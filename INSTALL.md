@@ -23,6 +23,7 @@ For older Windows versions, you may have to use **Docker Toolbox** (https://www.
 
 ```
 $> git clone https://github.com/savoirfairelinux/sous-chef
+$> cd sous-chef
 $> docker-compose build
 $> docker-compose up
 ```
@@ -36,6 +37,10 @@ $> docker-compose -f docker-compose.yml -f docker-compose.prod.yml up
 ```
 
 ## Django initialization
+
+Unfortunately, the bulk of the Django configuration cannot happen until the containers are already built
+and running, because it needs to talk to the database which is in a different container, managed by docker-compose.
+So after you do the first build, you need to manually do some more steps.
 
 In your console:
 
@@ -58,9 +63,14 @@ $> python3 manage.py createsuperuser
 $> python3 manage.py loaddata sample_data
 ```
 
-## Generate Django assets using gulp
+## Generate frontend assets
 
-### Run gulp
+[gulp](http://gulpjs.com/) is a javascript-based build system.
+We use it to compile and optimize files from `src/frontend/` to `src/sous_chef/static/`.
+We specifically use it to compile scss to css, javascript to minified javascript,
+and images to further-compressed images.
+
+To run gulp, use:
 
 **From host machine:**
 
@@ -79,8 +89,7 @@ $> cd tools/gulp && node node_modules/gulp/bin/gulp.js
 
 Please rest assured that the "unsafe-perm" option will not bring any security risk to sous-chef. The Node.js packages that we are installing here are only used for generating static files, such as images, CSS, JavaScript, etc., and will never be executed from external.
 
-If you have an error with this command, try deleting the folder `tools/gulp/node_modules` completely and rerun it. If the problem still exists, please let us know.
-
+If you have an error with this command, try deleting the folder `tools/gulp/node_modules` completely and rerun it. If the problem still exists, please let us know, including the versions of node, npm, and gulp that you have.
 
 ## Connection to application
 
