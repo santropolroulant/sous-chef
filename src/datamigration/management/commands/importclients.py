@@ -1,11 +1,9 @@
+import csv
+from datetime import date
+
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
-from django.shortcuts import get_object_or_404
 from member.models import Client, Member, Route
-import os
-import csv
-from sys import path
-from datetime import date
 
 
 class Command(BaseCommand):
@@ -34,11 +32,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # Load fixtures for the routes
-        fixture_dir = os.path.abspath(os.path.join(
-            os.path.dirname(__file__), '../fixtures')
-        )
         fixture_filename = 'routes.json'
-        fixture_file = os.path.join(fixture_dir, fixture_filename)
         call_command('loaddata', fixture_filename)
 
         if options['file']:

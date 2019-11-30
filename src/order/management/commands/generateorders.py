@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 from order.models import Order
 from member.models import Client
 from datetime import datetime, timedelta
-from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
+from django.contrib.admin.models import LogEntry, ADDITION
 
 
 class Command(BaseCommand):

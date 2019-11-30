@@ -1,6 +1,6 @@
 import csv
-
 from datetime import date
+
 from django.core.management.base import BaseCommand
 
 from member.models import (
@@ -47,7 +47,7 @@ class Command(BaseCommand):
                     member = Member.objects.get(mid=row[self.ROW_MID])
                     client = Client.objects.get(member=member)
 
-                    if row[self.ROW_FIRSTNAME] is not '':
+                    if row[self.ROW_FIRSTNAME] != '':
 
                         relationship, created = \
                             Member.objects.update_or_create(
@@ -75,7 +75,7 @@ class Command(BaseCommand):
                                 ))
                             client.billing_member = relationship
                         if row[self.ROW_REFERENT] == '1':
-                            referencing = Referencing.objects.create(
+                            Referencing.objects.create(
                                 referent=relationship,
                                 client=client,
                                 referral_reason=row[self.ROW_REASON],

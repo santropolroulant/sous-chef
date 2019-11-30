@@ -3,11 +3,10 @@ import factory
 import random
 from datetime import date
 from faker import Factory as FakerFactory
-from member.factories import MemberFactory, ClientFactory
+from member.factories import ClientFactory
 from order.models import (
     Order, Order_item, ORDER_STATUS, ORDER_ITEM_TYPE_CHOICES
 )
-from meal.factories import ComponentFactory
 from order.models import SIZE_CHOICES
 
 fake = FakerFactory.create()

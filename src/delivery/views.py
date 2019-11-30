@@ -9,19 +9,13 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.mixins import PermissionRequiredMixin
-from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
-from django.core.serializers.json import DjangoJSONEncoder
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
-from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext
 from django.utils.translation import ugettext_lazy as _
 from django.views import generic
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.cache import never_cache
 from django.http import HttpResponseRedirect, HttpResponse, Http404
-from django.http import JsonResponse
 from django.urls import reverse_lazy, reverse
 from django.contrib.admin.models import LogEntry, ADDITION
 from django.db.models.functions import Lower
@@ -52,10 +46,9 @@ from meal.models import (
     Component,
     Menu, Menu_component,
     Component_ingredient)
-from member.models import Client, Route, ROUTE_VEHICLES, DeliveryHistory
+from member.models import Client, Route, DeliveryHistory
 from order.models import (
     Order, component_group_sorting, SIZE_CHOICES_REGULAR, SIZE_CHOICES_LARGE)
-from .models import Delivery
 from .filters import KitchenCountOrderFilter
 from .forms import DishIngredientsForm
 from . import tsp
@@ -347,7 +340,7 @@ class RoutesInformation(
             MultiRouteReport.routes_make_pages(routes_dict)
             try:
                 f = open(ROUTE_SHEETS_FILE, "rb")
-            except:
+            except Exception:
                 raise Http404("File " + ROUTE_SHEETS_FILE + " does not exist")
             response = HttpResponse(content_type='application/pdf')
             response['Content-Disposition'] = \
@@ -380,11 +373,11 @@ class CreateDeliveryOfToday(
             raise Http404
 
         try:
-            delivery_history = DeliveryHistory.objects.get(
+            DeliveryHistory.objects.get(
                 route=route, date=timezone.datetime.today()
             )
         except DeliveryHistory.DoesNotExist:
-            delivery_history = DeliveryHistory.objects.create(
+            DeliveryHistory.objects.create(
                 route=route, date=timezone.datetime.today(),
                 vehicle=route.vehicle
             )
@@ -741,7 +734,6 @@ class MultiRouteReport(object):
                 for c in route['detail_lines']:
                     tab_style.add('LINEABOVE',
                                   (0, line), (-1, line), 1, rl_colors.black)
-                    items = c.delivery_items
                     rows.append([
                         # client
                         [RLParagraph(c.firstname + ' ' + c.lastname,
@@ -813,7 +805,7 @@ class KitchenCount(
             # download kitchen count report as PDF
             try:
                 f = open(KITCHEN_COUNT_FILE, "rb")
-            except:
+            except Exception:
                 raise Http404("File " + KITCHEN_COUNT_FILE + " does not exist")
             response = HttpResponse(content_type='application/pdf')
             response['Content-Disposition'] = \
@@ -1559,7 +1551,7 @@ class MealLabels(
     def get(self, request, **kwargs):
         try:
             f = open(MEAL_LABELS_FILE, "rb")
-        except:
+        except Exception:
             raise Http404("File " + MEAL_LABELS_FILE + " does not exist")
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = \

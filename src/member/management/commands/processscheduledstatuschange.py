@@ -1,10 +1,7 @@
-from django.core.management.base import BaseCommand
-from member.factories import ClientFactory
-from member.models import Client, ClientScheduledStatus, Member
-from django.core.management import call_command
-import os
 from datetime import date, datetime
-from sys import path
+
+from django.core.management.base import BaseCommand
+from member.models import ClientScheduledStatus
 
 
 class Command(BaseCommand):

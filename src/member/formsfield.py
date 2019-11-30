@@ -2,9 +2,7 @@ import re
 from django import forms
 from django.utils.encoding import smart_text
 from django.utils.translation import ugettext_lazy as _
-from localflavor.ca.forms import (
-    CAPhoneNumberField, CAPostalCodeField
-)
+from localflavor.ca.forms import CAPhoneNumberField
 
 
 class CAPhoneNumberExtField(CAPhoneNumberField):

@@ -1,11 +1,7 @@
-from django.core.management.base import BaseCommand
-from django.core.management import call_command
-from django.shortcuts import get_object_or_404
-from member.factories import ClientFactory, MemberFactory
-from member.models import Client, Member, Route, Address, Contact, EMAIL, HOME
-import os
 import csv
-from sys import path
+
+from django.core.management.base import BaseCommand
+from member.models import Member, Address, Contact, EMAIL, HOME
 
 
 class Command(BaseCommand):
@@ -52,14 +48,14 @@ class Command(BaseCommand):
                     contacts = Contact.objects.filter(member=member)
                     contacts.delete()
 
-                    if row[self.ROW_PHONE] is not '':
-                        contact = Contact.objects.create(
+                    if row[self.ROW_PHONE] != '':
+                        Contact.objects.create(
                             type=HOME,
                             value=row[self.ROW_PHONE],
                             member=member
                         )
-                    if row[self.ROW_EMAIL] is not '':
-                        contact = Contact.objects.create(
+                    if row[self.ROW_EMAIL] != '':
+                        Contact.objects.create(
                             type=EMAIL,
                             value=row[self.ROW_EMAIL],
                             member=member

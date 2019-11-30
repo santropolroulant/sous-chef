@@ -1,9 +1,7 @@
 import factory
 import random
-import datetime
+
 from billing.models import Billing
-from member.factories import ClientFactory
-from order.factories import OrderFactory
 
 
 class BillingFactory(factory.DjangoModelFactory):

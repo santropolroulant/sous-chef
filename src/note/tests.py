@@ -1,7 +1,6 @@
-import importlib
 import itertools
 from django.test import TestCase
-from note.models import Note, NotePriority, NoteCategory
+from note.models import Note
 from note.factories import NoteFactory
 from django.contrib.auth.models import User
 from member.factories import ClientFactory, RouteFactory
@@ -247,7 +246,7 @@ class NoteBatchToggleViewTestCase(SousChefTestMixin, TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        r = RouteFactory()  # prerequisite
+        RouteFactory()  # prerequisite
         cls.unread_notes = NoteFactory.create_batch(10, is_read=False)
         cls.read_notes = NoteFactory.create_batch(10, is_read=True)
 

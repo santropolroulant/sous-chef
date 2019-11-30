@@ -1,5 +1,3 @@
-from datetime import date
-
 from django import forms
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone

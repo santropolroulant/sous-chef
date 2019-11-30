@@ -1,5 +1,4 @@
 import datetime
-import math
 import json
 from django.db import models
 from django.db.models import Q
@@ -9,14 +8,13 @@ from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 from django_filters import (
-    FilterSet, CharFilter, ChoiceFilter, BooleanFilter,
-    MultipleChoiceFilter
+    FilterSet, CharFilter, ChoiceFilter, MultipleChoiceFilter
 )
 from annoying.fields import JSONField
 
 from member.formsfield import CAPhoneNumberExtField
 from meal.models import (
-    COMPONENT_GROUP_CHOICES, COMPONENT_GROUP_CHOICES_MAIN_DISH,
+    COMPONENT_GROUP_CHOICES,
     COMPONENT_GROUP_CHOICES_SIDES
 )
 from note.models import Note
@@ -153,9 +151,9 @@ class Member(models.Model):
                 self.add_contact_information(HOME, val_clean, True)
                 return val_clean
             return val_orig
-        except ValidationError as error:
+        except ValidationError:
             return val_orig
-        except:
+        except Exception:
             return ""
 
     @property
@@ -171,9 +169,9 @@ class Member(models.Model):
                 self.add_contact_information(CELL, val_clean, True)
                 return val_clean
             return val_orig
-        except ValidationError as error:
+        except ValidationError:
             return val_orig
-        except:
+        except Exception:
             return ""
 
     @property
@@ -189,9 +187,9 @@ class Member(models.Model):
                 self.add_contact_information(WORK, val_clean, True)
                 return val_clean
             return val_orig
-        except ValidationError as error:
+        except ValidationError:
             return val_orig
-        except:
+        except Exception:
             return ""
 
     @property
@@ -201,7 +199,7 @@ class Member(models.Model):
                 mc.value for mc in self.member_contact.all()
                 if mc.type == EMAIL
             )
-        except:
+        except Exception:
             return ""
 
     def add_contact_information(self, type, value, force_update=False):
@@ -214,7 +212,7 @@ class Member(models.Model):
         if value is None:
             value = ''
 
-        if force_update or value is not '':
+        if force_update or value != '':
             contact, created = Contact.objects.update_or_create(
                 member=self, type=type,
                 defaults={
@@ -331,9 +329,9 @@ class Contact(models.Model):
             try:
                 f = CAPhoneNumberExtField()
                 return f.clean(self.value)
-            except ValidationError as error:
+            except ValidationError:
                 return self.value
-            except:
+            except Exception:
                 return ""
         return self.value
 

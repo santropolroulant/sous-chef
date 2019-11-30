@@ -6,15 +6,13 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseBadRequest
 from django.urls import reverse_lazy, reverse
 from django.db import transaction
 from django.db.models import Q, Prefetch, When, Case, Sum, IntegerField
 from django.db.transaction import atomic
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404
-from django.utils import timezone
-from django.utils.decorators import method_decorator, classonlymethod
+from django.utils.decorators import classonlymethod
 from django.utils.encoding import force_text
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
@@ -48,7 +46,6 @@ from member.models import (
     Client_avoid_ingredient,
     Client_avoid_component,
     HOME, WORK, CELL, EMAIL)
-from note.models import Note
 from order.mixins import FormValidAjaxableResponseMixin
 from order.models import SIZE_CHOICES, Order
 
@@ -202,7 +199,7 @@ class ClientWizard(
                 'size_{}'.format(days)
             )
 
-            if json['size_{}'.format(days)] is "":
+            if json['size_{}'.format(days)] == "":
                 json['size_{}'.format(days)] = None
 
             for meal, Meals in COMPONENT_GROUP_CHOICES:
@@ -223,8 +220,6 @@ class ClientWizard(
         basic_information = self.form_dict['basic_information'].cleaned_data
         address_information = self.form_dict[
             'address_information'].cleaned_data
-        relationships = self.form_dict[
-            'relationships'].cleaned_data
         payment_information = self.form_dict[
             'payment_information'].cleaned_data
         dietary_restriction = self.form_dict[
@@ -646,43 +641,6 @@ class ClientStatusView(ClientView):
         return context
 
 
-class ClientNotesView(ClientView):
-    template_name = 'client/view/notes.html'
-
-    def get_context_data(self, **kwargs):
-        context = super(ClientNotesView, self).get_context_data(**kwargs)
-        context['active_tab'] = 'notes'
-        context['notes'] = NoteClientFilter(
-            self.request.GET, queryset=self.object.notes).qs
-
-        uf = NoteClientFilter(self.request.GET, queryset=self.object.notes)
-        context['filter'] = uf
-
-        return context
-
-
-class ClientDetail(ClientView):
-    template_name = 'client/view.html'
-
-    def get_context_data(self, **kwargs):
-        context = super(ClientDetail, self).get_context_data(**kwargs)
-        context['notes'] = list(Note.objects.all())
-        if self.object.meal_default_week:
-            context['meal_default'] = parse_json(self.object.meal_default_week)
-        else:
-            context['meal_default'] = []
-        return context
-
-    def parse_json(meals):
-        meal_default = []
-
-        for meal in meals:
-            if meals[meal] is not None:
-                meal_default.append(meal + ": " + str(meals[meal]))
-
-        return meal_default
-
-
 class ClientOrderList(ClientView):
     template_name = 'client/view/orders.html'
 
@@ -1000,7 +958,7 @@ class ClientUpdateDietaryRestriction(ClientUpdateInformation):
         for days, v in DAYS_OF_WEEK:
             json['size_{}'.format(days)] = form['size_{}'.format(days)]
 
-            if json['size_{}'.format(days)] is "":
+            if json['size_{}'.format(days)] == "":
                 json['size_{}'.format(days)] = None
 
             for meal, Meal in COMPONENT_GROUP_CHOICES:
