@@ -12,7 +12,7 @@ class ComponentTestCase(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        component = Component.objects.create(
+         Component.objects.create(
             name='Coq au vin', component_group='main dish')
 
     def test_str_is_fullname(self):
@@ -72,7 +72,7 @@ class IngredientTestCase(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        ingredient = Ingredient.objects.create(
+         Ingredient.objects.create(
             name='Green peas', ingredient_group='veggies and fruits')
 
     def test_str_is_fullname(self):
@@ -86,7 +86,7 @@ class MenuTestCase(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        menu = Menu.objects.create(date=datetime.date(2016, 5, 21))
+         Menu.objects.create(date=datetime.date(2016, 5, 21))
 
     def test_str_is_fullname(self):
         """Menu's string representation includes date"""
@@ -176,7 +176,7 @@ class Restricted_itemTestCase(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        restricted_item = Restricted_item.objects.create(
+         Restricted_item.objects.create(
             name='pork', restricted_item_group='meat')
 
     def test_str_is_fullname(self):

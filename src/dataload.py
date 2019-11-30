@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# flake8: noqa
 
 from meal.models import Component, Restricted_item, Ingredient
 from meal.models import Component_ingredient, Incompatibility

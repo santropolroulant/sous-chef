@@ -9,15 +9,9 @@ from django_filters import FilterSet, ChoiceFilter, CharFilter
 from django.urls import reverse
 from django.core.exceptions import ValidationError
 
-from member.models import (Client, Member, Route, DAYS_OF_WEEK,
-                           RATE_TYPE_LOW_INCOME, RATE_TYPE_SOLIDARY,
-                           Address, Option, Client_option, Restriction,
-                           Client_avoid_ingredient, Client_avoid_component,
-                           OPTION_GROUP_CHOICES_PREPARATION)
-from meal.models import (Menu, Menu_component, Component,
-                         Restricted_item, Ingredient,
-                         Component_ingredient, Incompatibility,
-                         COMPONENT_GROUP_CHOICES,
+from member.models import (Client, DAYS_OF_WEEK, RATE_TYPE_LOW_INCOME,
+                           RATE_TYPE_SOLIDARY, OPTION_GROUP_CHOICES_PREPARATION)
+from meal.models import (COMPONENT_GROUP_CHOICES,
                          COMPONENT_GROUP_CHOICES_MAIN_DISH,
                          COMPONENT_GROUP_CHOICES_SIDES)
 
@@ -161,7 +155,6 @@ class OrderManager(models.Manager):
           Created orders.
         """
         created_orders = []
-        messages = []
         weekday = delivery_date.weekday()  # Monday is 0, Sunday is 6
         day = DAYS_OF_WEEK[weekday][0]     # 0 -> 'monday', 6 -> 'sunday'
         for client in clients:
@@ -218,7 +211,6 @@ class OrderManager(models.Manager):
           An array of created orders.
         """
         created_orders = []
-        messages = []
 
         # Calculate client prices (main and side)
         prices = self.get_client_prices(client)

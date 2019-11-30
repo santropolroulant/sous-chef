@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.db.models.functions import Lower
 from meal.models import (Component, Restricted_item,
                          Ingredient, Component_ingredient,
-                         Incompatibility, Menu, Menu_component,
+                         Incompatibility, Menu,
                          COMPONENT_GROUP_CHOICES,
                          INGREDIENT_GROUP_CHOICES,
                          RESTRICTED_ITEM_GROUP_CHOICES)

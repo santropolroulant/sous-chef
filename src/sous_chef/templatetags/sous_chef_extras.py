@@ -1,8 +1,4 @@
 from django import template
-from meal.models import COMPONENT_GROUP_CHOICES
-from meal.settings import COMPONENT_SYSTEM_DEFAULT
-from django.utils.translation import ugettext_lazy as _
-
 
 register = template.Library()
 

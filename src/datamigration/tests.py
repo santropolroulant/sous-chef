@@ -211,7 +211,6 @@ class ImportMemberMealsTestCase(TestCase):
     def test_import_meal_labels(self):
         marie = Client.objects.get(member__mid=93)
         self.assertEquals(marie.notes.all().count(), 0)
-        dorothy = Client.objects.get(member__mid=94)
 
 
 class ImportMemberOrdersTestCase(TestCase):

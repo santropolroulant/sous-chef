@@ -1,12 +1,8 @@
-from django.core.management.base import BaseCommand
-from django.core.management import call_command
-from django.shortcuts import get_object_or_404
-from member.factories import ClientFactory, MemberFactory
-from member.models import Client, Member, Route, Address, Contact
-from member.models import EMAIL, HOME, CELL, WORK
-import os
 import csv
-from sys import path
+
+from django.core.management.base import BaseCommand
+from member.models import Member, Address, Contact
+from member.models import EMAIL, HOME, CELL, WORK
 
 
 class Command(BaseCommand):
@@ -55,34 +51,34 @@ class Command(BaseCommand):
                     contacts = Contact.objects.filter(member=member)
                     contacts.delete()
 
-                    if row[self.ROW_HOME_PHONE] is not '' \
+                    if row[self.ROW_HOME_PHONE] != '' \
                             and len(row[self.ROW_HOME_PHONE]) >= 7:
-                        contact = Contact.objects.create(
+                        Contact.objects.create(
                             type=HOME,
                             value=row[self.ROW_HOME_PHONE],
                             member=member
                         )
-                    if row[self.ROW_CELL_PHONE] is not ''\
+                    if row[self.ROW_CELL_PHONE] != ''\
                             and len(row[self.ROW_CELL_PHONE]) >= 7:
-                        contact = Contact.objects.create(
+                        Contact.objects.create(
                             type=CELL,
                             value=row[self.ROW_CELL_PHONE],
                             member=member
                         )
 
-                    if row[self.ROW_WORK_PHONE] is not ''\
+                    if row[self.ROW_WORK_PHONE] != ''\
                             and len(row[self.ROW_WORK_PHONE]) >= 7:
                         work = row[self.ROW_WORK_PHONE]
-                        if row[self.ROW_EXT] is not '':
+                        if row[self.ROW_EXT] != '':
                             work += '  #' + row[self.ROW_EXT]
 
-                        contact = Contact.objects.create(
+                        Contact.objects.create(
                             type=WORK,
                             value=work,
                             member=member
                         )
-                    if row[self.ROW_EMAIL] is not '':
-                        contact = Contact.objects.create(
+                    if row[self.ROW_EMAIL] != '':
+                        Contact.objects.create(
                             type=EMAIL,
                             value=row[self.ROW_EMAIL],
                             member=member

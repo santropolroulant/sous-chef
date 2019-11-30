@@ -48,10 +48,10 @@ class BillingCreate(
 
     def get(self, request):
         date = self.request.GET.get('delivery_date', '-')
-        date = date if date is not '' else '-'
+        date = date if date != '' else '-'
         year, month = date.split('-')
 
-        if year is '' or month is '':
+        if year == '' or month == '':
             messages.add_message(
                 self.request, messages.ERROR,
                 _("You must select a period to create a billing and click in "

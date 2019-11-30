@@ -236,6 +236,6 @@ SOUSCHEF_ENVIRONMENT_NAME = os.environ.get('SOUSCHEF_ENVIRONMENT_NAME') or ''
 try:
     GIT_HEAD = subprocess.check_output(['git', 'rev-parse', 'HEAD'])
     GIT_TAG = subprocess.check_output(['git', 'describe', '--tags'])
-except Exception as e:
+except Exception:
     GIT_HEAD = None
     GIT_TAG = None

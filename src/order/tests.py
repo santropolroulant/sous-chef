@@ -2,9 +2,7 @@
 
 import random
 import urllib.parse
-import importlib
 import datetime
-from unittest.mock import patch
 from datetime import date
 
 from django.test import TestCase
@@ -16,10 +14,10 @@ from django.core.exceptions import ValidationError
 from django.core.management import call_command
 from django.db.models import Q, Sum
 
-from member.models import (Client, Address, Member, Route, DAYS_OF_WEEK)
+from member.models import (Client, Address, Member, Route)
 from member.factories import RouteFactory, ClientFactory
 from meal.factories import ComponentFactory
-from order.models import Order, Order_item, MAIN_PRICE_DEFAULT, \
+from order.models import Order, Order_item, \
     OrderStatusChange, COMPONENT_GROUP_CHOICES_MAIN_DISH, \
     ORDER_ITEM_TYPE_CHOICES_COMPONENT, \
     ORDER_STATUS_ORDERED, ORDER_STATUS_DELIVERED, ORDER_STATUS_CANCELLED
@@ -274,7 +272,7 @@ class OrderItemTestCase(TestCase):
             component_group=None).count(), 1)
 
     def test_edge_case_two_delivery_items(self):
-        order_item2 = Order_item.objects.create(
+        Order_item.objects.create(
             order=self.order,
             price=0,
             billable_flag=False,
@@ -359,7 +357,7 @@ class OrderAutoCreateOnDefaultsTestCase(TestCase):
         """
         # Create an  for a random ongoing client
         client = random.choice(self.ongoing_clients)
-        order = OrderFactory(
+        OrderFactory(
             delivery_date=self.delivery_date,
             client=client,
         )
@@ -387,7 +385,7 @@ class OrderAutoCreateOnDefaultsTestCase(TestCase):
         fruit_salad_item = items.filter(component_group='fruit_salad').get()
         self.assertEqual(fruit_salad_item.total_quantity, 1)
         green_salad_item = items.filter(component_group='green_salad').get()
-        self.assertEqual(fruit_salad_item.total_quantity, 1)
+        self.assertEqual(green_salad_item.total_quantity, 1)
         self.assertEqual(items.filter(component_group='compote').count(), 0)
 
 
@@ -795,17 +793,17 @@ class OrderCreateBatchTestCase(SousChefTestMixin, TestCase):
         past = today - datetime.timedelta(days=1)
 
         client = self.episodic_client[1]
-        order1 = OrderFactory(
+        OrderFactory(
             delivery_date=today,
             status='O',
             client=client
         )
-        order2 = OrderFactory(
+        OrderFactory(
             delivery_date=future,
             status='O',
             client=client
         )
-        order0 = OrderFactory(
+        OrderFactory(
             delivery_date=past,
             status='O',
             client=client
@@ -1202,7 +1200,7 @@ class OrderStatusChangeTestCase(OrderItemTestCase):
 
     def test_invalid_creation_wrong_status_from(self):
         order = self.order
-        with self.assertRaises(ValidationError) as context:
+        with self.assertRaises(ValidationError):
             osc = OrderStatusChange(
                 order=order,
                 status_from='D',

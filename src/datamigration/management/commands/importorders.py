@@ -1,15 +1,8 @@
-from django.core.management.base import BaseCommand
-from django.core.management import call_command
-from django.shortcuts import get_object_or_404
-from member.factories import ClientFactory, MemberFactory
-from member.models import Client, Member, Route, Address, Contact, Referencing
-from member.models import Option, Client_option, Client_avoid_ingredient
-from order.models import Order
-import os
 import csv
-import json
-from sys import path
-from datetime import date
+
+from django.core.management.base import BaseCommand
+from member.models import Client, Member
+from order.models import Order
 
 
 class Command(BaseCommand):

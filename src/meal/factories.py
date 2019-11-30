@@ -2,7 +2,6 @@
 
 import factory
 import random
-from django.db import models
 from faker import Factory as FakerFactory
 from meal.models import (
     Ingredient, Component, Component_ingredient, Incompatibility,

@@ -5,30 +5,26 @@ from datetime import date, timedelta
 from decimal import Decimal
 from django.contrib.auth.models import User
 from django.core.management import call_command
-from django.forms import BaseFormSet
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.six import StringIO
-from django.test import TestCase, Client
+from django.test import TestCase
 
 from member.models import (
     Member, Client, Address,
     Contact, Option, Client_option, Restriction, Route,
     Client_avoid_ingredient, Client_avoid_component,
     ClientScheduledStatus, Relationship,
-    CELL, HOME, EMAIL, DAYS_OF_WEEK
+    CELL, HOME, EMAIL
 )
 from meal.models import (
     Restricted_item, Ingredient, Component, COMPONENT_GROUP_CHOICES
 )
-from order.models import Order
 from member.factories import (
     RouteFactory, ClientFactory, ClientScheduledStatusFactory,
     MemberFactory, DeliveryHistoryFactory, RelationshipFactory
 )
 from meal.factories import IngredientFactory, ComponentFactory
-from django.core.management import call_command
-from django.utils.six import StringIO
 from django.utils import translation
 from django.utils.translation import ugettext
 
@@ -811,6 +807,7 @@ class FormTestCase(TestCase):
                 data,
                 follow=True
             )
+            self.assertEqual(response.status_code, 200)
 
         member = Member.objects.get(firstname="User")
         self._test_assert_member_info(member)
@@ -944,6 +941,7 @@ class FormTestCase(TestCase):
         response = self.client.get(
             reverse_lazy('member:client_information', kwargs={'pk': client.id})
         )
+        self.assertEqual(response.status_code, 200)
 
         self.assertTrue(b"User" in response.content)
         self.assertTrue(b"Testing" in response.content)
@@ -1636,6 +1634,7 @@ class ClientStatusUpdateAndScheduleCase(SousChefTestMixin, TestCase):
             HTTP_X_REQUESTED_WITH='XMLHttpRequest',
             follow=True
         )
+        self.assertEqual(response.status_code, 200)
         self.assertIn(
             ugettext('This field is required.').encode(response.charset),
             response.content
@@ -1663,6 +1662,7 @@ class ClientStatusUpdateAndScheduleCase(SousChefTestMixin, TestCase):
             HTTP_X_REQUESTED_WITH='XMLHttpRequest',
             follow=True
         )
+        self.assertEqual(response.status_code, 200)
         client = Client.objects.get(pk=self.active_client.id)
         scheduled_change_start = ClientScheduledStatus.objects.get(
             client=client.id, change_date='2018-09-23')
@@ -1709,6 +1709,7 @@ class ClientStatusUpdateAndScheduleCase(SousChefTestMixin, TestCase):
             HTTP_X_REQUESTED_WITH='XMLHttpRequest',
             follow=True,
         )
+        self.assertEqual(response.status_code, 200)
         client = Client.objects.get(pk=self.active_client.id)
         scheduled_change = ClientScheduledStatus.objects.get(
             client=client.id)
@@ -2331,6 +2332,7 @@ class ClientUpdateDietaryRestrictionTestCase(ClientUpdateTestCase):
             data,
             follow=True
         )
+        self.assertEqual(response.status_code, 200)
 
         # Reload client data as it should have been changed in the database
         client = Client.objects.get(id=client.id)
@@ -3224,28 +3226,28 @@ class TestMigrationApply0026(TestMigrations):
             firstname="John",
             lastname="Doe"
         )
-        client1 = Client.objects.create(
+        Client.objects.create(
             billing_member=member1,
             member=member1,
             # Important fields
             emergency_contact=emgc_member,
             emergency_contact_relationship='friend'
         )
-        client2 = Client.objects.create(
+        Client.objects.create(
             billing_member=member2,
             member=member2,
             # Important fields
             emergency_contact=emgc_member,
             emergency_contact_relationship=None
         )
-        client3 = Client.objects.create(
+        Client.objects.create(
             billing_member=member3,
             member=member3,
             # Important fields
             emergency_contact=None,
             emergency_contact_relationship='friend'
         )
-        client4 = Client.objects.create(
+        Client.objects.create(
             billing_member=member4,
             member=member4,
             # Important fields
@@ -3325,7 +3327,7 @@ class TestMigrationUnapply0026(TestMigrations):
             firstname="Andy",
             lastname="Lee"
         )
-        client0 = Client.objects.create(
+        Client.objects.create(
             billing_member=member0,
             member=member0,
         )
@@ -3423,37 +3425,37 @@ class TestMigrationApply0029(TestMigrations):
             postal_code="-"
         )
 
-        member1 = Member.objects.create(
+        Member.objects.create(
             firstname="1",
             lastname="-",
             address=addr1
         )
-        member2a = Member.objects.create(
+        Member.objects.create(
             firstname="2",
             lastname="a",
             address=addr2
         )
-        member2b = Member.objects.create(
+        Member.objects.create(
             firstname="2",
             lastname="b",
             address=addr2
         )
-        member3a = Member.objects.create(
+        Member.objects.create(
             firstname="3",
             lastname="a",
             address=addr3
         )
-        member3b = Member.objects.create(
+        Member.objects.create(
             firstname="3",
             lastname="b",
             address=addr3
         )
-        member3c = Member.objects.create(
+        Member.objects.create(
             firstname="3",
             lastname="c",
             address=addr3
         )
-        member_no_addr = Member.objects.create(
+        Member.objects.create(
             firstname="No",
             lastname="Address",
             address=None
@@ -3752,7 +3754,7 @@ class RouteGetOptimisedSequenceViewTestCase(SousChefTestMixin, TestCase):
         try:
             result = json.loads(response.content.decode(response.charset))
             self.assertEqual(len(result), 10)
-        except (TypeError, ValueError) as e:
+        except (TypeError, ValueError):
             self.fail("Response is not valid JSON.")
 
 
@@ -3765,7 +3767,7 @@ class RouteDeliveryHistoryDetailViewTestCase(SousChefTestMixin, TestCase):
             username='foo', email='foo@example.com', password='secure')
         self.client.login(username='foo', password='secure')
         r = RouteFactory()
-        dh = DeliveryHistoryFactory(
+        DeliveryHistoryFactory(
             route=r,
             date=timezone.datetime.date(
                 timezone.datetime(2001, 1, 1)
@@ -3786,7 +3788,7 @@ class RouteDeliveryHistoryDetailViewTestCase(SousChefTestMixin, TestCase):
         user.save()
         self.client.login(username='foo', password='secure')
         r = RouteFactory()
-        dh = DeliveryHistoryFactory(
+        DeliveryHistoryFactory(
             route=r,
             date=timezone.datetime.date(
                 timezone.datetime(2001, 1, 1)

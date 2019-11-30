@@ -1,6 +1,5 @@
 import datetime
 import json
-import importlib
 
 from django.db.models import Q
 from django.test import RequestFactory
@@ -49,7 +48,7 @@ class KitchenCountReportTestCase(SousChefTestMixin, TestCase):
         self.today = datetime.date.today()
         # create orders today
         clients = Client.active.all()
-        numorders = Order.objects.auto_create_orders(
+        Order.objects.auto_create_orders(
             self.today, clients)
         # main dish and its ingredients today
         main_dishes = Component.objects.filter(name='Ginger pork')
@@ -103,7 +102,7 @@ class KitchenCountReportTestCase(SousChefTestMixin, TestCase):
         # generate orders today
         self.today = datetime.date.today()
         clients = Client.active.all()
-        numorders = Order.objects.auto_create_orders(
+        Order.objects.auto_create_orders(
             self.today, clients)
         # main dish and its ingredients today
         main_dishes = Component.objects.filter(name='Ginger pork')
@@ -143,7 +142,7 @@ class KitchenCountReportTestCase(SousChefTestMixin, TestCase):
         # generate orders today
         self.today = datetime.date.today()
         clients = Client.active.all()
-        numorders = Order.objects.auto_create_orders(
+        Order.objects.auto_create_orders(
             self.today, clients)
         Menu.create_menu_and_components(
             self.today,
@@ -390,7 +389,7 @@ class DeliveryRouteSheetTestCase(SousChefTestMixin, TestCase):
         # generate orders today
         self.today = datetime.date.today()
         clients = Client.active.all()
-        numorders = Order.objects.auto_create_orders(
+        Order.objects.auto_create_orders(
             self.today, clients)
         self.route_id = Route.objects.get(name='Centre Sud').id
         self.force_login()
@@ -406,6 +405,7 @@ class DeliveryRouteSheetTestCase(SousChefTestMixin, TestCase):
         member = Member.objects.filter(lastname='Tracy')[0]
         client = Client.objects.get(member=member.id)
         order = Order.objects.get(client=client.id, delivery_date=self.today)
+        self.assertEqual(order.client.id, client.id)
         mile_end_id = Route.objects.get(name='Mile-End').id
         route_list = Order.get_delivery_list(self.today, mile_end_id)
         self.assertTrue('Tracy' in repr(route_list))
@@ -414,7 +414,7 @@ class DeliveryRouteSheetTestCase(SousChefTestMixin, TestCase):
         """Sample route sheet page."""
         client = Client.objects.filter(member__lastname='Blondin')[0]
         route = Route.objects.get(pk=self.route_id)
-        delivery_history = DeliveryHistoryFactory(
+        DeliveryHistoryFactory(
             route=route,
             date=tz.datetime.today(),
             client_id_sequence=[client.id]
@@ -439,7 +439,7 @@ class DeliveryRouteSheetTestCase(SousChefTestMixin, TestCase):
         user.is_staff = True
         user.save()
         self.client.login(username='foo', password='secure')
-        dh = DeliveryHistoryFactory(
+        DeliveryHistoryFactory(
             route=Route.objects.get(pk=self.route_id),
             date=tz.datetime.today()
         )
@@ -1046,7 +1046,7 @@ class ExcludeMalconfiguredClientsTestCase(SousChefTestMixin, TestCase):
         self.assertEqual(response.status_code, 404)
 
         # Try invalid DeliveryHistory
-        d = DeliveryHistory.objects.create(
+        DeliveryHistory.objects.create(
             route=self.route1,
             date=tz.datetime.today(),
             # As long as this sequence is not exactly same as the clients',

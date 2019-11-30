@@ -1,11 +1,10 @@
 import csv
 import json
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 from django.views import generic, View
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext_lazy as _
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib import messages
@@ -182,9 +181,8 @@ class CreateOrdersBatch(
                     DAYS_OF_WEEK
                 ),
             )
-        context['delivery_dates'] = []
-        DAYS_OF_WEEK_DICT = dict(DAYS_OF_WEEK)
 
+        context['delivery_dates'] = []
         context['override_orders'] = []
         for date in delivery_dates:
             date_obj = datetime.strptime(date, '%Y-%m-%d')

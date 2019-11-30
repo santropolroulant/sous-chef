@@ -1,7 +1,6 @@
 import collections
 from django.db import models
-from django.db.models import Q, Sum, Prefetch
-from member.models import Client
+from django.db.models import Q, Prefetch
 from order.models import Order, Order_item
 from datetime import datetime, date
 from annoying.fields import JSONField
@@ -192,9 +191,3 @@ def calculate_amount_total(orders):
     for order in orders:
         total += order.price
     return total
-
-
-# get the order detail from a list of orders
-def get_order_detail(self, orders):
-
-    detail = {"meal_regular": 0, "meal_large": 0}

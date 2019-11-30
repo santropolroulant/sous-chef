@@ -1,16 +1,11 @@
 from django import forms
-from django.utils.encoding import force_text
-from django.utils.safestring import mark_safe
-from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
-from django.urls import reverse
 from extra_views import InlineFormSet
 
 from member.models import Client
 
 from meal.models import COMPONENT_GROUP_CHOICES, COMPONENT_GROUP_CHOICES_SIDES
-from order.models import Order_item, SIZE_CHOICES, OrderStatusChange, \
-    ORDER_ITEM_TYPE_CHOICES
+from order.models import Order_item, SIZE_CHOICES, OrderStatusChange
 
 
 class CreateOrderItem(InlineFormSet):
@@ -91,7 +86,7 @@ class CreateOrdersBatchForm(forms.Form):
 
     def clean_is_submit(self):
         is_submit = self.cleaned_data['is_submit']
-        if is_submit is not 1:
+        if is_submit != 1:
             # prevents form submit and force a form refresh
             raise forms.ValidationError(
                 _("This field must be 1 to submit the form.")

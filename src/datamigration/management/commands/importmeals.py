@@ -1,16 +1,8 @@
-from django.core.management.base import BaseCommand
-from django.core.management import call_command
-from django.shortcuts import get_object_or_404
-from member.factories import ClientFactory, MemberFactory
-from member.models import Client, Member, Route, Address, Contact, Referencing
-from member.models import Option, Client_option, Client_avoid_ingredient
-from note.models import Note
-from meal.models import Ingredient
-import os
 import csv
-import json
-from sys import path
-from datetime import date
+
+from django.core.management.base import BaseCommand
+from member.models import Client, Member
+from member.models import Option, Client_option
 
 
 class Command(BaseCommand):
@@ -47,9 +39,6 @@ class Command(BaseCommand):
         food_prep_cut = Option.objects.get(
             name='Cut up meat'
         )
-
-        ingredients = Ingredient.objects.all()
-        beef = Ingredient.objects.all().filter(name__icontains='beef')
 
         with open(file) as f:
             reader = csv.reader(f, delimiter=';')

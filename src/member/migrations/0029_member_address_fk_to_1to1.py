@@ -11,7 +11,6 @@ def separate_shared_address_instances(apps, schema_editor):
     Before changing ForeignKey to OneToOneField, make sure that members use different address instances.
     """
     Member = apps.get_model('member', 'Member')
-    Address = apps.get_model('member', 'Address')
     address_ids = set()
     for m in Member.objects.select_related('address').all():
         a = m.address

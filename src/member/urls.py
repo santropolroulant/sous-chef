@@ -4,7 +4,6 @@ from django.utils.translation import string_concat
 
 from member.views import (
     ClientWizard,
-    ClientDetail,
     ClientList,
     SearchMembers,
     ClientOrderList,
@@ -84,7 +83,6 @@ urlpatterns = [
         name='member_step'),
     url(_(r'^list/$'), ClientList.as_view(), name='list'),
     url(_(r'^search/$'), SearchMembers.as_view(), name='search'),
-    url(_(r'^view/(?P<pk>\d+)/$'), ClientDetail.as_view(), name='view'),
     url(_(r'^view/(?P<pk>\d+)/orders$'),
         ClientOrderList.as_view(), name='list_orders'),
     url(_(r'^view/(?P<pk>\d+)/information$'),

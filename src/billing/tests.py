@@ -1,9 +1,8 @@
 from django.test import TestCase
-from order.factories import OrderFactory, OrderItemFactory
-from billing.models import Billing, calculate_amount_total, BillingManager
+from order.factories import OrderFactory
+from billing.models import Billing, calculate_amount_total
 import datetime
-import importlib
-from member.factories import ClientFactory, RouteFactory
+from member.factories import ClientFactory
 from order.models import Order
 from django.contrib.auth.models import User
 from django.urls import reverse
@@ -40,6 +39,8 @@ class BillingTestCase(TestCase):
 
     def testTotalAmount(self):
         total_amount = calculate_amount_total(self.orders)
+        # TODO: put the proper number here to test the function.
+        self.assertEqual(total_amount, 100)
 
     def testOrderDetail(self):
         pass
