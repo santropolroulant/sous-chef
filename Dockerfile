@@ -1,24 +1,26 @@
 FROM python:3.5
 ENV PYTHONUNBUFFERED 1
 
+# Install underlying debian dependencies
+RUN apt-get update && \
+  apt-get install curl gettext -y && \
+  apt-get clean
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
+RUN apt-get install nodejs build-essential binutils libproj-dev gdal-bin -y && \
+  apt-get clean
+
+# Install gulp
+RUN npm install gulp -g
+
 # Create workdir and copy code
 RUN mkdir /code
 WORKDIR /code
 COPY . /code/
 
-# Install underlying debian dependencies
-RUN apt-get update
-RUN apt-get install curl gettext -y
-RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
-RUN apt-get install nodejs build-essential -y
-RUN apt-get install binutils libproj-dev gdal-bin -y
-RUN apt-get clean
-
 # Install python dependencies
 RUN pip3 install -r requirements.txt
 
 # Install javascript dependencies
-RUN npm install gulp -g
 RUN cd /code/tools/gulp && npm install
 
 # Generate and collect assets
