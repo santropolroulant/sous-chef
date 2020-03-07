@@ -70,12 +70,12 @@
   <div class="dashboard-stat column">
     <div class="ui segments">
       <div class="ui segment">
-        {% trans 'An overview of the number of main dishes delivered on each route. All active, paused and pending clients are taken into account. Format: "ongoing scheduled dishes (+ episodic and ongoing unscheduled default dishes)"' as route_help_text %}
+        {% trans 'An overview of the number of main dishes delivered on each route. All active, paused and pending clients are taken into account. Format: "scheduled dishes (episodic default dishes)"' as route_help_text %}
         <h3 class="ui blue header">{% trans "Route Size Monitoring" %}<small><i class="help-text question grey icon link" data-content="{{ route_help_text|force_escape }}"></i></small></h3>
       </div>
       <div class="ui secondary blue inverted dashboard left aligned segment" style="justify-content: flex-start; height: inherit">
         <div>
-          <table class="ui very compact striped table">
+          <table class="ui very compact striped table route-size-monitoring">
             <thead>
               <tr>
                 <th class="four wide"></th>
@@ -143,6 +143,45 @@
               </tr>
               {% endfor %}
             </tbody>
+            <tfoot>
+              <tr>
+                <td>
+                  <b>{% trans 'TOTAL' %}</b>
+                </td>
+                <td class="center aligned"></td>
+                <td class="center aligned">
+                    <b>{{ total_scheduled_by_day.monday }}</b>
+                    {% if total_episodic_by_day.monday %}
+                    (+{{total_episodic_by_day.monday}})
+                    {% endif %}
+                  </td>
+                  <td class="center aligned">
+                    <b>{{ total_scheduled_by_day.tuesday }}</b>
+                    {% if total_episodic_by_day.tuesday %}
+                    (+{{total_episodic_by_day.tuesday}})
+                    {% endif %}
+                  </td>
+                  <td class="center aligned">
+                    <b>{{ total_scheduled_by_day.wednesday }}</b>
+                    {% if total_episodic_by_day.wednesday %}
+                    (+{{total_episodic_by_day.wednesday}})
+                    {% endif %}
+                  </td>
+                  <td class="center aligned"></td>
+                  <td class="center aligned">
+                    <b>{{ total_scheduled_by_day.friday }}</b>
+                    {% if total_episodic_by_day.friday %}
+                    (+{{total_episodic_by_day.friday}})
+                    {% endif %}
+                  </td>
+                  <td class="center aligned">
+                    <b>{{ total_scheduled_by_day.saturday }}</b>
+                    {% if total_episodic_by_day.saturday %}
+                    (+{{total_episodic_by_day.saturday}})
+                    {% endif %}
+                  </td>
+                </tr>
+            </tfoot>
           </table>
         </div>
       </div>
