@@ -124,11 +124,11 @@ WSGI_APPLICATION = 'sous_chef.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'feast',
-        'USER': 'root',
-        'PASSWORD': '123456',
-        'HOST': 'db',
-        'port': '3306',
+        'NAME': os.environ.get('SOUSCHEF_DJANGO_DB_NAME', 'feast'),
+        'USER': os.environ.get('SOUSCHEF_DJANGO_DB_USER', 'root'),
+        'PASSWORD': os.environ.get('SOUSCHEF_DJANGO_DB_PASSWORD', '123456'),
+        'HOST': os.environ.get('SOUSCHEF_DJANGO_DB_HOST', 'db'),
+        'port': os.environ.get('SOUSCHEF_DJANGO_DB_PORT', '3306'),
     }
 }
 
