@@ -18,10 +18,10 @@ import os
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('../src'))
+sys.path.insert(0, os.path.abspath('../souschef'))
 
 import django
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "sous_chef.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "souschef.sous_chef.settings")
 django.setup()
 
 # -- General configuration ------------------------------------------------

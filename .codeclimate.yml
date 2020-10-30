@@ -15,8 +15,8 @@ engines:
       - python:
 ratings:
    paths:
-   - "src/**/*.py"
-   # - src/**/*.js
+   - "souschef/**/*.py"
+   # - souschef/**/*.js
 exclude_paths:
 - "**/tests.py"
 - "docs/**/*"

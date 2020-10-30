@@ -1,7 +1,7 @@
-FROM python:3.5
+FROM python:3.7
 ENV PYTHONUNBUFFERED 1
 
-# Install underlying debian dependencies
+# Install underlying Debian dependencies
 RUN apt-get update && \
   apt-get install curl gettext -y && \
   apt-get clean
@@ -9,24 +9,12 @@ RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
 RUN apt-get install nodejs build-essential binutils libproj-dev gdal-bin -y && \
   apt-get clean
 
-# Install gulp
-RUN npm install gulp -g
-
-# Create workdir and copy code
 RUN mkdir /code
 WORKDIR /code
-COPY . /code/
+COPY ./requirements.txt .
+RUN pip3 install --no-cache-dir -r requirements.txt
 
-# Install python dependencies
-RUN pip3 install -r requirements.txt
-
-# Install javascript dependencies
-RUN cd /code/tools/gulp && npm install
-
-# Generate and collect assets
-RUN cd /code/tools/gulp && gulp
-RUN python3 src/manage.py collectstatic --noinput
-
-# Default entry point to gunicorn server, can be override by docker-compose
-CMD cd src && /usr/local/bin/gunicorn sous_chef.wsgi:application -w 2 -b :8000
-
+ENV DJANGO_SETTINGS_MODULE="souschef.sous_chef.settings"
+CMD pip3 install -e . && \
+  python3 souschef/manage.py collectstatic --noinput && \
+  /usr/local/bin/gunicorn souschef.sous_chef.wsgi:application -w 2 -b :8000

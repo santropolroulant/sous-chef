@@ -12,4 +12,4 @@ jobs:
     - name: Flake8 with annotations
       uses: TrueBrain/actions-flake8@v1.2
       with:
-       path: src
+       path: souschef

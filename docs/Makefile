@@ -49,8 +49,8 @@ help:
 
 .PHONY: sphinx-apidoc
 sphinx-apidoc:
-	sphinx-apidoc -f -o source ../src/ \
-		../src/*/migrations
+	sphinx-apidoc -f -o source ../souschef/ \
+		../souschef/*/migrations
 
 .PHONY: clean
 clean:
