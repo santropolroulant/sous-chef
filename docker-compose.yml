@@ -11,12 +11,12 @@ services:
       - backend
 
   web:
-    environment:
-      - SOUSCHEF_VERSION=v1.0-beta
     restart: always
     build: .
     volumes:
-      - souschef_static:/code/src/static
+      - ./:/code
+    ports:
+      - "8000:8000"
     depends_on:
       - db
     networks:
@@ -24,7 +24,6 @@ services:
 
 volumes:
   souschef_data:
-  souschef_static:
 
 networks:
   backend:

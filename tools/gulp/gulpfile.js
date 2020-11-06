@@ -18,9 +18,9 @@ const validate = require('gulp-jsvalidate');
 // Paths
 // ==========================================
 // - Source path folders
-const SRC_SCSS = '../../src/frontend/scss';
-const SRC_JS = '../../src/frontend/js';
-const SRC_IMG = '../../src/frontend/images';
+const SRC_SCSS = '../../souschef/frontend/scss';
+const SRC_JS = '../../souschef/frontend/js';
+const SRC_IMG = '../../souschef/frontend/images';
 
 // - Source paths
 // Add any additional vendor or site files added to the appropriate property below.
@@ -103,10 +103,10 @@ const sources = {
 
 // - Destination path folders
 const destinations = {
-  css: '../../src/sous_chef/assets/css',
-  js: '../../src/sous_chef/assets/js',
-  img: '../../src/sous_chef/assets/images',
-  fonts: '../../src/sous_chef/assets/fonts'
+  css: '../../souschef/sous_chef/assets/css',
+  js: '../../souschef/sous_chef/assets/js',
+  img: '../../souschef/sous_chef/assets/images',
+  fonts: '../../souschef/sous_chef/assets/fonts'
 };
 
 // Tasks

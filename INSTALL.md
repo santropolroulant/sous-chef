@@ -1,17 +1,27 @@
-# Installation
+# Installing Sous-Chef for Developpement
 
-## Required dependencies
+## Editor Setup
 
-### Linux
+To enforce some basic standards in the Sous-Chef source files we use an [EditorConfig](https://editorconfig.org/) configuration. You may find a plugin to your favorite source code editor [here](https://editorconfig.org/#download).
 
-As a first step, you must install the following dependencies:
+## Installing Docker
 
-1. **docker-engine**: https://docs.docker.com/engine/installation/
+We suggest using Docker for developping Sous-Chef as it simplifies the setup a great deal.
+
+### On Linux
+
+Install the following dependencies:
+
+1. **docker-engine**: https://docs.docker.com/engine/install/
 2. **docker-compose**: https://docs.docker.com/compose/install/
+
+On Debian systems, the following commands can be used to install Docker:
+
+    sudo apt install docker-compose
 
 ### OS X
 
-As a first step, you must install **Docker For Mac**: https://docs.docker.com/docker-for-mac/install/
+Install **Docker For Mac**: https://docs.docker.com/docker-for-mac/install/
 
 ### Windows
 
@@ -19,22 +29,43 @@ For Windows 10, it is recommended to use **Docker For Windows**: https://docs.do
 
 For older Windows versions, you may have to use **Docker Toolbox** (https://www.docker.com/toolbox) and you must run commands from the **docker quickstart terminal** (a shortcut on desktop).
 
-## Docker initialization
+## Getting the source code
+
+Clone the Sous-Chef repository:
 
 ```
-$> git clone https://github.com/savoirfairelinux/sous-chef
-$> cd sous-chef
-$> docker-compose build
-$> docker-compose up
+git clone https://github.com/santropolroulant/sous-chef
+cd sous-chef
 ```
 
-**Notice**: if you see the error "Can't connect to database" in `souschef_web_1`, try Ctrl+C and re-run `docker-compose up`.
+## Building the assets
 
-(Optional) Running docker-compose with production settings:
+Assets are built using Gulp and Node 10. To build the assets, or rebuild them when the assert source has changed, run the following command.
 
 ```
-$> docker-compose -f docker-compose.yml -f docker-compose.prod.yml up
+# This command can only be run at the root of the source code (where the `setup.py` file is).
+docker run -v $(pwd):/code node:10-buster /code/tools/compile_assets.sh
 ```
+
+If you have issues with running this command it might be because you have run `npm` from your host machine to install the dependencies. Delete the `node_modules` directory and try again:
+
+```
+rm -rf tools/gulp/node_modules
+```
+
+[gulp](http://gulpjs.com/) is a JavasSript-based build system.
+We use it to compile and optimize files from `souschef/frontend/` to `souschef/sous_chef/assets/`.
+We specifically use it to compile SCSS to CSS, JavasSript to minified JavaScript, and images to further-compressed images.
+
+## Building the Docker image and starting Sous-Chef
+
+Running this command will build the Docker image and start Sous-Chef:
+
+```
+docker-compose up
+```
+
+Sous-Chef will then be accessible at [http://localhost:8000](http://localhost:8000). If this is the first time you run Sous-Chef, keep-on reading, as there are a few more steps required.
 
 ## Django initialization
 
@@ -45,51 +76,23 @@ So after you do the first build, you need to manually do some more steps.
 In your console:
 
 ```
-$> docker-compose exec web bash
+docker-compose exec web bash
 ```
 
 Then you should be inside a container as you can see, e.g., `root@d157a3f57426:/code#`. Then run:
 
 ```
-$> cd src
+cd souschef
 
 # Run existing migrations
-$> python3 manage.py migrate
+python3 manage.py migrate
 
 # Create a user with administrator privileges
-$> python3 manage.py createsuperuser
+python3 manage.py createsuperuser
 
 # Optional: Load the initial data set
-$> python3 manage.py loaddata sample_data
+python3 manage.py loaddata sample_data
 ```
-
-## Generate frontend assets
-
-[gulp](http://gulpjs.com/) is a javascript-based build system.
-We use it to compile and optimize files from `src/frontend/` to `src/sous_chef/static/`.
-We specifically use it to compile scss to css, javascript to minified javascript,
-and images to further-compressed images.
-
-To run gulp, use:
-
-**From host machine:**
-
-```
-$> docker-compose exec web sh -c "cd tools/gulp && npm install --unsafe-perm && gulp"
-```
-
-Or **from container:**
-
-```
-$> cd tools/gulp && npm install --unsafe-perm && gulp
-
-# If you don't have the gulp command, try: 
-$> cd tools/gulp && node node_modules/gulp/bin/gulp.js
-```
-
-Please rest assured that the "unsafe-perm" option will not bring any security risk to sous-chef. The Node.js packages that we are installing here are only used for generating static files, such as images, CSS, JavaScript, etc., and will never be executed from external.
-
-If you have an error with this command, try deleting the folder `tools/gulp/node_modules` completely and rerun it. If the problem still exists, please let us know, including the versions of node, npm, and gulp that you have.
 
 ## Connection to application
 
@@ -102,13 +105,13 @@ The database content is stored in a Docker named volume that is not directly acc
 **For backup**, running:
 
 ```
-$> docker run --rm --volumes-from souschef_db_1 -v $(pwd):/backup ubuntu tar cvf /backup/backup.tar /var/lib/mysql
+docker run --rm --volumes-from souschef_db_1 -v $(pwd):/backup ubuntu tar cvf /backup/backup.tar /var/lib/mysql
 ```
 
 In Windows console, running:
 
 ```
-$> docker run --rm --volumes-from souschef_db_1 -v %cd%:/backup ubuntu tar cvf /backup/backup.tar /var/lib/mysql
+docker run --rm --volumes-from souschef_db_1 -v %cd%:/backup ubuntu tar cvf /backup/backup.tar /var/lib/mysql
 ```
 
 `souschef_db_1` is the container's name that can be found by running `docker ps`. This command creates a temporary Ubuntu container, connects it with both the volume that `souschef_db_1` uses and current directory on host machine. You will find `backup.tar` in current directory after this command.
@@ -116,13 +119,13 @@ $> docker run --rm --volumes-from souschef_db_1 -v %cd%:/backup ubuntu tar cvf /
 **For restoring**:
 
 ```
-$> docker run --rm --volumes-from souschef_db_1 -v $(pwd):/backup ubuntu bash -c "cd /var/lib/mysql && tar xvf /backup/backup.tar --strip 1"
+docker run --rm --volumes-from souschef_db_1 -v $(pwd):/backup ubuntu bash -c "cd /var/lib/mysql && tar xvf /backup/backup.tar --strip 1"
 ```
 
 In Windows console:
 
 ```
-$> docker run --rm --volumes-from souschef_db_1 -v %cd%:/backup ubuntu bash -c "cd /var/lib/mysql && tar xvf /backup/backup.tar --strip 1"
+docker run --rm --volumes-from souschef_db_1 -v %cd%:/backup ubuntu bash -c "cd /var/lib/mysql && tar xvf /backup/backup.tar --strip 1"
 ```
 
 Refs: https://docs.docker.com/engine/tutorials/dockervolumes/#backup-restore-or-migrate-data-volumes
@@ -130,6 +133,6 @@ Refs: https://docs.docker.com/engine/tutorials/dockervolumes/#backup-restore-or-
 ## Troubleshooting
 
 1. ```TERM environment not set```: https://github.com/dockerfile/mariadb/issues/3
-2. ```listen tcp 0.0.0.0:8000: bind: address already in use``` : an another application already uses the 8000 port. Vagrant applications often use the same port for instance. Locate the application and shut it down, or select an other port.
-3. ```Web server is up and running, but no answer after Django initialization``` : restart your container.
-4. ```Static files fail to load when using Nginx server in development mode (docker-compose up)```: run ```docker-compose exec web python src/manage.py collectstatic```
+2. ```listen tcp 0.0.0.0:8000: bind: address already in use```: another application already uses the 8000 port. Vagrant applications often use the same port for instance. Locate the application and shut it down, or select an other port.
+3. ```Web server is up and running, but no answer after Django initialization```: restart your container.
+4. ```Static files fails to load when using Nginx server in development mode (docker-compose up)```: run ```docker-compose exec web python3 souschef/manage.py collectstatic```
