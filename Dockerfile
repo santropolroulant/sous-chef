@@ -9,12 +9,19 @@ RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
 RUN apt-get install nodejs build-essential binutils libproj-dev gdal-bin -y && \
   apt-get clean
 
+# pyinotify is a development requirement to help with Django's runserver command.
+RUN pip3 install --no-cache-dir pyinotify
+
 RUN mkdir /code
 WORKDIR /code
-COPY ./requirements.txt .
-RUN pip3 install --no-cache-dir -r requirements.txt
+
+# We copy the strict minimum from the source code into the image so we can
+# install the requirements and have that step cached by Docker.
+COPY setup.py README.md /code/
+RUN pip3 install -e .
 
 ENV DJANGO_SETTINGS_MODULE="souschef.sous_chef.settings"
+ENV SOUSCHEF_ENVIRONMENT_NAME="DEV"
 CMD pip3 install -e . && \
   python3 souschef/manage.py collectstatic --noinput && \
-  /usr/local/bin/gunicorn souschef.sous_chef.wsgi:application -w 2 -b :8000
+  python3 souschef/manage.py runserver 0.0.0.0:8000

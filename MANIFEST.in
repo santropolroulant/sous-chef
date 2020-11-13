@@ -1,0 +1,5 @@
+include LICENSE.txt
+include README.md
+include INSTALL.md
+graft souschef/sous_chef/assets
+prune souschef/static

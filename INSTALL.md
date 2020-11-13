@@ -40,11 +40,10 @@ cd sous-chef
 
 ## Building the assets
 
-Assets are built using Gulp and Node 10. To build the assets, or rebuild them when the assert source has changed, run the following command.
+To build the assets, or rebuild them when the assets changes, run the following command:
 
 ```
-# This command can only be run at the root of the source code (where the `setup.py` file is).
-docker run -v $(pwd):/code node:10-buster /code/tools/compile_assets.sh
+./tools/compile_assets.sh
 ```
 
 If you have issues with running this command it might be because you have run `npm` from your host machine to install the dependencies. Delete the `node_modules` directory and try again:
@@ -59,9 +58,10 @@ We specifically use it to compile SCSS to CSS, JavasSript to minified JavaScript
 
 ## Building the Docker image and starting Sous-Chef
 
-Running this command will build the Docker image and start Sous-Chef:
+Running these commands will build the Docker image and start Sous-Chef:
 
 ```
+docker-compose build
 docker-compose up
 ```
 
@@ -93,6 +93,20 @@ python3 manage.py createsuperuser
 # Optional: Load the initial data set
 python3 manage.py loaddata sample_data
 ```
+
+## Troubleshooting
+
+In case of persistent issues with starting Sous-Chef, try removing the Docker volume (which holds the database):
+
+```
+docker-compose down
+docker volume rm sous-chef_souschef_data
+docker-compose up --build
+```
+
+Then, redo the "Django initialization" step above.
+
+Note: it happens that Sous-Chef cannot connect to the database, especially the first time you launch it. Simply stop the Docker processes with CTRL-C and relaunch `docker-compose up` to fix the issue.
 
 ## Connection to application
 
