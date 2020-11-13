@@ -28,10 +28,7 @@ SECRET_KEY = os.environ.get(
     '15ine$#^qas4_h2u7yk&lxat*&g*b8+)@wp$2x@vi2#v9)i2#u')  # For dev purposes
 
 # SECURITY WARNING: don't run with debug turned on in production!
-if os.environ.get('SOUSCHEF_ENVIRONMENT_NAME') == 'PROD':
-    DEBUG = False
-else:
-    DEBUG = True
+DEBUG = os.environ.get('SOUSCHEF_ENVIRONMENT_NAME') == 'DEV'
 
 # This IP may change for different computers and should be the
 # request.META.get('REMOTE_ADDR') for your local computer.
@@ -168,18 +165,14 @@ AUTHENTICATION_BACKENDS = (
 # https://docs.djangoproject.com/en/1.9/topics/i18n/
 
 LANGUAGE_CODE = 'en'
-
 USE_I18N = True
-
 USE_L10N = True
-
 
 # Store datetimes as UTC in database
 USE_TZ = True
 
 # Use this timezone when displaying datetimes
 TIME_ZONE = 'America/Montreal'
-
 
 # List of supported languages
 LANGUAGES = (
@@ -221,7 +214,7 @@ if DEBUG:
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
     MEDIA_URL = '/media/'
 else:
-    # In non development mode, serve files from /static/ using gninx as
+    # In non development mode, serve files from /static/ using nginx as
     # dedicated server
     # https://docs.djangoproject.com/en/1.11/howto/static-files/deployment/#serving-static-files-from-a-dedicated-server
     MEDIA_ROOT = os.path.join(STATIC_ROOT, 'media')
