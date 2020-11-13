@@ -4,7 +4,8 @@ Sous-Chef is a web application to **help** organizations to **plan** and **deliv
 
 ## Installation
 
-Please refer to the [installation procedure](INSTALL.md).
+- For production installation, please refer to the [installation procedure](INSTALL.md).
+- For developer setup, refer to [DEVSETUP.md](DEVSETUP.md).
 
 ## Communication
 

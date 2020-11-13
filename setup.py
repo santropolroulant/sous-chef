@@ -1,17 +1,12 @@
-import os
 import setuptools
-
-from glob import glob
 
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-EXCLUDED_FILES = ['.DS_Store']
-
 setuptools.setup(
     name="souschef",
-    version="1.3.0.dev1",
+    version="1.3.0.dev2",
     license="AGPL-3.0",
     author="Santropol Roulant and Savoir Faire Linux",
     author_email="info@santropolroulant.org",
@@ -20,13 +15,6 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/pypa/sous-chef",
     packages=setuptools.find_packages(),
-    package_data={
-        'souschef.sous_chef': [
-            filepath[len('souschef/sous_chef/assets/'):]
-            for filepath in glob('souschef/sous_chef/assets/**', recursive=True)
-            if not os.path.basename(filepath) in EXCLUDED_FILES
-        ],
-    },
     include_package_data=True,
     classifiers=[
         "Development Status :: 4 - Beta ",
