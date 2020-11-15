@@ -1,152 +1,121 @@
-# Installing Sous-Chef for Developpement
+# Installing Sous-Chef
 
-## Editor Setup
+These instructions document how to install Sous-Chef on Debian 10.
 
-To enforce some basic standards in the Sous-Chef source files we use an [EditorConfig](https://editorconfig.org/) configuration. You may find a plugin to your favorite source code editor [here](https://editorconfig.org/#download).
-
-## Installing Docker
-
-We suggest using Docker for developping Sous-Chef as it simplifies the setup a great deal.
-
-### On Linux
-
-Install the following dependencies:
-
-1. **docker-engine**: https://docs.docker.com/engine/install/
-2. **docker-compose**: https://docs.docker.com/compose/install/
-
-On Debian systems, the following commands can be used to install Docker:
-
-    sudo apt install docker-compose
-
-### OS X
-
-Install **Docker For Mac**: https://docs.docker.com/docker-for-mac/install/
-
-### Windows
-
-For Windows 10, it is recommended to use **Docker For Windows**: https://docs.docker.com/docker-for-windows/install/ (**notice**: Hyper-V must be enabled. Follow the instructions during installation.) Make sure that Docker icon appears in task tray and prompts "Docker is running". You can then use `cmd` or `PowerShell` to run the following commands.
-
-For older Windows versions, you may have to use **Docker Toolbox** (https://www.docker.com/toolbox) and you must run commands from the **docker quickstart terminal** (a shortcut on desktop).
-
-## Getting the source code
-
-Clone the Sous-Chef repository:
+1. Install required dependencies
 
 ```
-git clone https://github.com/santropolroulant/sous-chef
-cd sous-chef
+apt install mariadb-server nginx gdal-bin python3 python3-pip libmariadb-dev-compat
+# Invoke pip with 'python3 -m pip' to avoid a warning about a wrapper script
+python3 -m pip install -U pip
+python3 -m pip install souschef gunicorn
 ```
 
-## Building the assets
-
-To build the assets, or rebuild them when the assets changes, run the following command:
+2. Configure the database
 
 ```
-./tools/compile_assets.sh
+mysql_secure_installation
+mariadb -u root -p <<< "CREATE DATABASE souschefdb CHARACTER SET utf8;"
 ```
 
-If you have issues with running this command it might be because you have run `npm` from your host machine to install the dependencies. Delete the `node_modules` directory and try again:
+3. Export environment varibles
+
+These variables are required for the 'manage.py' script and for running the gunicorn server. Put them in the following file: `/etc/souschef.conf`
 
 ```
-rm -rf tools/gulp/node_modules
+DJANGO_SETTINGS_MODULE=souschef.sous_chef.settings
+SOUSCHEF_DJANGO_SECRET_KEY=...generate a random key here, at least 60 characters ...
+SOUSCHEF_ENVIRONMENT_NAME=PROD
+SOUSCHEF_DJANGO_ALLOWED_HOSTS=...servername.domain...
+SOUSCHEF_DJANGO_DB_HOST=localhost
+SOUSCHEF_DJANGO_DB_NAME=souschefdb
+SOUSCHEF_DJANGO_DB_USER=souschefuser
+SOUSCHEF_DJANGO_DB_PASSWORD=...password ...
 ```
 
-[gulp](http://gulpjs.com/) is a JavasSript-based build system.
-We use it to compile and optimize files from `souschef/frontend/` to `souschef/sous_chef/assets/`.
-We specifically use it to compile SCSS to CSS, JavasSript to minified JavaScript, and images to further-compressed images.
+Note: `SOUSCHEF_DJANGO_ALLOWED_HOSTS` is a list of coma-separated public name(s) or IP(s) of the server hosting sous-chef.
 
-## Building the Docker image and starting Sous-Chef
-
-Running these commands will build the Docker image and start Sous-Chef:
+3. Initialize Sous-Chef
 
 ```
-docker-compose build
-docker-compose up
-```
+cd /usr/local/lib/python3.7/dist-packages/souschef
 
-Sous-Chef will then be accessible at [http://localhost:8000](http://localhost:8000). If this is the first time you run Sous-Chef, keep-on reading, as there are a few more steps required.
+# Export the Sous-Chef configuration variables, so Django's
+# manage.py may work.
+for line in `cat /etc/souschef.conf`; do export $line; done
 
-## Django initialization
+# Collect the static files. To be done after installation and after each
+# version upgrade.
+python3 manage.py collectstatic --noinput
 
-Unfortunately, the bulk of the Django configuration cannot happen until the containers are already built
-and running, because it needs to talk to the database which is in a different container, managed by docker-compose.
-So after you do the first build, you need to manually do some more steps.
-
-In your console:
-
-```
-docker-compose exec web bash
-```
-
-Then you should be inside a container as you can see, e.g., `root@d157a3f57426:/code#`. Then run:
-
-```
-cd souschef
-
-# Run existing migrations
+# Create the tables. When run after a version upgade it ensures the database
+# schema is up to date.
 python3 manage.py migrate
 
-# Create a user with administrator privileges
+# Create a user with administrator privileges.
+# To be done once only.
 python3 manage.py createsuperuser
 
-# Optional: Load the initial data set
+# Optional: for testing Sous-Chef, you may want to load
+# some fixture data.
 python3 manage.py loaddata sample_data
 ```
 
-## Troubleshooting
+4. Configure the nginx server
 
-In case of persistent issues with starting Sous-Chef, try removing the Docker volume (which holds the database):
+This server will serve the static files and redirect all other requests to the gunicorn backend.
 
-```
-docker-compose down
-docker volume rm sous-chef_souschef_data
-docker-compose up --build
-```
-
-Then, redo the "Django initialization" step above.
-
-Note: it happens that Sous-Chef cannot connect to the database, especially the first time you launch it. Simply stop the Docker processes with CTRL-C and relaunch `docker-compose up` to fix the issue.
-
-## Connection to application
-
-A Django development server is automatically started unless you have run with production settings. It is accessible at `http://localhost:8000`.
-
-## Backup and restore database
-
-The database content is stored in a Docker named volume that is not directly accessible.
-
-**For backup**, running:
+First copy the content of [sampleconfig/nginx.conf](sampleconfig/nginx.conf) to `/etc/nginx/sites-available/souschef`, then:
 
 ```
-docker run --rm --volumes-from souschef_db_1 -v $(pwd):/backup ubuntu tar cvf /backup/backup.tar /var/lib/mysql
+# Remove the default site configuration, which is a symbolic link to `/etc/nginx/sites-available/default`
+rm /etc/nginx/sites-enabled/default
+# Enable souschef's configuration
+ln -s /etc/nginx/sites-available/souschef /etc/nginx/sites-enabled/souschef
+systemctl restart nginx
 ```
 
-In Windows console, running:
+5. Create the Sous-Chef service
+
+Put the following in `/etc/systemd/system/souschef.service`:
 
 ```
-docker run --rm --volumes-from souschef_db_1 -v %cd%:/backup ubuntu tar cvf /backup/backup.tar /var/lib/mysql
+[Unit]
+Description=Sous-Chef gunicorn backend
+Documentation=https://github.com/santropolroulant/sous-chef
+After=network.target
+Wants=mariadb.service
+
+[Install]
+WantedBy=multi-user.target
+Alias=souschef.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+EnvironmentFile=/etc/souschef.conf
+ExecStart=/usr/local/bin/gunicorn souschef.sous_chef.wsgi:application -w 4 -b :8000
+KillSignal=SIGTERM
 ```
 
-`souschef_db_1` is the container's name that can be found by running `docker ps`. This command creates a temporary Ubuntu container, connects it with both the volume that `souschef_db_1` uses and current directory on host machine. You will find `backup.tar` in current directory after this command.
-
-**For restoring**:
+Ask systemctl to read the new configuration:
 
 ```
-docker run --rm --volumes-from souschef_db_1 -v $(pwd):/backup ubuntu bash -c "cd /var/lib/mysql && tar xvf /backup/backup.tar --strip 1"
+systemctl daemon-reload
 ```
 
-In Windows console:
+Then start the Sous-Chef gunicorn backend:
 
 ```
-docker run --rm --volumes-from souschef_db_1 -v %cd%:/backup ubuntu bash -c "cd /var/lib/mysql && tar xvf /backup/backup.tar --strip 1"
+systemctl start souschef
+systemctl status souschef
 ```
 
-Refs: https://docs.docker.com/engine/tutorials/dockervolumes/#backup-restore-or-migrate-data-volumes
+To view the logs:
 
-## Troubleshooting
+```
+journalctl -u souschef
+```
 
-1. ```TERM environment not set```: https://github.com/dockerfile/mariadb/issues/3
-2. ```listen tcp 0.0.0.0:8000: bind: address already in use```: another application already uses the 8000 port. Vagrant applications often use the same port for instance. Locate the application and shut it down, or select an other port.
-3. ```Web server is up and running, but no answer after Django initialization```: restart your container.
-4. ```Static files fails to load when using Nginx server in development mode (docker-compose up)```: run ```docker-compose exec web python3 souschef/manage.py collectstatic```
+Sous-Chef should now be accessible at the server's address!

@@ -1,5 +1,6 @@
 include LICENSE.txt
 include README.md
 include INSTALL.md
+recursive-include souschef *.html *.mo
 graft souschef/sous_chef/assets
 prune souschef/static
