@@ -8,14 +8,37 @@ These instructions document how to install Sous-Chef on Debian 10.
 apt install mariadb-server nginx gdal-bin python3 python3-pip libmariadb-dev-compat
 # Invoke pip with 'python3 -m pip' to avoid a warning about a wrapper script
 python3 -m pip install -U pip
-python3 -m pip install souschef gunicorn
+python3 -m pip install gunicorn
+python3 -m pip install souschef
+```
+
+To install a development version of Sous-Chef from the PyPI test index, run:
+```
+python3 -m pip install --extra-index-url https://test.pypi.org/simple/ souschef==1.3.0.dev2
 ```
 
 2. Configure the database
 
+Secure mariadb:
+
 ```
 mysql_secure_installation
-mariadb -u root -p <<< "CREATE DATABASE souschefdb CHARACTER SET utf8;"
+# Answer yes to all questions (and provide asked information):
+# -> Set root password
+# -> Remove anonymous users
+# -> Disallow root login remotely
+# -> Remove test database and access to it
+# -> Reload privilege tables now
+```
+
+Create the database and the souschef user.
+```
+mariadb -u root -p
+MariaDB [(none)]> CREATE DATABASE souschefdb CHARACTER SET utf8;
+MariaDB [(none)]> CREATE USER souschefuser@localhost IDENTIFIED BY '...strong password here...';
+MariaDB [(none)]> GRANT SELECT, INSERT, UPDATE, DELETE ON souschefdb.* TO souschefuser@localhost;
+MariaDB [(none)]> FLUSH PRIVILEGES;
+MariaDB [(none)]> quit
 ```
 
 3. Export environment varibles
@@ -50,22 +73,21 @@ python3 manage.py collectstatic --noinput
 
 # Create the tables. When run after a version upgade it ensures the database
 # schema is up to date.
+# Database migration needs to run as the root user and not as souschefdb.
+export SOUSCHEF_DJANGO_DB_USER=root
+export SOUSCHEF_DJANGO_DB_PASSWORD=...password...
 python3 manage.py migrate
 
 # Create a user with administrator privileges.
 # To be done once only.
 python3 manage.py createsuperuser
-
-# Optional: for testing Sous-Chef, you may want to load
-# some fixture data.
-python3 manage.py loaddata sample_data
 ```
 
 4. Configure the nginx server
 
 This server will serve the static files and redirect all other requests to the gunicorn backend.
 
-First copy the content of [sampleconfig/nginx.conf](sampleconfig/nginx.conf) to `/etc/nginx/sites-available/souschef`, then:
+First copy the content of [`configsamples/nginx.conf`](configsamples/nginx.conf) to `/etc/nginx/sites-available/souschef`, then:
 
 ```
 # Remove the default site configuration, which is a symbolic link to `/etc/nginx/sites-available/default`
@@ -77,35 +99,13 @@ systemctl restart nginx
 
 5. Create the Sous-Chef service
 
-Put the following in `/etc/systemd/system/souschef.service`:
-
-```
-[Unit]
-Description=Sous-Chef gunicorn backend
-Documentation=https://github.com/santropolroulant/sous-chef
-After=network.target
-Wants=mariadb.service
-
-[Install]
-WantedBy=multi-user.target
-Alias=souschef.service
-
-[Service]
-Type=simple
-User=www-data
-Group=www-data
-EnvironmentFile=/etc/souschef.conf
-ExecStart=/usr/local/bin/gunicorn souschef.sous_chef.wsgi:application -w 4 -b :8000
-KillSignal=SIGTERM
-```
-
-Ask systemctl to read the new configuration:
+Put the content of [`configsamples/souschef.service`](configsamples/souschef.service) in `/etc/systemd/system/souschef.service`, then ask systemctl to read the new configuration:
 
 ```
 systemctl daemon-reload
 ```
 
-Then start the Sous-Chef gunicorn backend:
+Start the Sous-Chef gunicorn backend:
 
 ```
 systemctl start souschef
@@ -119,3 +119,19 @@ journalctl -u souschef
 ```
 
 Sous-Chef should now be accessible at the server's address!
+
+## Debugging Sous-Chef
+
+If you get an error 400 and need to debug Sous-Chef, you can set the following in `/etc/souschef.conf`:
+
+```
+SOUSCHEF_ENVIRONMENT_NAME=DEV
+```
+
+Then restart the service:
+
+```
+systemctl start souschef
+```
+
+Django will then provide a detailed stack trace, enabling the debugging of the installation. Do not forget to turn off debugging once you fixed the issues as debugging creates a security risk and takes more memory.
