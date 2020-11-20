@@ -4,6 +4,8 @@ These instructions document how to install Sous-Chef on Debian 10.
 
 1. Install required dependencies
 
+Become root, then install the dependencies.
+
 ```
 apt install mariadb-server nginx gdal-bin python3 python3-pip libmariadb-dev-compat
 # Invoke pip with 'python3 -m pip' to avoid a warning about a wrapper script
@@ -23,7 +25,8 @@ Secure mariadb:
 
 ```
 mysql_secure_installation
-# Answer yes to all questions (and provide asked information):
+# When prompted for the current password for root, press the enter key (since no password is defined).
+# Then answer yes to all questions (and provide asked information):
 # -> Set root password
 # -> Remove anonymous users
 # -> Disallow root login remotely
@@ -32,6 +35,7 @@ mysql_secure_installation
 ```
 
 Create the database and the souschef user.
+
 ```
 mariadb -u root -p
 MariaDB [(none)]> CREATE DATABASE souschefdb CHARACTER SET utf8;
