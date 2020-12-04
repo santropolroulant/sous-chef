@@ -58,9 +58,19 @@ SOUSCHEF_DJANGO_DB_HOST=localhost
 SOUSCHEF_DJANGO_DB_NAME=souschefdb
 SOUSCHEF_DJANGO_DB_USER=souschefuser
 SOUSCHEF_DJANGO_DB_PASSWORD=...password ...
+SOUSCHEF_GENERATED_DOCS_DIR=/var/local/souschef
 ```
 
 Note: `SOUSCHEF_DJANGO_ALLOWED_HOSTS` is a list of coma-separated public name(s) or IP(s) of the server hosting sous-chef.
+
+3. Create required directories
+
+Sous-Chef needs a writable directory to generate PDF documents.
+
+```
+mkdir /var/local/souschef
+chown www-data:www-data /var/local/souschef
+```
 
 3. Initialize Sous-Chef
 
