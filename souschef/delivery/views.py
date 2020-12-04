@@ -53,11 +53,8 @@ from .filters import KitchenCountOrderFilter
 from .forms import DishIngredientsForm
 from . import tsp
 
-MEAL_LABELS_FILE = os.path.join(settings.BASE_DIR, "meal_labels.pdf")
-KITCHEN_COUNT_FILE = os.path.join(settings.BASE_DIR, "kitchen_count.pdf")
-ROUTE_SHEETS_FILE = os.path.join(settings.BASE_DIR, "route_sheets.pdf")
-LOGO_IMAGE = os.path.join(settings.BASE_DIR,
-                          "160widthSR-Logo-Screen-PurpleGreen-HI-RGB1.jpg")
+
+LOGO_IMAGE = os.path.join(settings.BASE_DIR, "160widthSR-Logo-Screen-PurpleGreen-HI-RGB1.jpg")
 DELIVERY_STARTING_POINT_LAT_LONG = (45.516564, -73.575145)  # Santropol Roulant
 
 
@@ -339,9 +336,9 @@ class RoutesInformation(
             # generate PDF report
             MultiRouteReport.routes_make_pages(routes_dict)
             try:
-                f = open(ROUTE_SHEETS_FILE, "rb")
+                f = open(settings.ROUTE_SHEETS_FILE, "rb")
             except Exception:
-                raise Http404("File " + ROUTE_SHEETS_FILE + " does not exist")
+                raise Http404("File " + settings.ROUTE_SHEETS_FILE + " does not exist")
             response = HttpResponse(content_type='application/pdf')
             response['Content-Disposition'] = \
                 'attachment; filename="routesheets{}.pdf"'. \
@@ -670,7 +667,7 @@ class MultiRouteReport(object):
                 An integer : The number of pages generated.
             """
             doc = MultiRouteReport.RLMultiRouteDocTemplate(
-                ROUTE_SHEETS_FILE,
+                settings.ROUTE_SHEETS_FILE,
                 leftMargin=0.5 * rl_inch,
                 rightMargin=0.5 * rl_inch,
                 bottomMargin=0.5 * rl_inch,
@@ -804,9 +801,9 @@ class KitchenCount(
         if reverse('delivery:downloadKitchenCount') in request.path:
             # download kitchen count report as PDF
             try:
-                f = open(KITCHEN_COUNT_FILE, "rb")
+                f = open(settings.KITCHEN_COUNT_FILE, "rb")
             except Exception:
-                raise Http404("File " + KITCHEN_COUNT_FILE + " does not exist")
+                raise Http404("File " + settings.KITCHEN_COUNT_FILE + " does not exist")
             response = HttpResponse(content_type='application/pdf')
             response['Content-Disposition'] = \
                 'attachment; filename="kitchencount{}.pdf"'. \
@@ -1149,7 +1146,7 @@ def kcr_make_pages(date, component_lines, meal_lines):
         Returns:
             An integer : The number of pages generated.
         """
-        doc = RLSimpleDocTemplate(KITCHEN_COUNT_FILE)
+        doc = RLSimpleDocTemplate(settings.KITCHEN_COUNT_FILE)
         story = []
 
         # begin Summary section
@@ -1535,7 +1532,7 @@ def kcr_make_labels(date, kitchen_list,
         sheet.add_label(label)
 
     if sheet.label_count > 0:
-        sheet.save(MEAL_LABELS_FILE)
+        sheet.save(settings.MEAL_LABELS_FILE)
     return sheet.label_count
 
 # END Meal labels
@@ -1550,9 +1547,9 @@ class MealLabels(
 
     def get(self, request, **kwargs):
         try:
-            f = open(MEAL_LABELS_FILE, "rb")
+            f = open(settings.MEAL_LABELS_FILE, "rb")
         except Exception:
-            raise Http404("File " + MEAL_LABELS_FILE + " does not exist")
+            raise Http404("File " + settings.MEAL_LABELS_FILE + " does not exist")
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = \
             'attachment; filename="labels{}.pdf"'. \
