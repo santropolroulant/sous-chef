@@ -139,6 +139,16 @@ journalctl -u souschef
 
 Sous-Chef should now be accessible at the server's address!
 
+6. Setup the Sous-Chef cron job
+
+Sous-Chef needs a cron job to be executed daily in order to correcly process orders. In order to activate the cronjob, set the following symlink:
+
+```
+cd /etc/cron.daily
+ln -s /usr/local/lib/python3.7/dist-packages/souschef/cronscripts/souschef_daily.sh souschef_daily
+killall -s SIGHUP cron
+```
+
 ## Debugging Sous-Chef
 
 If you get an error 400 and need to debug Sous-Chef, you can set the following in `/etc/souschef.conf`:
