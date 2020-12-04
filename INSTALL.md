@@ -45,6 +45,11 @@ MariaDB [(none)]> FLUSH PRIVILEGES;
 MariaDB [(none)]> quit
 ```
 
+If you need to restore the Sous-Chef database from a backup, you can do so using the following command:
+```
+mysql -p souschefdb < backupfile.sql
+```
+
 3. Export environment varibles
 
 These variables are required for the 'manage.py' script and for running the gunicorn server. Put them in the following file: `/etc/souschef.conf`
