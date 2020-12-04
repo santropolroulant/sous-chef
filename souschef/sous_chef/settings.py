@@ -18,7 +18,6 @@ from django.urls import reverse_lazy
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
 
@@ -207,23 +206,35 @@ STATICFILES_DIRS = (
 )
 STATIC_URL = '/static/'
 
-# Avatar files
+GENERATED_DOCS_DIR = os.environ.get(
+    'SOUSCHEF_GENERATED_DOCS_DIR',
+    '/var/local/souschef')
+
 if DEBUG:
     # When using the development server, serve files directly from /media/
     # https://docs.djangoproject.com/en/1.11/howto/static-files/#serving-files-uploaded-by-a-user-during-development
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
     MEDIA_URL = '/media/'
+    GENERATED_DOCS_DIR = BASE_DIR
 else:
     # In non development mode, serve files from /static/ using nginx as
     # dedicated server
     # https://docs.djangoproject.com/en/1.11/howto/static-files/deployment/#serving-static-files-from-a-dedicated-server
     MEDIA_ROOT = os.path.join(STATIC_ROOT, 'media')
     MEDIA_URL = '/static/media/'
+
+# Avatar files
 AVATAR_PROVIDERS = (
     'avatar.providers.PrimaryAvatarProvider',
     'avatar.providers.GravatarAvatarProvider',
     'avatar.providers.DefaultAvatarProvider',
 )
+
+MEAL_LABELS_FILE = os.path.join(GENERATED_DOCS_DIR, "meal_labels.pdf")
+KITCHEN_COUNT_FILE = os.path.join(GENERATED_DOCS_DIR, "kitchen_count.pdf")
+ROUTE_SHEETS_FILE = os.path.join(GENERATED_DOCS_DIR, "route_sheets.pdf")
+LOGO_IMAGE = os.path.join(GENERATED_DOCS_DIR, "160widthSR-Logo-Screen-PurpleGreen-HI-RGB1.jpg")
+DELIVERY_STARTING_POINT_LAT_LONG = (45.516564, -73.575145)  # Santropol Roulant
 
 # Displayable information
 SOUSCHEF_VERSION = os.environ.get('SOUSCHEF_VERSION') or ''
