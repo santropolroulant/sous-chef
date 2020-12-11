@@ -1,30 +1,27 @@
-FROM python:3.5
+FROM python:3.7
 ENV PYTHONUNBUFFERED 1
 
-# Create workdir and copy code
+# Install underlying Debian dependencies
+RUN apt-get update && \
+  apt-get install curl gettext -y && \
+  apt-get clean
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
+RUN apt-get install nodejs build-essential binutils libproj-dev gdal-bin -y && \
+  apt-get clean
+
+# pyinotify is a development requirement to help with Django's runserver command.
+RUN pip3 install --no-cache-dir pyinotify
+
 RUN mkdir /code
 WORKDIR /code
-COPY . /code/
 
-# Install underlying debian dependencies
-RUN apt-get update
-RUN apt-get install curl gettext -y
-RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
-RUN apt-get install nodejs build-essential -y
-RUN apt-get install binutils libproj-dev gdal-bin -y
-RUN apt-get clean
+# We copy the strict minimum from the source code into the image so we can
+# install the requirements and have that step cached by Docker.
+COPY setup.py README.md /code/
+RUN pip3 install -e .
 
-# Install python dependencies
-RUN pip3 install -r requirements.txt
-
-# Install javascript dependencies
-RUN npm install gulp -g
-RUN cd /code/tools/gulp && npm install
-
-# Generate and collect assets
-RUN cd /code/tools/gulp && gulp
-RUN python3 src/manage.py collectstatic --noinput
-
-# Default entry point to gunicorn server, can be override by docker-compose
-CMD cd src && /usr/local/bin/gunicorn sous_chef.wsgi:application -w 2 -b :8000
-
+ENV DJANGO_SETTINGS_MODULE="souschef.sous_chef.settings"
+ENV SOUSCHEF_ENVIRONMENT_NAME="DEV"
+CMD pip3 install -e . && \
+  python3 souschef/manage.py collectstatic --noinput && \
+  python3 souschef/manage.py runserver 0.0.0.0:8000

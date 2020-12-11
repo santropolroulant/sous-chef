@@ -4,19 +4,22 @@ services:
 
   db:
     restart: always
-    image: mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: feast
+    image: mariadb:10.3
     volumes:
       - souschef_data:/var/lib/mysql
     networks:
       - backend
 
   web:
-    environment:
-      - SOUSCHEF_VERSION=v1.0-beta
     restart: always
     build: .
     volumes:
-      - souschef_static:/code/src/static
+      - ./:/code
+    ports:
+      - "8000:8000"
     depends_on:
       - db
     networks:
@@ -24,8 +27,6 @@ services:
 
 volumes:
   souschef_data:
-  souschef_static:
 
 networks:
-  frontend:
   backend:

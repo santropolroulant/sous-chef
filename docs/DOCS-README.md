@@ -7,6 +7,6 @@ $ make html
 ```
 ## Windows:
 ```
-$ sphinx-apidoc -f -o source ../src/ ../src/*/migrations
+$ sphinx-apidoc -f -o source ../souschef/ ../souschef/*/migrations
 $ make html
 ```

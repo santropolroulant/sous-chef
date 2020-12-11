@@ -1,0 +1,17 @@
+[Unit]
+Description=Sous-Chef gunicorn backend
+Documentation=https://github.com/santropolroulant/sous-chef
+After=network.target
+Wants=mariadb.service
+
+[Install]
+WantedBy=multi-user.target
+Alias=souschef.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+EnvironmentFile=/etc/souschef.conf
+ExecStart=/usr/local/bin/gunicorn souschef.sous_chef.wsgi:application -w 4 -b :8000
+KillSignal=SIGTERM
