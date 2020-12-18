@@ -236,7 +236,6 @@ KITCHEN_COUNT_FILE = os.path.join(GENERATED_DOCS_DIR, "kitchen_count.pdf")
 ROUTE_SHEETS_FILE = os.path.join(GENERATED_DOCS_DIR, "route_sheets.pdf")
 
 # Displayable information
-SOUSCHEF_VERSION = os.environ.get('SOUSCHEF_VERSION') or ''
 SOUSCHEF_ENVIRONMENT_NAME = os.environ.get('SOUSCHEF_ENVIRONMENT_NAME') or ''
 
 try:

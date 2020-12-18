@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
+import pkg_resources
 
 from django.conf import settings
 from souschef.member.models import Client, Route
 from souschef.order.models import Order, ORDER_STATUS_ORDERED
 from souschef.note.models import Note, NoteFilter
 import datetime
+
+
+def get_sous_chef_version():
+    return pkg_resources.require("souschef")[0].version
 
 
 def total(request):
@@ -29,7 +34,7 @@ def total(request):
         'ORDER_FILTER_DEFAULT_DATE': datetime.datetime.now(),
         'NOTE_FILTER_DEFAULT_IS_READ': NoteFilter.NOTE_STATUS_UNREAD,
         'SC_ENVIRONMENT_NAME': settings.SOUSCHEF_ENVIRONMENT_NAME,
-        'SC_VERSION': settings.SOUSCHEF_VERSION,
+        'SC_VERSION': get_sous_chef_version(),
         'GIT_HEAD': settings.GIT_HEAD,
         'GIT_TAG': settings.GIT_TAG,
     }
