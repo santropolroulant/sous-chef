@@ -76,7 +76,7 @@ So after you do the first build, you need to manually do some more steps.
 In your console:
 
 ```
-docker-compose exec web bash
+docker-compose run web bash
 ```
 
 Then you should be inside a container as you can see, e.g., `root@d157a3f57426:/code#`. Then run:
@@ -93,6 +93,16 @@ python3 manage.py createsuperuser
 # Optional: Load the initial data set
 python3 manage.py loaddata sample_data
 ```
+
+## Running unit tests
+
+To run the project's unit test suite:
+
+```
+docker-compose run web python3 -Wa /code/souschef/manage.py test
+```
+
+Note: using -Wa is helpful when using Django as it shows deprecation warnings. See https://docs.djangoproject.com/en/3.1/topics/testing/overview/#running-tests.
 
 ## How to change the JavaScript code
 
