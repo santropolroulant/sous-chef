@@ -7,11 +7,10 @@ $(function() {
 
     $('#form_create_batch').submit(function(event) {
       if(event.originalEvent && $('#id_is_submit').val() === '1') {
-        var originalTarget = $(event.originalEvent.explicitOriginalTarget);
         var deliveryDates = ($('#id_delivery_dates').val() || '').split('|');
         var overrideDates = ($('#id_override_dates').val() || '').split('|');
-        if(originalTarget.attr('id') === 'original-form-submit' &&
-           $overrideModal.length && !arraysEqual(deliveryDates, overrideDates)) {
+
+        if($overrideModal.length && !arraysEqual(deliveryDates, overrideDates)) {
           event.preventDefault();
           $overrideModal.modal('show');
         }
