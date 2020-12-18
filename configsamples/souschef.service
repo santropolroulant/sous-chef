@@ -13,5 +13,5 @@ Type=simple
 User=www-data
 Group=www-data
 EnvironmentFile=/etc/souschef.conf
-ExecStart=/usr/local/bin/gunicorn souschef.sous_chef.wsgi:application -w 4 -b :8000
+ExecStart=/usr/local/bin/gunicorn souschef.sous_chef.wsgi:application -w 4 -b 127.0.0.1:8000
 KillSignal=SIGTERM
