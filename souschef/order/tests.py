@@ -339,7 +339,7 @@ class OrderAutoCreateOnDefaultsTestCase(TestCase):
         random_order = random.choice(created)
         self.assertEqual(created.count(), len(self.ongoing_clients))
         # Every client has the same defaults
-        self.assertEqual(random_order.price, 12.00)
+        self.assertEqual(random_order.price, 13.00)
 
     def test_auto_create_orders_no_delivery(self):
         """

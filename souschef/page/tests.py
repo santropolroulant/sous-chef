@@ -50,17 +50,17 @@ class HomeViewTestCase(TestCase):
     def test_route_meal_statistics(self):
         """
         On dashboard, routes statistics should display:
-        "Ongoing main dishes (+ Episodic main dishes)"
-        for active, paused and pending clients. (Ref #713)
+        "scheduled dishes (+ episodic default dishes)"
+        for active, paused and pending clients.
         """
         self.client.login(
             username=self.admin.username,
             password="test"
         )
 
-        route1 = RouteFactory()
-        route2 = RouteFactory()
-        route_empty = RouteFactory()  # Empty route
+        route_factory1 = RouteFactory()
+        route_factory2 = RouteFactory()
+        route_factory_empty = RouteFactory()  # Empty route
 
         meals_schedule_option, _ = Option.objects.get_or_create(
             name='meals_schedule', option_group='dish'
@@ -68,46 +68,46 @@ class HomeViewTestCase(TestCase):
 
         test_clients = (
             # Status        Deliv  Route Mon T Wed T Fri S Sun
-            (Client.PENDING, 'E', route1, 0, 2, 3, 4, 5, 6, 7),  # 1
-            (Client.PENDING, 'E', route2, 2, 3, 0, 1, 0, 3, 5),  # 2
-            (Client.PENDING, 'E', route2, 2, 0, 0, 1, 2, 3, 5),  # 3
-            (Client.ACTIVE,  'E', route1, 1, 2, 3, 4, 5, 6, 0),  # 4
-            (Client.ACTIVE,  'E', route1, 1, 0, 3, 0, 5, 6, 3),  # 5
-            (Client.ACTIVE,  'E', route2, 2, 3, 4, 1, 2, 3, 1),  # 6
-            (Client.PAUSED,  'E', route1, 1, 2, 3, 4, 0, 4, 3),  # 7
-            (Client.PAUSED,  'E', route2, 2, 3, 0, 1, 2, 3, 5),  # 8
-            (Client.PAUSED,  'E', route2, 2, 3, 4, 0, 2, 3, 5),  # 9
-            (Client.STOPNOCONTACT, 'E', route1, 1, 2, 0, 4, 5, 6, 3),  # 10
-            (Client.STOPNOCONTACT, 'E', route2, 0, 3, 4, 1, 2, 3, 1),  # 11
-            (Client.STOPCONTACT,   'E', route1, 1, 2, 3, 4, 5, 6, 7),  # 12
-            (Client.STOPCONTACT,   'E', route1, 1, 0, 3, 4, 5, 6, 7),  # 13
-            (Client.STOPCONTACT,   'E', route2, 2, 3, 4, 1, 2, 3, 5),  # 14
-            (Client.DECEASED,  'E', route1, 1, 2, 0, 4, 5, 6, 3),  # 15
-            (Client.DECEASED,  'E', route2, 2, 3, 4, 1, 0, 3, 1),  # 16
+            (Client.PENDING, 'E', route_factory1, 0, 2, 3, 4, 5, 6, 7),  # 1
+            (Client.PENDING, 'E', route_factory2, 2, 3, 0, 1, 0, 3, 5),  # 2
+            (Client.PENDING, 'E', route_factory2, 2, 0, 0, 1, 2, 3, 5),  # 3
+            (Client.ACTIVE,  'E', route_factory1, 1, 2, 3, 4, 5, 6, 0),  # 4
+            (Client.ACTIVE,  'E', route_factory1, 1, 0, 3, 0, 5, 6, 3),  # 5
+            (Client.ACTIVE,  'E', route_factory2, 2, 3, 4, 1, 2, 3, 1),  # 6
+            (Client.PAUSED,  'E', route_factory1, 1, 2, 3, 4, 0, 4, 3),  # 7
+            (Client.PAUSED,  'E', route_factory2, 2, 3, 0, 1, 2, 3, 5),  # 8
+            (Client.PAUSED,  'E', route_factory2, 2, 3, 4, 0, 2, 3, 5),  # 9
+            (Client.STOPNOCONTACT, 'E', route_factory1, 1, 2, 0, 4, 5, 6, 3),  # 10
+            (Client.STOPNOCONTACT, 'E', route_factory2, 0, 3, 4, 1, 2, 3, 1),  # 11
+            (Client.STOPCONTACT,   'E', route_factory1, 1, 2, 3, 4, 5, 6, 7),  # 12
+            (Client.STOPCONTACT,   'E', route_factory1, 1, 0, 3, 4, 5, 6, 7),  # 13
+            (Client.STOPCONTACT,   'E', route_factory2, 2, 3, 4, 1, 2, 3, 5),  # 14
+            (Client.DECEASED,  'E', route_factory1, 1, 2, 0, 4, 5, 6, 3),  # 15
+            (Client.DECEASED,  'E', route_factory2, 2, 3, 4, 1, 0, 3, 1),  # 16
 
-            (Client.PENDING, 'O', route1, 1, 2, 3, 4, 5, 6, 7),  # 51
-            (Client.PENDING, 'O', route1, 7, 6, 5, 4, 3, 2, 1),  # 52
-            (Client.PENDING, 'O', route2, 2, 0, 4, 1, 2, 3, 5),  # 53
-            (Client.ACTIVE,  'O', route1, 6, 5, 0, 3, 2, 1, 5),  # 54
-            (Client.ACTIVE,  'O', route2, 2, 3, 0, 1, 0, 3, 1),  # 55
-            (Client.ACTIVE,  'O', route2, 2, 0, 4, 1, 2, 3, 1),  # 56
-            (Client.PAUSED,  'O', route1, 1, 2, 0, 4, 0, 4, 3),  # 57
-            (Client.PAUSED,  'O', route1, 1, 0, 3, 4, 2, 4, 3),  # 58
-            (Client.PAUSED,  'O', route2, 0, 3, 0, 1, 0, 3, 5),  # 59
-            (Client.STOPNOCONTACT, 'O', route1, 1, 2, 3, 4, 5, 6, 3),  # 60
-            (Client.STOPNOCONTACT, 'O', route2, 2, 3, 4, 1, 2, 3, 1),  # 61
-            (Client.STOPCONTACT,   'O', route1, 1, 2, 3, 4, 5, 6, 7),  # 62
-            (Client.STOPCONTACT,   'O', route1, 1, 0, 3, 4, 5, 6, 7),  # 63
-            (Client.STOPCONTACT,   'O', route2, 2, 3, 4, 1, 2, 3, 5),  # 64
-            (Client.DECEASED,  'O', route1, 1, 2, 3, 4, 5, 6, 3),  # 65
-            (Client.DECEASED,  'O', route2, 2, 3, 4, 1, 2, 3, 1),  # 66
+            (Client.PENDING, 'O', route_factory1, 1, 2, 3, 4, 5, 6, 7),  # 51
+            (Client.PENDING, 'O', route_factory1, 7, 6, 5, 4, 3, 2, 1),  # 52
+            (Client.PENDING, 'O', route_factory2, 2, 0, 4, 1, 2, 3, 5),  # 53
+            (Client.ACTIVE,  'O', route_factory1, 6, 5, 0, 3, 2, 1, 5),  # 54
+            (Client.ACTIVE,  'O', route_factory2, 2, 3, 0, 1, 0, 3, 1),  # 55
+            (Client.ACTIVE,  'O', route_factory2, 2, 0, 4, 1, 2, 3, 1),  # 56
+            (Client.PAUSED,  'O', route_factory1, 1, 2, 0, 4, 0, 4, 3),  # 57
+            (Client.PAUSED,  'O', route_factory1, 1, 0, 3, 4, 2, 4, 3),  # 58
+            (Client.PAUSED,  'O', route_factory2, 0, 3, 0, 1, 0, 3, 5),  # 59
+            (Client.STOPNOCONTACT, 'O', route_factory1, 1, 2, 3, 4, 5, 6, 3),  # 60
+            (Client.STOPNOCONTACT, 'O', route_factory2, 2, 3, 4, 1, 2, 3, 1),  # 61
+            (Client.STOPCONTACT,   'O', route_factory1, 1, 2, 3, 4, 5, 6, 7),  # 62
+            (Client.STOPCONTACT,   'O', route_factory1, 1, 0, 3, 4, 5, 6, 7),  # 63
+            (Client.STOPCONTACT,   'O', route_factory2, 2, 3, 4, 1, 2, 3, 5),  # 64
+            (Client.DECEASED,  'O', route_factory1, 1, 2, 3, 4, 5, 6, 3),  # 65
+            (Client.DECEASED,  'O', route_factory2, 2, 3, 4, 1, 2, 3, 1),  # 66
         )
 
-        for s, d, r, mon, tue, wed, thu, fri, sat, sun in test_clients:
-            c = ClientFactory(
-                status=s,
-                delivery_type=d,
-                route=r,
+        for status, delivery_type, route_factory, mon, tue, wed, thu, fri, sat, sun in test_clients:
+            client_factory = ClientFactory(
+                status=status,
+                delivery_type=delivery_type,
+                route=route_factory,
                 meal_default_week={
                     "main_dish_monday_quantity": mon,
                     "main_dish_tuesday_quantity": tue,
@@ -139,10 +139,10 @@ class HomeViewTestCase(TestCase):
                 }
             )
 
-            if d == 'O':
+            if delivery_type == 'O':
                 # Ongoing: only two delivery days!
                 Client_option.objects.create(
-                    client=c,
+                    client=client_factory,
                     option=meals_schedule_option,
                     value=json.dumps(['tuesday', 'wednesday'])
                 )
@@ -158,77 +158,67 @@ class HomeViewTestCase(TestCase):
         routes = {route_name: (schedules, defaults)
                   for route_name, defaults, schedules in routes}
 
-        self.assertIn(route1.name, routes)
-        self.assertIn(route2.name, routes)
-        self.assertIn(route_empty.name, routes)
+        self.assertIn(route_factory1.name, routes)
+        self.assertIn(route_factory2.name, routes)
+        self.assertIn(route_factory_empty.name, routes)
 
-        r1 = routes[route1.name]
-        r2 = routes[route2.name]
-        re = routes[route_empty.name]
+        route1 = routes[route_factory1.name]
+        route2 = routes[route_factory2.name]
+        route_empty = routes[route_factory_empty.name]
 
         # Ongoing dishes -- ongoing clients on delivery days
         # Test clients 51 & 52 & 54 & 57 & 58
-        self.assertEqual(r1[0].get('monday', 0), 0)
-        self.assertEqual(r1[0].get('tuesday', 0), 2 + 6 + 5 + 2 + 0)
-        self.assertEqual(r1[0].get('wednesday', 0), 3 + 5 + 0 + 0 + 3)
-        self.assertEqual(r1[0].get('thursday', 0), 0)
-        self.assertEqual(r1[0].get('friday', 0), 0)
-        self.assertEqual(r1[0].get('saturday', 0), 0)
-        self.assertEqual(r1[0].get('sunday', 0), 0)
+        self.assertEqual(route1[0].get('monday', 0), 0)
+        self.assertEqual(route1[0].get('tuesday', 0), 2 + 6 + 5 + 2 + 0)
+        self.assertEqual(route1[0].get('wednesday', 0), 3 + 5 + 0 + 0 + 3)
+        self.assertEqual(route1[0].get('thursday', 0), 0)
+        self.assertEqual(route1[0].get('friday', 0), 0)
+        self.assertEqual(route1[0].get('saturday', 0), 0)
+        self.assertEqual(route1[0].get('sunday', 0), 0)
 
         # Test clients 53 & 55 & 56 & 59
-        self.assertEqual(r2[0].get('monday', 0), 0)
-        self.assertEqual(r2[0].get('tuesday', 0), 0 + 3 + 0 + 3)
-        self.assertEqual(r2[0].get('wednesday', 0), 4 + 0 + 4 + 0)
-        self.assertEqual(r2[0].get('thursday', 0), 0)
-        self.assertEqual(r2[0].get('friday', 0), 0)
-        self.assertEqual(r2[0].get('saturday', 0), 0)
-        self.assertEqual(r2[0].get('sunday', 0), 0)
+        self.assertEqual(route2[0].get('monday', 0), 0)
+        self.assertEqual(route2[0].get('tuesday', 0), 0 + 3 + 0 + 3)
+        self.assertEqual(route2[0].get('wednesday', 0), 4 + 0 + 4 + 0)
+        self.assertEqual(route2[0].get('thursday', 0), 0)
+        self.assertEqual(route2[0].get('friday', 0), 0)
+        self.assertEqual(route2[0].get('saturday', 0), 0)
+        self.assertEqual(route2[0].get('sunday', 0), 0)
 
-        self.assertEqual(re[0].get('monday', 0), 0)
-        self.assertEqual(re[0].get('tuesday', 0), 0)
-        self.assertEqual(re[0].get('wednesday', 0), 0)
-        self.assertEqual(re[0].get('thursday', 0), 0)
-        self.assertEqual(re[0].get('friday', 0), 0)
-        self.assertEqual(re[0].get('saturday', 0), 0)
-        self.assertEqual(re[0].get('sunday', 0), 0)
+        self.assertEqual(route_empty[0].get('monday', 0), 0)
+        self.assertEqual(route_empty[0].get('tuesday', 0), 0)
+        self.assertEqual(route_empty[0].get('wednesday', 0), 0)
+        self.assertEqual(route_empty[0].get('thursday', 0), 0)
+        self.assertEqual(route_empty[0].get('friday', 0), 0)
+        self.assertEqual(route_empty[0].get('saturday', 0), 0)
+        self.assertEqual(route_empty[0].get('sunday', 0), 0)
 
         # Episodic dishes -- ongoing clients out of delivery days
         #                    and episodic clients
         # Test clients 1 & 4 & 5 & 7 (episodic)
         #              51 & 52 & 54 & 57 & 58 (ongoing)
-        self.assertEqual(r1[1].get('monday', 0), 0 + 1 + 1 + 1 + (
-            1 + 7 + 6 + 1 + 1))
-        self.assertEqual(r1[1].get('tuesday', 0), 2 + 2 + 0 + 2)
-        self.assertEqual(r1[1].get('wednesday', 0), 3 + 3 + 3 + 3)
-        self.assertEqual(r1[1].get('thursday', 0), 4 + 4 + 0 + 4 + (
-            4 + 4 + 3 + 4 + 4))
-        self.assertEqual(r1[1].get('friday', 0), 5 + 5 + 5 + 0 + (
-            5 + 3 + 2 + 0 + 2))
-        self.assertEqual(r1[1].get('saturday', 0), 6 + 6 + 6 + 4 + (
-            6 + 2 + 1 + 4 + 4))
-        self.assertEqual(r1[1].get('sunday', 0), 7 + 0 + 3 + 3 + (
-            7 + 1 + 5 + 3 + 3))
+        self.assertEqual(route1[1].get('monday', 0), 3)
+        self.assertEqual(route1[1].get('tuesday', 0), 6)
+        self.assertEqual(route1[1].get('wednesday', 0), 12)
+        self.assertEqual(route1[1].get('thursday', 0), 12)
+        self.assertEqual(route1[1].get('friday', 0), 15)
+        self.assertEqual(route1[1].get('saturday', 0), 22)
+        self.assertEqual(route1[1].get('sunday', 0), 13)
 
         # Test clients 2 & 3 & 6 & 8 & 9 (episodic)
         #              53 & 55 & 56 & 59 (ongoing)
-        self.assertEqual(r2[1].get('monday', 0), 2 + 2 + 2 + 2 + 2 + (
-            2 + 2 + 2 + 0))
-        self.assertEqual(r2[1].get('tuesday', 0), 3 + 0 + 3 + 3 + 3)
-        self.assertEqual(r2[1].get('wednesday', 0), 0 + 0 + 4 + 0 + 4)
-        self.assertEqual(r2[1].get('thursday', 0), 1 + 1 + 1 + 1 + 0 + (
-            1 + 1 + 1 + 1))
-        self.assertEqual(r2[1].get('friday', 0), 0 + 2 + 2 + 2 + 2 + (
-            2 + 0 + 2 + 0))
-        self.assertEqual(r2[1].get('saturday', 0), 3 + 3 + 3 + 3 + 3 + (
-            3 + 3 + 3 + 3))
-        self.assertEqual(r2[1].get('sunday', 0), 5 + 5 + 1 + 5 + 5 + (
-            5 + 1 + 1 + 5))
+        self.assertEqual(route2[1].get('monday', 0), 10)
+        self.assertEqual(route2[1].get('tuesday', 0), 12)
+        self.assertEqual(route2[1].get('wednesday', 0), 8)
+        self.assertEqual(route2[1].get('thursday', 0), 4)
+        self.assertEqual(route2[1].get('friday', 0), 8)
+        self.assertEqual(route2[1].get('saturday', 0), 15)
+        self.assertEqual(route2[1].get('sunday', 0), 21)
 
-        self.assertEqual(re[1].get('monday', 0), 0)
-        self.assertEqual(re[1].get('tuesday', 0), 0)
-        self.assertEqual(re[1].get('wednesday', 0), 0)
-        self.assertEqual(re[1].get('thursday', 0), 0)
-        self.assertEqual(re[1].get('friday', 0), 0)
-        self.assertEqual(re[1].get('saturday', 0), 0)
-        self.assertEqual(re[1].get('sunday', 0), 0)
+        self.assertEqual(route_empty[1].get('monday', 0), 0)
+        self.assertEqual(route_empty[1].get('tuesday', 0), 0)
+        self.assertEqual(route_empty[1].get('wednesday', 0), 0)
+        self.assertEqual(route_empty[1].get('thursday', 0), 0)
+        self.assertEqual(route_empty[1].get('friday', 0), 0)
+        self.assertEqual(route_empty[1].get('saturday', 0), 0)
+        self.assertEqual(route_empty[1].get('sunday', 0), 0)
