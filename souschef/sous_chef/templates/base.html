@@ -72,9 +72,9 @@
     </div>
 
     {% if debug %}
-        <script src="{% static 'js/sous-chef.js' %}" type="application/javascript"></script>
+        <script src="{% static 'js/sous-chef.js' %}?version={% now "U" %}" type="application/javascript"></script>
     {% else %}
-        <script src="{% static 'js/sous-chef.min.js' %}" type="application/javascript"></script>
+        <script src="{% static 'js/sous-chef.min.js' %}?version={{ SC_VERSION }}" type="application/javascript"></script>
     {% endif %}
     <!-- WARNING :  Do not move this line before a manual import of script! -->
     {% block extrajs %}{% endblock %}
