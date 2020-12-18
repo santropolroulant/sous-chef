@@ -119,7 +119,7 @@ So the proper and formal way to change the JavaScript code is the following:
 
     `docker-compose run web python3 /code/souschef/manage.py collectstatic --noinput`
 
-4. Refresh your page. The new JavaScript files should be downloaded and executed by the browser.
+4. Refresh your page. The new JavaScript files should be downloaded and executed by the browser. You might need to force the page refresh (pressing shift when reloading) to clear the caches for the new code to be loaded.
 
 ## Troubleshooting
 
