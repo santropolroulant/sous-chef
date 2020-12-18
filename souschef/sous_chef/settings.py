@@ -37,7 +37,7 @@ DEBUG = os.environ.get('SOUSCHEF_ENVIRONMENT_NAME') == 'DEV'
 INTERNAL_IPS = os.environ.get(
     'SOUSCHEF_DJANGO_INTERNAL_IPS',
     # Default value is an example: use space-separated string in env
-    '172.19.0.1  172.19.0.101').strip().split()
+    '172.19.0.1  172.22.0.1').strip().split()
 
 ALLOWED_HOSTS = os.environ.get(
     'SOUSCHEF_DJANGO_ALLOWED_HOSTS',

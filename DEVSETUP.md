@@ -94,7 +94,26 @@ python3 manage.py createsuperuser
 python3 manage.py loaddata sample_data
 ```
 
+## How to change the JavaScript code
+
+You first need to know that Sous-Chef's JavaScript code placed in `souschef/frontend/js`. Be careful: the JavaScript files you will find in `souschef/sous_chef/assets/js` and `souschef/static/js` are (respectively) the result of running the `gulp` command and Django's copy of the assets, and are not part of the source code nor should be committed in Git. (As a reminder, the `gulp` command is ran when you execute the `./tools/compile_assets.sh` script, and the copy of the assets is made by the `manage.py collectstatic` command in the `Dockerfile`.)
+
+So the proper and formal way to change the JavaScript code is the following:
+
+1. Edit the JavaScript code in `souschef/frontend/js`.
+2. Rebuild the assets by running:
+
+    `./tools/compile_assets.sh`.
+
+3. Copy the assets to Django's static directory by running:
+
+    `docker-compose run web python3 /code/souschef/manage.py collectstatic --noinput`
+
+4. Refresh your page. The new JavaScript files should be downloaded and executed by the browser.
+
 ## Troubleshooting
+
+### Issues starting Sous-Chef
 
 In case of persistent issues with starting Sous-Chef, try removing the Docker volume (which holds the database):
 
@@ -107,6 +126,29 @@ docker-compose up --build
 Then, redo the "Django initialization" step above.
 
 Note: it happens that Sous-Chef cannot connect to the database, especially the first time you launch it. Simply stop the Docker processes with CTRL-C and relaunch `docker-compose up` to fix the issue.
+
+### JavaScript served as minified file when developping
+
+Sous-Chef will only serve non-minified JavaScript files when the IP address of the requester is listed in the INTERNAL_IPS variable in `souschef/sous_chef/settings.py`. The IPs listed in the configuration are already adjusted to using Docker Compose. If you are receiving a minified version of Sous-Chef's JavaScript code here's how to configure your development environment.
+
+First, you need to figure-out the requester IP as seen by Django. In `souschef/page/views.py` add the following (don't commit this code though!):
+
+```python
+# Some code omitted
+class HomeView:
+
+    def get_context_data(self, **kwargs):
+        # Add this print here
+        print(f"REMOTE_ADDR is: {self.request.META.get('REMOTE_ADDR')}")
+```
+
+Then, refresh Sous-Chef's home page. In the logs (in the terminal where you started `docker-compose up`), you should see a message like this:
+
+```
+web_1  | REMOTE_ADDR is: 172.22.0.1
+```
+
+Add this IP to the INTERNAL_IPS variable in `souschef/sous_chef/settings.py`, but don't commit your changes.
 
 ## Connection to application
 
