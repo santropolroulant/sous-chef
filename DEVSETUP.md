@@ -6,7 +6,7 @@ To enforce some basic standards in the Sous-Chef source files we use an [EditorC
 
 ## Installing Docker
 
-We suggest using Docker for developping Sous-Chef as it simplifies the setup a great deal.
+We recommend using Docker for developping Sous-Chef as it simplifies the setup a great deal.
 
 ### On Linux
 

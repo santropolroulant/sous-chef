@@ -39,8 +39,7 @@ class BillingTestCase(TestCase):
 
     def testTotalAmount(self):
         total_amount = calculate_amount_total(self.orders)
-        # TODO: put the proper number here to test the function.
-        self.assertEqual(total_amount, 100)
+        self.assertEqual(total_amount, 50)
 
     def testOrderDetail(self):
         pass
