@@ -106,9 +106,10 @@ python3 manage.py createsuperuser
 
 This server will serve the static files and redirect all other requests to the gunicorn backend.
 
-First copy the content of [`configsamples/nginx.conf`](configsamples/nginx.conf) to `/etc/nginx/sites-available/souschef`, then:
+Copy the content of [`souschef/configsamples/nginx.conf`](souschef/configsamples/nginx.conf) to `/etc/nginx/sites-available/souschef` and activate nginx:
 
 ```
+cp /usr/local/lib/python3.7/dist-packages/souschef/configsamples/nginx.conf /etc/nginx/sites-available/souschef
 # Remove the default site configuration, which is a symbolic link to `/etc/nginx/sites-available/default`
 rm /etc/nginx/sites-enabled/default
 # Enable souschef's configuration
@@ -118,9 +119,10 @@ systemctl restart nginx
 
 5. Create the Sous-Chef service
 
-Put the content of [`configsamples/souschef.service`](configsamples/souschef.service) in `/etc/systemd/system/souschef.service`, then ask systemctl to read the new configuration:
+Put the content of [`souschef/configsamples/souschef.service`](souschef/configsamples/souschef.service) to `/etc/systemd/system/souschef.service`, then ask systemctl to read the new configuration:
 
 ```
+cp /usr/local/lib/python3.7/dist-packages/souschef/configsamples/souschef.service /etc/systemd/system/souschef.service
 systemctl daemon-reload
 ```
 
