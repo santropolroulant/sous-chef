@@ -151,6 +151,23 @@ ln -s /usr/local/lib/python3.7/dist-packages/souschef/cronscripts/souschef_daily
 killall -s SIGHUP cron
 ```
 
+7. Managing souschef crons
+
+To a add all crons configured in the settings of the souschef app:
+```
+python manage.py crontab add
+```
+
+To show all crons added by souschef:
+```
+python manage.py crontab show
+```
+
+To remove all crons added by souschef:
+```
+python manage.py crontab remove
+```
+
 ## Debugging Sous-Chef
 
 If you get an error 400 and need to debug Sous-Chef, you can set the following in `/etc/souschef.conf`:

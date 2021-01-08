@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     # Third party apps
     'annoying',
     'avatar',
+    'django_crontab',
     'django_filters',
     'formtools',
     'leaflet',
@@ -209,6 +210,10 @@ STATIC_URL = '/static/'
 GENERATED_DOCS_DIR = os.environ.get(
     'SOUSCHEF_GENERATED_DOCS_DIR',
     '/var/local/souschef')
+
+CRONJOBS = [
+    ('0 0 * * *', 'souschef.pycrons.cleaning.clean_old_pdf_files')
+]
 
 if DEBUG:
     # When using the development server, serve files directly from /media/
