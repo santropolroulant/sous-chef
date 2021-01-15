@@ -15,7 +15,7 @@ A public mailing list was available in the past but is now inactive. You may [br
 
 ## How to contribute
 
-Please refer to the https://github.com/savoirfairelinux/sous-chef/blob/dev/CONTRIBUTING.md[contribution guidelines].
+Please refer to the [contribution guidelines](https://github.com/savoirfairelinux/sous-chef/blob/dev/CONTRIBUTING.md).
 
 ## Licensing
 
