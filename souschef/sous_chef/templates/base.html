@@ -22,7 +22,7 @@
     <div class="pusher">
         <div class="ui grid container">
             <!-- Non responsive menu -->
-            <div class="ui left fixed vertical inverted menu">
+            <div class="ui left fixed vertical inverted menu {% if SC_ENVIRONMENT_NAME == 'STAGING' %}staging-color{% endif %}">
                 {% include "system/menu.html" %}
             </div>
             <!-- Responsive top menu -->
