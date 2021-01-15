@@ -52,6 +52,9 @@ PAYMENT_TYPE = (
     ('3rd', _('3rd Party')),
     ('credit', _('Credit card')),
     ('eft', _('EFT')),
+    ('cash', _('Cash')),
+    ('etransfert', _('e-Transfer')),
+    ('cheque', _('Cheque')),
 )
 
 DELIVERY_TYPE = (
