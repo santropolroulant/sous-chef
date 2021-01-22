@@ -9,7 +9,7 @@ Become root, then install the dependencies.
 ```
 apt install mariadb-server nginx gdal-bin python3 python3-pip libmariadb-dev-compat
 # Invoke pip with 'python3 -m pip' to avoid a warning about a wrapper script
-python3 -m pip install -U pip
+python3 -m pip install -U pip certifi
 python3 -m pip install gunicorn
 python3 -m pip install souschef
 ```
