@@ -122,8 +122,13 @@ systemctl restart nginx
 Put the content of [`souschef/configsamples/souschef.service`](souschef/configsamples/souschef.service) to `/etc/systemd/system/souschef.service`, then ask systemctl to read the new configuration:
 
 ```
-cp /usr/local/lib/python3.7/dist-packages/souschef/configsamples/souschef.service /etc/systemd/system/souschef.service
+cp /usr/local/lib/python3.7/dist-packages/souschef/configsamples/souschef.service /lib/systemd/system/souschef.service
 systemctl daemon-reload
+```
+
+Also make sure Sous-Chef will start at boot:
+```
+systemctl enable souschef
 ```
 
 Start the Sous-Chef gunicorn backend:
