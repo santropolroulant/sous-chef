@@ -2,6 +2,8 @@
 
 These instructions document how to install Sous-Chef on Debian 10.
 
+To update an existing installation, see [UPDATE.md](UPDATE.md).
+
 1. Install required dependencies
 
 Become root, then install the dependencies.
@@ -79,7 +81,7 @@ chown www-data:www-data /var/local/souschef
 
 3. Initialize Sous-Chef
 
-```
+```bash
 cd /usr/local/lib/python3.7/dist-packages/souschef
 
 # Export the Sous-Chef configuration variables, so Django's
@@ -93,9 +95,7 @@ python3 manage.py collectstatic --noinput
 # Create the tables. When run after a version upgade it ensures the database
 # schema is up to date.
 # Database migration needs to run as the root user and not as souschefdb.
-export SOUSCHEF_DJANGO_DB_USER=root
-export SOUSCHEF_DJANGO_DB_PASSWORD=...password...
-python3 manage.py migrate
+SOUSCHEF_DJANGO_DB_USER=root SOUSCHEF_DJANGO_DB_PASSWORD=...password... python3 manage.py migrate
 
 # Create a user with administrator privileges.
 # To be done once only.
@@ -108,10 +108,12 @@ This server will serve the static files and redirect all other requests to the g
 
 Copy the content of [`souschef/configsamples/nginx.conf`](souschef/configsamples/nginx.conf) to `/etc/nginx/sites-available/souschef` and activate nginx:
 
-```
+```bash
 cp /usr/local/lib/python3.7/dist-packages/souschef/configsamples/nginx.conf /etc/nginx/sites-available/souschef
+
 # Remove the default site configuration, which is a symbolic link to `/etc/nginx/sites-available/default`
 rm /etc/nginx/sites-enabled/default
+
 # Enable souschef's configuration
 ln -s /etc/nginx/sites-available/souschef /etc/nginx/sites-enabled/souschef
 systemctl restart nginx
@@ -153,7 +155,6 @@ Sous-Chef needs a cron job to be executed daily in order to correcly process ord
 ```
 cd /etc/cron.daily
 ln -s /usr/local/lib/python3.7/dist-packages/souschef/cronscripts/souschef_daily.sh souschef_daily
-killall -s SIGHUP cron
 ```
 
 ## Debugging Sous-Chef

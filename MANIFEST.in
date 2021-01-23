@@ -1,6 +1,7 @@
 include LICENSE.txt
 include README.md
 include INSTALL.md
+include UPDATE.md
 recursive-include souschef *.html *.mo *.jpg
 graft souschef/configsamples
 graft souschef/cronscripts
