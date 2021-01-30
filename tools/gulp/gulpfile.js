@@ -65,6 +65,14 @@ const sources = {
       site: [
         `${SRC_JS}/multidatespicker.js`,
       ]
+    },
+    mealCancellation: {
+      vendor: [
+        'node_modules/jquery-ui-multi-date-picker/dist/jquery-ui.multidatespicker.js',
+      ],
+      site: [
+        `${SRC_JS}/meal-cancellation.js`,
+      ]
     }
   },
 
@@ -161,6 +169,17 @@ gulp.task('scripts-multidatespicker', () =>
     .pipe(gulp.dest(destinations.js))
 );
 
+gulp.task('scripts-meal-cancellation', () =>
+  gulp.src([].concat(sources.js.mealCancellation.vendor).concat(sources.js.mealCancellation.site))
+    .pipe(concat('meal-cancellation.js'))
+    .pipe(gulp.dest(destinations.js))
+    .pipe(bytediff.start())
+    .pipe(uglify())
+    .pipe(bytediff.stop(bytediffFormatter))
+    .pipe(rename({ suffix: '.min' }))
+    .pipe(gulp.dest(destinations.js))
+);
+
 gulp.task('images', () =>
   gulp.src([].concat(sources.img.vendor).concat(sources.img.site))
     .pipe(cache(imagemin({
@@ -177,13 +196,13 @@ gulp.task('fonts', () =>
 );
 
 gulp.task('default', () => {
-  gulp.start('styles', 'scripts-multidatespicker', 'scripts-leaflet', 'scripts',
+  gulp.start('styles', 'scripts-multidatespicker', 'scripts-leaflet', 'scripts', 'scripts-meal-cancellation',
   'images', 'fonts');
 });
 
 gulp.task('watch', ['default'], () => {
   gulp.watch(`${SRC_SCSS}/**/*.scss`, ['styles']);
-  gulp.watch(`${SRC_JS}/**/*.js`, ['scripts-multidatespicker', 'scripts-leaflet', 'scripts']);
+  gulp.watch(`${SRC_JS}/**/*.js`, ['scripts-multidatespicker', 'scripts-leaflet', 'scripts', 'scripts-meal-cancellation']);
   gulp.watch(`${SRC_IMG}/**/*`, ['images']);
 });
 
@@ -192,6 +211,7 @@ gulp.task('validate', () =>
     .concat(sources.js.scripts.site)
     .concat(sources.js.leaflet.site)
     .concat(sources.js.multiDatesPicker.site)
+    .concat(sources.js.mealCancellation.site)
   )
   .pipe(debug())
   .pipe(validate())
