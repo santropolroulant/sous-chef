@@ -156,6 +156,9 @@ class OrderManager(models.Manager):
         weekday = delivery_date.weekday()  # Monday is 0, Sunday is 6
         day = DAYS_OF_WEEK[weekday][0]     # 0 -> 'monday', 6 -> 'sunday'
         for client in clients:
+            is_cancel = client.cancel_meal_dates.filter(cancel_date=delivery_date)
+            if is_cancel:
+                continue
             try:
                 order = Order.objects.get(client=client,
                                           delivery_date=delivery_date)
