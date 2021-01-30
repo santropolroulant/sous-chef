@@ -8,6 +8,9 @@
     {% load leaflet_tags %}
     {% leaflet_js %}
     {% leaflet_css %}
+    <link href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" rel="stylesheet">
+    {% comment %} Wash out jquery UI css on other semantic UI elements by importing it again. {% endcomment %}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.11/semantic.min.css" rel="stylesheet">
 {% endblock %}
 
 {% block title %}
@@ -75,5 +78,15 @@
         <script src="{% static 'js/leaflet.js' %}" type="application/javascript"></script>
     {% else %}
         <script src="{% static 'js/leaflet.min.js' %}" type="application/javascript"></script>
+    {% endif %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.1/jquery-ui.min.js" type="application/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.1/i18n/jquery-ui-i18n.min.js" type="application/javascript"></script>
+    <script type="application/javascript">
+        $.datepicker.setDefaults( $.datepicker.regional[ "{{ LANGUAGE_CODE }}" ] );
+    </script>
+    {% if debug %}
+        <script src="{% static 'js/meal-cancellation.js' %}" type="application/javascript"></script>
+    {% else %}
+        <script src="{% static 'js/meal-cancellation.min.js' %}" type="application/javascript"></script>
     {% endif %}
 {% endblock %}
