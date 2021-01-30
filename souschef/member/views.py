@@ -1,6 +1,9 @@
 # coding: utf-8
 
 import csv
+import json
+
+from datetime import datetime
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -45,6 +48,7 @@ from souschef.member.models import (
     DAYS_OF_WEEK,
     Client_avoid_ingredient,
     Client_avoid_component,
+    Client_cancel_meal_date,
     HOME, WORK, CELL, EMAIL)
 from souschef.order.mixins import FormValidAjaxableResponseMixin
 from souschef.order.models import SIZE_CHOICES, Order
@@ -224,6 +228,7 @@ class ClientWizard(
             'payment_information'].cleaned_data
         dietary_restriction = self.form_dict[
             'dietary_restriction'].cleaned_data
+        
 
         member, created = Member.objects.update_or_create(
             id=id,
@@ -407,7 +412,8 @@ class ClientWizard(
             Client_avoid_component.objects.create(
                 client=client,
                 component=component_to_avoid
-            )
+            )        
+
 
     def billing_member_is_member(self):
         basic_information = self.form_dict['basic_information']
@@ -896,6 +902,11 @@ class ClientUpdateDietaryRestriction(ClientUpdateInformation):
         client = get_object_or_404(
             Client, pk=self.kwargs.get('pk')
         )
+        cancel_meal_dates = [datetime.combine(date_entry.cancel_date, datetime.min.time()).strftime("%Y-%m-%d")
+                             for date_entry
+                             in client.cancel_meal_dates.all()]
+        cancel_meal_dates_json = json.dumps(cancel_meal_dates)
+
         initial.update({
             'status': True if client.status == Client.ACTIVE else False,
             'delivery_type': client.delivery_type,
@@ -904,6 +915,7 @@ class ClientUpdateDietaryRestriction(ClientUpdateInformation):
             'ingredient_to_avoid': client.ingredients_to_avoid.all,
             'dish_to_avoid': client.components_to_avoid.all,
             'food_preparation': client.food_preparation.all,
+            'cancel_meal_dates': cancel_meal_dates_json,
         })
         for k, v in (client.meal_default_week or {}).items():
             initial[k] = v
@@ -951,6 +963,15 @@ class ClientUpdateDietaryRestriction(ClientUpdateInformation):
             Client_avoid_component.objects.create(
                 client=client,
                 component=component_to_avoid
+            )
+
+        # Save cancel meal dates
+        client.cancel_meal_dates.all().delete()
+        cancel_meal_dates = form['cancel_meal_dates']
+        for cancel_meal_date in cancel_meal_dates:
+            Client_cancel_meal_date.objects.create(
+                client=client,
+                cancel_date=cancel_meal_date
             )
 
         # Save preferences
