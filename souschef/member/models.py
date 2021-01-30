@@ -1106,3 +1106,25 @@ class Client_avoid_component(models.Model):
         return "{} {} <has> {}".format(self.client.member.firstname,
                                        self.client.member.lastname,
                                        self.component.name)
+
+
+class Client_cancel_meal_date(models.Model):
+    client = models.ForeignKey(
+        'member.Client',
+        verbose_name=_('client'),
+        on_delete=models.CASCADE,
+        related_name='cancel_meal_dates'
+    )
+
+    cancel_date = models.DateField(
+        auto_now=False,
+        auto_now_add=False,
+        default=timezone.now,
+        null=False
+    )
+
+
+    def __str__(self):
+        return "{} {} <has a cancel date> {}".format(self.client.member.firstname,
+                                                     self.client.member.lastname,
+                                                     self.cancel_date)

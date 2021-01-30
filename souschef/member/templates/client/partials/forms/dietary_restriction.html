@@ -1,4 +1,5 @@
 {% load i18n %}
+{% load static %}
 <h4 class="ui dividing header">{% trans 'Meal status' %}</h4>
 
 <div class="field">
@@ -53,4 +54,10 @@
 <div class="field">
     <label>{{ form.dish_to_avoid.label }}</label>
       {{ form.dish_to_avoid }}
+</div>
+
+<h4 class="ui dividing header">{% trans 'Meal cancelation' %}</h4>
+<div class="field">
+  <div id="cancel_meal_dates"></div>
+  {{ form.cancel_meal_dates }}
 </div>
