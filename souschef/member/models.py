@@ -50,11 +50,11 @@ RATE_TYPE_SOLIDARY = RATE_TYPE[2][0]
 PAYMENT_TYPE = (
     (' ', _('----')),
     ('3rd', _('3rd Party')),
+    ('cash', _('Cash')),
+    ('cheque', _('Cheque')),
     ('credit', _('Credit card')),
     ('eft', _('EFT')),
-    ('cash', _('Cash')),
     ('etransfert', _('e-Transfer')),
-    ('cheque', _('Cheque')),
 )
 
 DELIVERY_TYPE = (
