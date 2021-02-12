@@ -24,4 +24,5 @@ ENV DJANGO_SETTINGS_MODULE="souschef.sous_chef.settings"
 ENV SOUSCHEF_ENVIRONMENT_NAME="DEV"
 CMD pip3 install -e . && \
   python3 souschef/manage.py collectstatic --noinput && \
+  python3 souschef/manage.py migrate && \
   python3 souschef/manage.py runserver 0.0.0.0:8000
