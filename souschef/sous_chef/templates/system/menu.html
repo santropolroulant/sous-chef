@@ -49,6 +49,8 @@
     <a class="item" href="{% url 'delivery:order' %}"><i class="food icon"></i>{% trans 'Kitchen Count' %}</a>
     <a class="item" href="{% url 'billing:list' %}"><i class="dollar icon"></i>{% trans 'Billing' %}</a>
     {% if request.user.is_superuser %}<a class="item" href="{% url 'admin:index' %}"><i class="settings icon"></i>{% trans 'Admin' %}</a>{% endif %}
+    <!-- The archive link is served by nginx. It contains previously generated kitchen counts, labels and route reports. -->
+    <a class="item" href="archive" target="_blank"><i class="folder icon"></i>{% trans 'Archive' %}</a>
     <a href="{% url 'page:logout' %}" class="item"><i class="sign out icon"></i>{% trans 'Logout' %}</a>
 </div>
 <div class="item">
