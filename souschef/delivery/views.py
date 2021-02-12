@@ -3,6 +3,7 @@ import datetime
 from datetime import date
 import json
 import os
+from shutil import copyfile
 import textwrap
 
 from django.conf import settings
@@ -783,9 +784,11 @@ class MultiRouteReport(object):
             # build full document
             doc.build(story,
                       onFirstPage=drawHeader, onLaterPages=drawHeader)
+            # Copy the route sheets file to keep a history
+            destination_of_copy = f"{settings.ROUTE_SHEETS_FILE.rstrip('.pdf')}_{datetime.date.today().strftime('%Y%m%d')}.pdf"
+            copyfile(settings.ROUTE_SHEETS_FILE, destination_of_copy)
             return doc.page  # number of last page
         # END def
-
         return go()  # returns number of pages generated
 
 # END Route sheet report.
@@ -1266,6 +1269,9 @@ def kcr_make_pages(date, component_lines, meal_lines):
 
         # build full document
         doc.build(story, onFirstPage=myFirstPage, onLaterPages=myLaterPages)
+        # Copy the kitchen count file to keep a history
+        destination_of_copy = f"{settings.KITCHEN_COUNT_FILE.rstrip('.pdf')}_{datetime.date.today().strftime('%Y%m%d')}.pdf"
+        copyfile(settings.KITCHEN_COUNT_FILE, destination_of_copy)
         return doc.page
     return go()  # returns number of pages generated
 
@@ -1533,6 +1539,9 @@ def kcr_make_labels(date, kitchen_list,
 
     if sheet.label_count > 0:
         sheet.save(settings.MEAL_LABELS_FILE)
+    # Copy the meal labels file to keep a history
+    destination_of_copy = f"{settings.MEAL_LABELS_FILE.rstrip('.pdf')}_{datetime.date.today().strftime('%Y%m%d')}.pdf"
+    copyfile(settings.MEAL_LABELS_FILE, destination_of_copy)
     return sheet.label_count
 
 # END Meal labels
