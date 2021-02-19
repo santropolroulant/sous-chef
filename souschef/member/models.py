@@ -117,7 +117,7 @@ class Member(models.Model):
         verbose_name=_('lastname')
     )
 
-    address = models.OneToOneField(
+    address = models.ForeignKey(
         'member.Address',
         verbose_name=_('address'),
         null=True,
@@ -230,6 +230,7 @@ class Address(models.Model):
 
     class Meta:
         verbose_name_plural = _('addresses')
+        ordering = ['number', 'street', 'apartment']
 
     # Member address information
     number = models.PositiveIntegerField(
