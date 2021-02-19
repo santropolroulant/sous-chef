@@ -9,7 +9,8 @@ To update an existing installation, see [UPDATE.md](UPDATE.md).
 Become root, then install the dependencies.
 
 ```
-apt install mariadb-server nginx gdal-bin python3 python3-pip libmariadb-dev-compat
+apt install mariadb-server nginx libnginx-mod-http-fancyindex gdal-bin python3 \
+    python3-pip libmariadb-dev-compat
 # Invoke pip with 'python3 -m pip' to avoid a warning about a wrapper script
 python3 -m pip install -U pip certifi
 python3 -m pip install gunicorn
