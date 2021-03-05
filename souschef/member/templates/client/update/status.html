@@ -1,6 +1,6 @@
 {% load i18n %}
 <div class="header">
-    {% trans 'Status modification' %}
+    {% trans 'Status Modification' %}
 </div>
 <form class="content ui form" id="change-status-form" method="POST" action="">
     {% csrf_token %}
@@ -16,8 +16,8 @@
         {{ form.reason }}
         {% if form.reason.errors %} {{ form.reason.errors }} {% endif %}
     </div>
-    <hr>
-    <p>{% trans 'If you want to schedule a status modification, feel free to fill one or two of theses date fields.' %}</p>
+    <h3>{% trans 'Scheduling' %}</h3>
+    <p>{% trans 'To schedule a status modification, fill one or two of theses date fields:' %}</p>
     <div class="two fields">
         <div class="field">
             <label>{{ form.change_date.label }}</label>
@@ -40,6 +40,13 @@
             {% if form.end_date.errors %} {{ form.end_date.errors }} {% endif %}
         </div>
     </div>
+    <h3>{% trans 'Upcoming Orders' %}</h3>
+    {% if orders %}
+        <p>{% trans 'Please note that this client currently has the following upcoming orders:' %}</p>
+        {% include 'client/partials/order_list.html' %}
+    {% else %}
+        <p>{% trans 'This client has no upcoming orders.' %}</p>
+    {% endif %}
 </form>
 <div class="actions">
     <button class="ui button deny">{% trans "Cancel" %}</button>

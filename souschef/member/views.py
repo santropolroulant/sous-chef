@@ -1177,10 +1177,13 @@ class ClientStatusScheduler(
 
     def get_context_data(self, **kwargs):
         context = super(ClientStatusScheduler, self).get_context_data(**kwargs)
-        context['client'] = get_object_or_404(
+        context['client'] = client = get_object_or_404(
             Client, pk=self.kwargs.get('pk')
         )
         context['client_status'] = Client.CLIENT_STATUS
+        context['orders'] = client.upcoming_orders.prefetch_related(
+            'orders'
+        )
         return context
 
     def get_initial(self):
