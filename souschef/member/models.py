@@ -673,6 +673,13 @@ class Client(models.Model):
         return self.client_order.all()
 
     @property
+    def upcoming_orders(self):
+        """
+        Returns upcoming orders associated to this client
+        """
+        return self.client_order.filter(delivery_date__gte=datetime.date.today()).all()
+
+    @property
     def food_preparation(self):
         """
         Returns specific food preparation associated to this client
