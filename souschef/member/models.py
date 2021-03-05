@@ -109,15 +109,15 @@ class Member(models.Model):
     # Member information
     firstname = models.CharField(
         max_length=50,
-        verbose_name=_('firstname')
+        verbose_name=_('First name')
     )
 
     lastname = models.CharField(
         max_length=50,
-        verbose_name=_('lastname')
+        verbose_name=_('Last name')
     )
 
-    address = models.ForeignKey(
+    address = models.OneToOneField(
         'member.Address',
         verbose_name=_('address'),
         null=True,
