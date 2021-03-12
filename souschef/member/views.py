@@ -652,6 +652,7 @@ class ClientOrderList(ClientView):
         )
         context['client_status'] = Client.CLIENT_STATUS
         context['active_tab'] = 'orders'
+        context['show_actions_column'] = True
         return context
 
 

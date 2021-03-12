@@ -42,7 +42,7 @@
     </div>
     <h3>{% trans 'Upcoming Orders' %}</h3>
     {% if orders %}
-        <p>{% trans 'Please note that this client currently has the following upcoming orders:' %}</p>
+        <p>{% trans 'This client has the following upcoming orders:' %}</p>
         {% include 'client/partials/order_list.html' %}
     {% else %}
         <p>{% trans 'This client has no upcoming orders.' %}</p>

@@ -14,7 +14,9 @@
         <th class="">{% trans 'Amount' %}
             <i class="help-text question grey icon link" data-content="{% trans 'Total amount in $CAD.' %}"></i>
         </th>
+        {% if show_actions_column %}
         <th class="">{% trans 'Actions' %}</th>
+        {% endif %}
       </thead>
     </thead>
     <tbody>
@@ -24,11 +26,13 @@
                 <td>{{order.delivery_date}}</td>
                 <td class="center aligned">{{order.get_status_display}}</td>
                 <td><i class="dollar icon"></i>{{order.price}}</td>
+                {% if show_actions_column %}
                 <td>
                     <a class="ui basic icon button"  href="{% url 'order:view' pk=order.id %}"><i class="icon unhide"></i></a>
                     {% if can_edit_data %}<a class="ui basic icon button"  href="{% url 'order:update' pk=order.id %}"><i class="icon edit"></i></a>{% endif %}
                     {% if can_edit_data %}<a class="ui basic icon button order-delete" href="#" data-order-id="{{order.id}}"><i class="icon trash"></i></a>{% endif %}
                 </td>
+                {% endif %}
             </tr>
             {% if can_edit_data %}{% include "order_confirm_delete.html" %}{% endif %}
         {% endfor %}
