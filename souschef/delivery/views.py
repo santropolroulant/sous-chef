@@ -6,6 +6,8 @@ import os
 from shutil import copyfile
 import textwrap
 
+from typing import NamedTuple, List
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -863,13 +865,16 @@ class KitchenCount(
                    and client_id in geolocalized_client_ids:
                     kitchen_list[client_id] = kitchen_item
 
-            component_lines, meal_lines = kcr_make_lines(kitchen_list, date)
+            component_lines = kcr_make_component_lines(kitchen_list, date)
+            meal_lines = kcr_make_meal_lines(kitchen_list)
+            sides_clashing_ingredients = kcr_get_sides_clashing_ingredients(kitchen_list)
+
             if component_lines:
                 # we have orders today
-                num_pages = kcr_make_pages(     # kitchen count as PDF
-                    date,
+                num_pages = KitchenCountReport().render( # kitchen count as PDF
                     component_lines,                    # summary
-                    meal_lines)                         # detail
+                    meal_lines,                         # detail
+                    sides_clashing_ingredients)
                 num_labels = kcr_make_labels(   # meal labels as PDF
                     date,
                     kitchen_list,                       # KitchenItems
@@ -910,6 +915,26 @@ MealLine = collections.namedtuple(
     'MealLine', meal_line_fields[0::2])
 
 
+class ClientLine(NamedTuple):
+    client_name: str
+    regular_quantity: int
+    large_quantity: int
+    other_restrictions: List[str]
+
+
+class ClashingSideIngredientsGrouped(NamedTuple):
+    ingredients_name: List[str]
+    client_lines: List[ClientLine]
+
+    @property
+    def regular_quantity_total(self):
+        return sum(line.regular_quantity for line in self.client_lines)
+
+    @property
+    def large_quantity_total(self):
+        return sum(line.large_quantity for line in self.client_lines)
+
+
 def meal_line(kititm):
     """Builds a line for the main section of the Kitchen Count Report.
 
@@ -936,6 +961,8 @@ def meal_line(kititm):
         span='1')
 
 
+
+
 def kcr_cumulate(regular, large, meal):
     """Count cumulative meal quantities by size.
 
@@ -956,8 +983,7 @@ def kcr_cumulate(regular, large, meal):
         large = large + meal.meal_qty
     return (regular, large)
 
-
-def kcr_make_lines(kitchen_list, date):
+def kcr_make_component_lines(kitchen_list, date):
     """Generate the sections and lines for the kitchen count report.
 
     Count all the dishes that have to be prepared and identify all the
@@ -973,8 +999,7 @@ def kcr_make_lines(kitchen_list, date):
             meals will be delivered.
 
     Returns:
-        A tuple. First value is the component (dishes) summary lines. The
-          second value is the special meals lines.
+        The component (dishes) summary lines.
     """
     # Build component summary
     component_lines = {}
@@ -1026,6 +1051,25 @@ def kcr_make_lines(kitchen_list, date):
     else:
         component_lines_sorted = []
 
+    return component_lines_sorted
+
+
+def kcr_make_meal_lines(kitchen_list):
+    """Generate the sections and lines for the kitchen count report.
+
+    Count all the dishes that have to be prepared and identify all the
+    special client requirements such as disliked ingredients and
+    restrictions.
+
+    Args:
+        kitchen_list : A dictionary of KitchenItem objects (see
+            order/models) which contain detailed information about
+            all the meals that have to be prepared for the day and
+            the client requirements and restrictions.
+
+    Returns:
+        The special meals lines.
+    """
     # Build special meal lines
 
     meal_lines = []
@@ -1073,32 +1117,91 @@ def kcr_make_lines(kitchen_list, date):
     meal_lines.append(MealLine(*meal_line_fields[1::2])._replace(
         rqty=str(rtotal), lqty=str(ltotal), ingr_clash='TOTAL SPECIALS'))
 
-    return (component_lines_sorted, meal_lines)
+    return meal_lines
+
+def kcr_get_sides_clashing_ingredients(kitchen_list):
+    return [
+        ClashingSideIngredientsGrouped(
+            ['Banane', 'Orange', 'Pamplemousse'],
+            [
+                ClientLine(
+                    client_name='Fortier, Mo.',
+                    regular_quantity=1,
+                    large_quantity=0,
+                    other_restrictions=['bananes', 'pommes'],
+                ),
+                ClientLine(
+                    client_name='Michel, Re.',
+                    regular_quantity=0,
+                    large_quantity=1,
+                    other_restrictions=['choux', 'carottes'],
+                )
+            ]
+        ),
+        ClashingSideIngredientsGrouped(
+            ['Patates', 'Pommes de terre'],
+            [
+                ClientLine(
+                    client_name='Gagnon, Ma.',
+                    regular_quantity=1,
+                    large_quantity=1,
+                    other_restrictions=[],
+                ),
+                ClientLine(
+                    client_name='Tremblay, Ja.',
+                    regular_quantity=1,
+                    large_quantity=0,
+                    other_restrictions=['piments forts'],
+                )
+            ]
+        )
+    ]
 
 
-def kcr_make_pages(date, component_lines, meal_lines):
-    """Generate the kitchen count report pages as a PDF file.
-
-    Uses ReportLab see http://www.reportlab.com/documentation/faq/
-
-    Args:
-        date : The delivery date of the meals.
-        component_lines : A list of ComponentLine objects, the summary of
-            component quantities and sizes for the date's meal.
-        meal_lines : A list of MealLine objects, the details of the clients
-            for the date that have ingredients clashing with those in today's
-            main dish.
-
-    Returns:
-        An integer : The number of pages generated.
-    """
+class KitchenCountReport:
     PAGE_HEIGHT = 11.0 * rl_inch
     PAGE_WIDTH = 8.5 * rl_inch
 
-    styles = rl_getSampleStyleSheet()
-    defineStyles(styles)
+    def __init__(self):
+        self.styles = rl_getSampleStyleSheet()
 
-    def drawHeader(canvas, doc):
+    def render(self, component_lines: List[ComponentLine],
+               meal_lines: List[MealLine],
+               sides_clashing_ingredients: List[ClashingSideIngredientsGrouped]):
+        """Generate the kitchen count report pages as a PDF file.
+
+        Uses ReportLab see http://www.reportlab.com/documentation/faq/
+
+        Args:
+            component_lines: A list of ComponentLine objects, the summary of
+                component quantities and sizes for the date's meal.
+            meal_lines: A list of MealLine objects, the details of the clients
+                for the date that have ingredients clashing with those in today's
+                main dish.
+            sides_clashing_ingredients: A list of ClashingSideIngredientsGrouped objects,
+                containing the clashing ingredients for sides for clients, groupes by
+                clashing ingredients.
+
+        Returns:
+            An integer : The number of pages generated.
+        """
+        defineStyles(self.styles)
+
+        doc = RLSimpleDocTemplate(settings.KITCHEN_COUNT_FILE)
+        story = []
+
+        self.append_summary(story, component_lines)
+        self.append_meal_clashing_ingredients(story, meal_lines)
+        self.append_sides_clashing_ingredients(story, sides_clashing_ingredients)
+
+        # build full document
+        doc.build(story, onFirstPage=self.myFirstPage, onLaterPages=self.myLaterPages)
+        # Copy the kitchen count file to keep a history
+        destination_of_copy = f"{settings.KITCHEN_COUNT_FILE.rstrip('.pdf')}_{datetime.date.today().strftime('%Y%m%d')}.pdf"
+        copyfile(settings.KITCHEN_COUNT_FILE, destination_of_copy)
+        return doc.page
+
+    def drawHeader(self, canvas, doc):
         """Draw the header part common to all pages.
 
         Args:
@@ -1107,17 +1210,17 @@ def kcr_make_pages(date, component_lines, meal_lines):
         """
         canvas.setFont('Helvetica', 14)
         canvas.drawString(
-            x=1.9 * rl_inch, y=PAGE_HEIGHT,
+            x=1.9 * rl_inch, y=self.PAGE_HEIGHT,
             text='Kitchen count report')
         canvas.setFont('Helvetica', 9)
         canvas.drawRightString(
-            x=6.0 * rl_inch, y=PAGE_HEIGHT,
+            x=6.0 * rl_inch, y=self.PAGE_HEIGHT,
             text='{}'.format(datetime.date.today().strftime('%a., %d %B %Y')))
         canvas.drawRightString(
-            x=PAGE_WIDTH - 0.75 * rl_inch, y=PAGE_HEIGHT,
+            x=self.PAGE_WIDTH - 0.75 * rl_inch, y=self.PAGE_HEIGHT,
             text='Page {:d}'.format(doc.page))
 
-    def myFirstPage(canvas, doc):
+    def myFirstPage(self, canvas, doc):
         """Draw the complete header for the first page.
 
         Args:
@@ -1125,14 +1228,14 @@ def kcr_make_pages(date, component_lines, meal_lines):
             doc : A reportlab.platypus.SimpleDocTemplate object.
         """
         canvas.saveState()
-        drawHeader(canvas, doc)
+        self.drawHeader(canvas, doc)
         canvas.drawInlineImage(
             LOGO_IMAGE,
-            0.75 * rl_inch, PAGE_HEIGHT - 1.0 * rl_inch,
+            0.75 * rl_inch, self.PAGE_HEIGHT - 1.0 * rl_inch,
             width=1.0 * rl_inch, height=1.0 * rl_inch)
         canvas.restoreState()
 
-    def myLaterPages(canvas, doc):
+    def myLaterPages(self, canvas, doc):
         """Draw the complete header for all pages except the first one.
 
         Args:
@@ -1140,99 +1243,89 @@ def kcr_make_pages(date, component_lines, meal_lines):
             doc : A reportlab.platypus.SimpleDocTemplate object.
         """
         canvas.saveState()
-        drawHeader(canvas, doc)
+        self.drawHeader(canvas, doc)
         canvas.restoreState()
 
-    def go():
-        """Generate the pages.
-
-        Returns:
-            An integer : The number of pages generated.
-        """
-        doc = RLSimpleDocTemplate(settings.KITCHEN_COUNT_FILE)
-        story = []
-
-        # begin Summary section
+    def append_summary(self, story, component_lines):
         story.append(RLSpacer(1, 0.25 * rl_inch))
         rows = []
         rows.append(['',
-                     RLParagraph('TOTAL', styles['NormalCenter']),
-                     '',
-                     RLParagraph('Menu', styles['NormalLeft']),
-                     RLParagraph('Ingredients', styles['NormalLeft'])])
+                    RLParagraph('TOTAL', self.styles['NormalCenter']),
+                    '',
+                    RLParagraph('Menu', self.styles['NormalLeft']),
+                    RLParagraph('Ingredients', self.styles['NormalLeft'])])
         rows.append(['',
-                     RLParagraph('Regular', styles['SmallRight']),
-                     RLParagraph('Large', styles['SmallRight']),
-                     '',
-                     ''])
+                    RLParagraph('Regular', self.styles['SmallRight']),
+                    RLParagraph('Large', self.styles['SmallRight']),
+                    '',
+                    ''])
         for cl in component_lines:
             rows.append([cl.component_group,
-                         cl.rqty,
-                         cl.lqty,
-                         cl.name,
-                         RLParagraph(cl.ingredients, styles['NormalLeft'])])
+                        cl.rqty,
+                        cl.lqty,
+                        cl.name,
+                        RLParagraph(cl.ingredients, self.styles['NormalLeft'])])
         tab = RLTable(rows,
-                      colWidths=(100, 40, 40, 120, 220),
-                      style=[('VALIGN', (0, 0), (-1, 1), 'TOP'),
-                             ('VALIGN', (0, 2), (-1, -1), 'BOTTOM'),
-                             ('GRID', (1, 0), (-1, 1), 1, rl_colors.black),
-                             ('SPAN', (1, 0), (2, 0)),
-                             ('ALIGN', (1, 2), (2, -1), 'RIGHT'),
-                             ('SPAN', (3, 0), (3, 1)),
-                             ('SPAN', (4, 0), (4, 1))])
+                    colWidths=(100, 40, 40, 120, 220),
+                    style=[('VALIGN', (0, 0), (-1, 1), 'TOP'),
+                            ('VALIGN', (0, 2), (-1, -1), 'BOTTOM'),
+                            ('GRID', (1, 0), (-1, 1), 1, rl_colors.black),
+                            ('SPAN', (1, 0), (2, 0)),
+                            ('ALIGN', (1, 2), (2, -1), 'RIGHT'),
+                            ('SPAN', (3, 0), (3, 1)),
+                            ('SPAN', (4, 0), (4, 1))])
         story.append(tab)
         story.append(RLSpacer(1, 0.25 * rl_inch))
-        # end Summary section
 
-        # begin Detail section
+    def append_meal_clashing_ingredients(self, story, meal_lines):
         rows = []
         line = 0
         tab_style = RLTableStyle(
             [('VALIGN', (0, 0), (-1, -1), 'TOP')])
-        rows.append([RLParagraph('Clashing ingredients', styles['NormalLeft']),
-                     RLParagraph('Regular', styles['NormalRight']),
-                     RLParagraph('Large', styles['NormalRight']),
-                     '',
-                     RLParagraph('Client', styles['NormalLeft']),
-                     RLParagraph('Other restrictions', styles['NormalLeft'])])
+        rows.append([RLParagraph('Meal clashing ingredients', self.styles['NormalLeft']),
+                    RLParagraph('Regular', self.styles['NormalRight']),
+                    RLParagraph('Large', self.styles['NormalRight']),
+                    '',
+                    RLParagraph('Client', self.styles['NormalLeft']),
+                    RLParagraph('Other restrictions', self.styles['NormalLeft'])])
         tab_style.add('LINEABOVE',
-                      (0, line), (-1, line), 1, rl_colors.black)
+                    (0, line), (-1, line), 1, rl_colors.black)
         tab_style.add('LINEBEFORE',
-                      (0, line), (0, line), 1, rl_colors.black)
+                    (0, line), (0, line), 1, rl_colors.black)
         tab_style.add('LINEAFTER',
-                      (-1, line), (-1, line), 1, rl_colors.black)
+                    (-1, line), (-1, line), 1, rl_colors.black)
         line += 1
         for ml in meal_lines:
             if ml.ingr_clash and not ml.client:
                 # Total line at the bottom
                 rows.append([RLParagraph(ml.ingr_clash,
-                                         styles['NormalLeftBold']),
-                             RLParagraph(ml.rqty, styles['NormalRightBold']),
-                             RLParagraph(ml.lqty, styles['NormalRightBold']),
-                             '',
-                             '',
-                             ''])
+                                         self.styles['NormalLeftBold']),
+                            RLParagraph(ml.rqty, self.styles['NormalRightBold']),
+                            RLParagraph(ml.lqty, self.styles['NormalRightBold']),
+                            '',
+                            '',
+                            ''])
                 tab_style.add('LINEABOVE',
-                              (0, line), (-1, line), 1, rl_colors.black)
+                            (0, line), (-1, line), 1, rl_colors.black)
             elif ml.ingr_clash or ml.client:
                 # not a blank separator line
                 if ml.span != '-1':
                     # line has ingredient clash data
                     tab_style.add('SPAN',
-                                  (0, line), (0, line + int(ml.span) - 1))
+                                (0, line), (0, line + int(ml.span) - 1))
                     tab_style.add('LINEABOVE',
-                                  (0, line), (-1, line), 1, rl_colors.black)
+                                (0, line), (-1, line), 1, rl_colors.black)
                     # for dashes, must use LINEABOVE because dashes do not work
                     #   with LINEBELOW; seems to be a bug in ReportLab see :
                     #   reportlab/platypus/tables.py line # 1309
                     tab_style.add('LINEABOVE',           # op
-                                  (1, line + 1),         # start
-                                  (-1, line + 1),        # stop
-                                  1,                     # weight
-                                  rl_colors.black,       # color
-                                  None,                  # cap
-                                  [1, 2])                # dashes
-                    value = RLParagraph(ml.ingr_clash, styles['LargeBoldLeft'])
+                                (1, line + 1),         # start
+                                (-1, line + 1),        # stop
+                                1,                     # weight
+                                rl_colors.black,       # color
+                                None,                  # cap
+                                [1, 2])                # dashes
+                    value = RLParagraph(ml.ingr_clash, self.styles['LargeBoldLeft'])
                 else:
                     # span = -1 means clash data must be blanked out
                     #   because it is the same as the initial spanned row
@@ -1246,34 +1339,121 @@ def kcr_make_pages(date, component_lines, meal_lines):
                     qty_style = 'NormalRight'
                 rows.append([
                     value,
-                    RLParagraph(ml.rqty, styles[qty_style]),
-                    RLParagraph(ml.lqty, styles[qty_style]),
+                    RLParagraph(ml.rqty, self.styles[qty_style]),
+                    RLParagraph(ml.lqty, self.styles[qty_style]),
                     '',
-                    RLParagraph(client, styles['NormalLeft']),
+                    RLParagraph(client, self.styles['NormalLeft']),
                     [RLParagraph(
                         ml.rest_ingr +
                         (' ;' if ml.rest_ingr and ml.rest_item else ''),
-                        styles['NormalLeft']),
-                     RLParagraph(ml.rest_item, styles['NormalLeftBold'])]])
+                        self.styles['NormalLeft']),
+                    RLParagraph(ml.rest_item, self.styles['NormalLeftBold'])]])
                 # END IF
                 line += 1
             # END IF
         # END FOR
         tab = RLTable(rows,
-                      colWidths=(150, 50, 50, 20, 100, 150),
-                      repeatRows=1)
+                    colWidths=(150, 50, 50, 20, 100, 150),
+                    repeatRows=1)
         tab.setStyle(tab_style)
         story.append(tab)
         story.append(RLSpacer(1, 1 * rl_inch))
-        # end Detail section
 
-        # build full document
-        doc.build(story, onFirstPage=myFirstPage, onLaterPages=myLaterPages)
-        # Copy the kitchen count file to keep a history
-        destination_of_copy = f"{settings.KITCHEN_COUNT_FILE.rstrip('.pdf')}_{datetime.date.today().strftime('%Y%m%d')}.pdf"
-        copyfile(settings.KITCHEN_COUNT_FILE, destination_of_copy)
-        return doc.page
-    return go()  # returns number of pages generated
+    def append_sides_clashing_ingredients(self, story, sides_clashing_ingredients):
+        maker = KitchenCountSidesClashTableMaker(self.styles)
+        table = maker.make_table(sides_clashing_ingredients)
+        story.append(table)
+        story.append(RLSpacer(1, 1 * rl_inch))
+
+
+class KitchenCountSidesClashTableMaker:
+    def __init__(self, styles):
+        self.line = 0
+        self.styles = styles
+
+    def make_table(self, sides_clashing_ingredients):
+        rows = []
+        tab_style = RLTableStyle(
+            [('VALIGN', (0, 0), (-1, -1), 'TOP')])
+        rows.append([RLParagraph('Sides clashing ingredients', self.styles['NormalLeft']),
+                    RLParagraph('Regular', self.styles['NormalRight']),
+                    RLParagraph('Large', self.styles['NormalRight']),
+                    '',
+                    RLParagraph('Client', self.styles['NormalLeft']),
+                    RLParagraph('Other restrictions', self.styles['NormalLeft'])])
+        tab_style.add('LINEABOVE',
+                    (0, 0), (-1, 0), 1, rl_colors.red)
+        tab_style.add('LINEBELOW',
+                    (0, 0), (-1, 0), 1, rl_colors.red)
+        tab_style.add('LINEBEFORE',
+                    (0, 0), (0, 0), 1, rl_colors.red)
+        tab_style.add('LINEAFTER',
+                    (-1, 0), (-1, 0), 1, rl_colors.red)
+
+        print("==== sides_clashing_ingredients =====")
+        print(sides_clashing_ingredients)
+        for sides_clash in sides_clashing_ingredients:
+            self._append_sides_clash(rows, tab_style, sides_clash)
+
+        table = RLTable(rows,
+                    colWidths=(150, 50, 50, 20, 100, 150),
+                    repeatRows=1)
+        table.setStyle(tab_style)
+        return table
+
+    def _append_sides_clash(self, rows, tab_style, sides_clash):
+        self._append_clash_total_line(rows, tab_style, sides_clash)
+
+        print("==== client lines =====")
+        print(sides_clash.client_lines)
+
+        for client_line in sides_clash.client_lines:
+            pass
+            # self._append_client_line(rows, tab_style, line, client_line)
+
+    def _append_clash_total_line(self, rows, tab_style, sides_clash):
+        self.line += 1
+        rows.append([RLParagraph(', '.join(sides_clash.ingredients_name),
+                                    self.styles['NormalLeftBold']),
+                    RLParagraph(str(sides_clash.regular_quantity_total), self.styles['NormalRightBold']),
+                    RLParagraph(str(sides_clash.large_quantity_total), self.styles['NormalRightBold']),
+                    '',
+                    '',
+                    ''])
+        tab_style.add('LINEABOVE',
+                        (0, self.line), (-1, self.line), 1, rl_colors.black)
+
+    def _append_client_line(self, rows, tab_style, client_line):
+        self.line += 1
+        tab_style.add('SPAN',
+                        (0, self.line), (0, self.line - 1))
+        tab_style.add('LINEABOVE',
+                        (0, self.line), (-1, self.line), 1, rl_colors.black)
+        # for dashes, must use LINEABOVE because dashes do not work
+        #   with LINEBELOW; seems to be a bug in ReportLab see :
+        #   reportlab/platypus/tables.py line # 1309
+        tab_style.add('LINEABOVE',           # op
+                        (1, self.line + 1),         # start
+                        (-1, self.line + 1),        # stop
+                        1,                     # weight
+                        rl_colors.black,       # color
+                        None,                  # cap
+                        [1, 2])                # dashes
+        # TODO: il y a deux types de restrictions!!!
+        value = RLParagraph(', '.join(client_line.other_restrictions), self.styles['LargeBoldLeft'])
+
+        rows.append([
+            value,
+            RLParagraph(str(client_line.regular_quantity), self.styles['NormalRight']),
+            RLParagraph(str(client_line.large_quantity), self.styles['NormalRight']),
+            '',
+            RLParagraph(client_line.client_name, self.styles['NormalLeft']),
+            ''])
+            # [RLParagraph(
+            #     ml.rest_ingr +
+            #     (' ;' if ml.rest_ingr and ml.rest_item else ''),
+            #     styles['NormalLeft']),
+            #  RLParagraph(ml.rest_item, styles['NormalLeftBold'])]])
 
 # END Kitchen count report view, helper classes and functions
 

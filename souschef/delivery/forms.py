@@ -34,5 +34,5 @@ class DishIngredientsForm(forms.Form):
         data = self.cleaned_data['sides_ingredients']
         if not data:
             raise forms.ValidationError(
-                _("Please choose some Sides ingredients"))
+                _("Please choose some sides ingredients"))
         return data
