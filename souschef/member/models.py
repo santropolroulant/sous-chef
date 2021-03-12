@@ -675,13 +675,9 @@ class Client(models.Model):
     @property
     def upcoming_orders(self):
         """
-        Returns upcoming orders associated to this client.
-        Only active ("ordered") orders will be returned.
+        Returns upcoming orders associated to this client, regardless of order status.
         """
-        return self.client_order.filter(
-            delivery_date__gte=datetime.date.today(),
-            status='O',
-        ).all()
+        return self.client_order.filter(delivery_date__gte=datetime.date.today()).all()
 
     @property
     def food_preparation(self):
