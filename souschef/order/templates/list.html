@@ -63,7 +63,7 @@
           <a class="ui basic icon button"  href="{% url 'order:view' pk=order.id %}"><i class="icon unhide"></i></a>
           {% if can_edit_data %}
             <a class="ui basic icon button" title="{% trans 'Edit the order.' %}" href="{% url 'order:update' pk=order.id %}"><i class="icon edit"></i></a>
-            {% if order.status == 'O' %}
+            {% if False and order.status == 'O' %}
                 <a class="ui basic icon button order-cancel" title="{% trans 'Cancel the order.' %}" href="#" data-order-id="{{order.id}}"><i class="icon ban"></i></a>
             {% endif %}
             <a class="ui basic icon button order-delete" title="{% trans 'Delete the order.' %}" href="#" data-order-id="{{order.id}}"><i class="icon trash"></i></a>
