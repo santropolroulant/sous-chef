@@ -666,6 +666,10 @@ class Client(models.Model):
         return age
 
     @property
+    def status_verbose(self):
+        return dict(self.CLIENT_STATUS).get(self.status, _('Unknown'))
+
+    @property
     def orders(self):
         """
         Returns orders associated to this client

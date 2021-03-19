@@ -62,7 +62,7 @@
     {% for order in orders %}
     <tr>
       <td><i class="hashtag icon"></i>{{order.id}}</td>
-      <td><a href="{% url 'member:client_information' pk=order.client.id %}">{{order.client}}
+      <td><a href="{% url 'member:client_information' pk=order.client.id %}">{{order.client}}</a></td>
       <td>{{order.delivery_date}}</td>
       <td class="center aligned">{{order.get_status_display}}</td>
       <td class="center aligned"><i class="dollar icon"></i>{{order.price}}</td>
