@@ -57,6 +57,19 @@ SIDE_PRICE_SOLIDARY = 0.50
 
 
 class OrderManager(models.Manager):
+    def get_orders(self,
+                   delivery_date=None,
+                   order_statuses=None):
+        # If no date is passed, use the current day
+        if delivery_date is None:
+            delivery_date = date.today()
+        extra_kwargs = {}
+        if order_statuses:
+            extra_kwargs['status__in'] = order_statuses
+        return self.get_queryset().filter(
+            delivery_date=delivery_date,
+            **extra_kwargs,
+        )
 
     def get_shippable_orders(self,
                              delivery_date=None,

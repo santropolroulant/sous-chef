@@ -49,7 +49,13 @@ from souschef.meal.models import (
     Component_ingredient)
 from souschef.member.models import Client, Route, DeliveryHistory
 from souschef.order.models import (
-    Order, component_group_sorting, SIZE_CHOICES_REGULAR, SIZE_CHOICES_LARGE)
+    component_group_sorting,
+    ORDER_STATUS_CANCELLED,
+    ORDER_STATUS_ORDERED,
+    Order,
+    SIZE_CHOICES_LARGE,
+    SIZE_CHOICES_REGULAR,
+)
 from .filters import KitchenCountOrderFilter
 from .forms import DishIngredientsForm
 from . import tsp
@@ -59,16 +65,8 @@ LOGO_IMAGE = os.path.join(settings.BASE_DIR, "160widthSR-Logo-Screen-PurpleGreen
 DELIVERY_STARTING_POINT_LAT_LONG = (45.516564, -73.575145)  # Santropol Roulant
 
 
-class Orderlist(LoginRequiredMixin, PermissionRequiredMixin, FilterView):
-    # Display all the order on a given day
-    context_object_name = 'orders'
-    filterset_class = KitchenCountOrderFilter
-    model = Order
-    permission_required = 'sous_chef.read'
-    template_name = 'review_orders.html'
-
-    def get_queryset(self):
-        queryset = Order.objects.get_shippable_orders().order_by(
+def get_orders_for_kitchen_count(order_statuses):
+    return Order.objects.get_orders(order_statuses=order_statuses).order_by(
             'client__route__pk', 'pk'
         ).prefetch_related('orders').select_related(
             'client__member',
@@ -83,7 +81,24 @@ class Orderlist(LoginRequiredMixin, PermissionRequiredMixin, FilterView):
             'client__member__address__latitude',
             'client__member__address__longitude'
         )
-        return queryset
+
+def get_ordered_orders_for_kitchen_count():
+    return get_orders_for_kitchen_count(ORDER_STATUS_ORDERED)
+
+def get_cancelled_orders_for_kitchen_count():
+    return get_orders_for_kitchen_count(ORDER_STATUS_CANCELLED)
+
+
+class Orderlist(LoginRequiredMixin, PermissionRequiredMixin, FilterView):
+    # Display all the order on a given day
+    context_object_name = 'orders'
+    filterset_class = KitchenCountOrderFilter
+    model = Order
+    permission_required = 'sous_chef.read'
+    template_name = 'review_orders.html'
+
+    def get_queryset(self):
+        return get_ordered_orders_for_kitchen_count()
 
     def get_context_data(self, **kwargs):
         context = super(Orderlist, self).get_context_data(**kwargs)
@@ -91,6 +106,7 @@ class Orderlist(LoginRequiredMixin, PermissionRequiredMixin, FilterView):
         if LogEntry.objects.exists():
             log = LogEntry.objects.latest('action_time')
             context['orders_refresh_date'] = log
+        context['cancelled_orders'] = get_cancelled_orders_for_kitchen_count()
 
         return context
 
@@ -1697,16 +1713,16 @@ class RefreshOrderView(
     def get(self, request):
         delivery_date = date.today()
         clients = Client.ongoing.all()
-        orders = Order.objects.auto_create_orders(delivery_date, clients)
+        Order.objects.auto_create_orders(delivery_date, clients)
         LogEntry.objects.log_action(
             user_id=1, content_type_id=1,
             object_id="", object_repr="Generation of orders for " + str(
                 datetime.datetime.now().strftime('%m %d %Y %H:%M')),
             action_flag=ADDITION,
         )
-        orders.sort(key=lambda o: (
-            o.client.route.pk if o.client.route is not None else -1,
-            o.pk
-        ))
-        context = {'orders': orders}
+
+        context = {
+            'orders': get_ordered_orders_for_kitchen_count(),
+            'canceled_orders': get_cancelled_orders_for_kitchen_count(),
+        }
         return render(request, 'partials/generated_orders.html', context)
