@@ -1,7 +1,6 @@
 import csv
 import json
-from django.db import models
-from django.db.transaction import commit
+
 from django.http import HttpResponse
 from django.http.response import HttpResponseRedirect
 from django.views import generic, View
