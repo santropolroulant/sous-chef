@@ -1723,6 +1723,6 @@ class RefreshOrderView(
 
         context = {
             'orders': get_ordered_orders_for_kitchen_count(),
-            'canceled_orders': get_cancelled_orders_for_kitchen_count(),
+            'cancelled_orders': get_cancelled_orders_for_kitchen_count(),
         }
         return render(request, 'partials/generated_orders.html', context)

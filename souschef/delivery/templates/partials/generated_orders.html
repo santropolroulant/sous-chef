@@ -3,8 +3,11 @@
 {% load static %}
 {% load rules %}
 
+{# This div will be replaced by new content when the user clics on "Generate orders". #}
+<div id="generated-orders">
+
 {% has_perm 'sous_chef.edit' request.user as can_edit_data %}
-<table id="generated-orders" class="ui very basic stripped compact celled table">
+<table id="generated-orders-table" class="ui very basic stripped compact celled table">
   {% include 'partials/generated_orders_table_head.html' %}
   <tbody>
     {% for order in orders %}
@@ -47,7 +50,7 @@
 <h2 class="ui header">{% trans "Cancelled Orders" %}</h2>
 <p>{% trans 'These clients will not receive a meal today, but their order can be enabled if needed (by viewing the order and setting the status to "Ordered").' %}</p>
 
-<table id="generated-orders" class="ui very basic stripped compact celled table">
+<table class="ui very basic stripped compact celled table">
   {% include 'partials/generated_orders_table_head.html' %}
   <tbody>
     {% for order in cancelled_orders %}
@@ -75,3 +78,5 @@
 {% if can_edit_data %}
   <div class="ui modal status"></div>
 {% endif %}
+
+</div>

@@ -25,7 +25,7 @@ $(function() {
             url: $(this).attr('data-url'),
             success: function (xhr, ajaxOptions, thrownError) {
                 $("#generated-orders").html(xhr)
-                var count = $("#generated-orders tbody tr").length;
+                var count = $("#generated-orders-table tbody tr").length;
                 $('.orders-count span').html(count);
                 $('.orders-count').attr('data-order-count', count);
                 $('.button.orders i').removeClass('loading');
