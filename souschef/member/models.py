@@ -766,6 +766,21 @@ class Client(models.Model):
                     prefs.append((day, meal_schedule))
             return prefs
 
+    @property
+    def is_in_error_for_the_kitchen_count(self):
+        """ Return True if the client is in error for the Kitchen Count orders list page.
+
+        The client is in error if either:
+        - is not not geolocalized;
+        - it has no route;
+        - it is not active.
+        """
+        return (
+            not self.is_geolocalized or
+            not self.route or
+            self.status != 'A'
+        )
+
     def set_simple_meals_schedule(self, schedule):
         """
         Set the delivery days for the client.
