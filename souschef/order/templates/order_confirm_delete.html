@@ -1,12 +1,14 @@
 {% load i18n %}
 
-<div class="ui basic modal order-{{order.id}}">
+<div class="ui basic modal order-delete-{{order.id}}">
   <div class="ui icon header">
       <i class="trash icon"></i>
       {% trans "Delete Order" %} #{{order.id}}
     </div>
-  <div class="content" style="text-align:center;">
-      <p>{% trans 'This order will be deleted and all the info will be lost, are you sure?' %}</p>
+  <div class="content" style="font-size: 1.3em;">
+      <p>{% trans 'This order will be deleted.' %}</p>
+      <p>{% blocktrans with client_name=order.client.member %}Please note that will not prevent a new order from being generated in the Kitchen Count for <span class="confirm-client-name">{{ client_name }}</span> when pressing "Generate orders".{% endblocktrans %}
+      <p>{% trans 'Are you sure?' %}</p>
   </div>
   <div class="actions">
     <form action="{% url 'order:delete' pk=order.id %}?next={% url 'order:list' %}%3F{{request.META.QUERY_STRING|urlencode}}" method="POST" id="order-{{order.id}}-delete-form">{% csrf_token %}

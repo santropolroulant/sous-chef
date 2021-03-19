@@ -2,14 +2,16 @@ from django.conf.urls import url
 from django.utils.translation import ugettext_lazy as _
 
 from souschef.order.views import (
-    OrderList,
-    OrderDetail,
+    CancelOrder,
+    CreateDeleteOrderClientBill,
     CreateOrder,
     CreateOrdersBatch,
+    DeleteOrder,
+    OrderDetail,
+    OrderList,
     UpdateOrder,
     UpdateOrderStatus,
-    CreateDeleteOrderClientBill,
-    DeleteOrder)
+)
 
 app_name = "order"
 
@@ -32,5 +34,6 @@ urlpatterns = [
         CreateDeleteOrderClientBill.as_view(),
         name='update_client_bill'
     ),
+    url(_(r'^cancel/(?P<pk>\d+)/$'), CancelOrder.as_view(), name='cancel'),
     url(_(r'^delete/(?P<pk>\d+)/$'), DeleteOrder.as_view(), name='delete'),
 ]

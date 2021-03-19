@@ -1,6 +1,9 @@
 import csv
 import json
+from django.db import models
+from django.db.transaction import commit
 from django.http import HttpResponse
+from django.http.response import HttpResponseRedirect
 from django.views import generic, View
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
@@ -15,7 +18,7 @@ from extra_views import CreateWithInlinesView, UpdateWithInlinesView
 
 from datetime import datetime
 
-from souschef.order.models import Order, OrderFilter, \
+from souschef.order.models import ORDER_STATUS_CANCELLED, Order, OrderFilter, \
     ORDER_STATUS, OrderStatusChange
 from souschef.order.mixins import AjaxableResponseMixin, FormValidAjaxableResponseMixin
 from souschef.order.forms import CreateOrderItem, UpdateOrderItem, \
@@ -373,6 +376,17 @@ class CreateDeleteOrderClientBill(
         order = self.get_object(pk)
         order.includes_a_bill = False
         return HttpResponse('OK', status=200)
+
+
+class CancelOrder(
+        LoginRequiredMixin, PermissionRequiredMixin, View):
+    permission_required = 'sous_chef.edit'
+
+    def post(self, request, pk, *args, **kwargs):
+        order = get_object_or_404(Order, pk=pk)
+        order.status = ORDER_STATUS_CANCELLED
+        order.save()
+        return HttpResponseRedirect(request.GET['next'])
 
 
 class DeleteOrder(

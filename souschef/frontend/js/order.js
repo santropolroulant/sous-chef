@@ -35,13 +35,19 @@ $(function() {
       $('#form_create_batch').submit();
     });
 
-    $('.order-delete').click(function(){
+    $('.order-cancel').click(function(){
         var order_id = $(this).data('orderId');
-        var selector = '.ui.basic.modal.order-' + order_id;
+        var selector = '.ui.basic.modal.order-cancel-' + order_id;
         $(selector).modal('show');
     });
 
-    function updateOtherFieldStatus() {
+    $('.order-delete').click(function(){
+      var order_id = $(this).data('orderId');
+      var selector = '.ui.basic.modal.order-delete-' + order_id;
+      $(selector).modal('show');
+  });
+
+  function updateOtherFieldStatus() {
         var value = $('input[name=reason_select]:checked', '#change-status-form').val();
         if (value !== 'other') {
             $('#reason_other_field textarea').attr('disabled', 'disabled');

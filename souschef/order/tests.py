@@ -1589,6 +1589,7 @@ class RedirectAnonymousUserTestCase(SousChefTestMixin, TestCase):
         check(reverse('order:update', kwargs={'pk': 1}))
         check(reverse('order:update_status', kwargs={'pk': 1}))
         check(reverse('order:update_client_bill', kwargs={'pk': 1}))
+        check(reverse('order:cancel', kwargs={'pk': 1}))
         check(reverse('order:delete', kwargs={'pk': 1}))
 
 
