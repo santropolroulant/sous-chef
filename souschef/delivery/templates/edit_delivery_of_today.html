@@ -63,7 +63,10 @@
         </thead>
         <tbody id="clients-on-delivery-history">
           {% for client in clients_on_delivery_history %}
-          <tr data-latitude="{{ client.member.address.latitude|unlocalize }}" data-longitude="{{ client.member.address.longitude|unlocalize }}" data-id="{{ client.pk }}">
+          <tr data-latitude="{{ client.member.address.latitude|unlocalize }}"
+              data-longitude="{{ client.member.address.longitude|unlocalize }}"
+              data-id="{{ client.pk }}"
+              {% if client.status != 'A' %}class="error"{% endif %}>
             <td data-property="delivery_sequence">{{ forloop.counter }}</td>
             <td data-property="name"><a href="{% url 'member:client_information' pk=client.pk %}" title="{% trans "Access the client's file" %}">{{ client.member.firstname }} {{ client.member.lastname }}</a></td>
             <td>{{ client.get_status_display }}</td>
