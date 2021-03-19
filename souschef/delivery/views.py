@@ -98,7 +98,7 @@ class Orderlist(LoginRequiredMixin, PermissionRequiredMixin, FilterView):
     template_name = 'review_orders.html'
 
     def get_queryset(self):
-        return get_ordered_orders_for_kitchen_count()
+        return get_orders_for_kitchen_count((ORDER_STATUS_ORDERED, ORDER_STATUS_CANCELLED))
 
     def get_context_data(self, **kwargs):
         context = super(Orderlist, self).get_context_data(**kwargs)
@@ -106,7 +106,11 @@ class Orderlist(LoginRequiredMixin, PermissionRequiredMixin, FilterView):
         if LogEntry.objects.exists():
             log = LogEntry.objects.latest('action_time')
             context['orders_refresh_date'] = log
-        context['cancelled_orders'] = get_cancelled_orders_for_kitchen_count()
+
+        ordered_orders = [o.status == 'O' for o in context['orders']]
+        cancelled_orders = [o.status == 'C' for o in context['orders']]
+        context['has_ordered_orders'] = not not ordered_orders
+        context['has_cancelled_orders'] = not not cancelled_orders
 
         return context
 
