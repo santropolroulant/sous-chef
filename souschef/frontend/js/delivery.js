@@ -1,6 +1,43 @@
+function enableGeneratedOrdersCancelButton() {
+  $('.ui.order.cancel.button').click(function () {
+    var self = this;
+    var modalCtntURL = $(self).attr('data-url');
+    $.get(modalCtntURL, {status:'C'}, function(data, modalCtntURL){
+        $('.ui.modal.status').html(data).modal("setting", {
+            closable: false,
+            // When approving modal, submit form
+            onApprove: function($element, modalCtntURL) {
+                var data = $('#change-status-form').serializeArray();
+
+                $.ajax({
+                     type: 'POST',
+                     url: $(self).attr('data-url'),
+                     data: data,
+                     success: function (xhr, ajaxOptions, thrownError) {
+                         if ( $(xhr).find('.errorlist').length > 0 ) {
+                             $('.ui.modal.status').html(xhr);
+                         } else {
+                             $('.ui.modal.status').modal("hide");
+                             location.reload();
+                         }
+                     },
+                 });
+                return false; // don't hide modal until we have the response
+            },
+            // When denying modal, restore default value for status dropdown
+            onDeny: function($element) {
+                $('.ui.modal.status').modal("hide");
+            }
+        }).modal('setting', 'autofocus', false).modal("show");
+    });
+  });
+}
+
 $(function() {
     // Javascript of the delivery application
     // ****************************************
+
+    enableGeneratedOrdersCancelButton();
 
     $('.ui.dropdown.maindish.selection').dropdown('setting', 'onChange', function(value, text, $selectedItem) {
         $url = $(".field.dish.selection").data('url');
@@ -24,45 +61,13 @@ $(function() {
             type: 'GET',
             url: $(this).attr('data-url'),
             success: function (xhr, ajaxOptions, thrownError) {
-                $("#generated-orders").html(xhr)
+                $("#generated-orders").html(xhr);
+                enableGeneratedOrdersCancelButton();
                 var count = $("#generated-orders-table tbody tr").length;
                 $('.orders-count span').html(count);
                 $('.orders-count').attr('data-order-count', count);
                 $('.button.orders i').removeClass('loading');
             },
-        });
-    });
-
-    $('.ui.order.cancel.button').click(function () {
-        var self = this;
-        var modalCtntURL = $(self).attr('data-url');
-        $.get(modalCtntURL, {status:'C'}, function(data, modalCtntURL){
-            $('.ui.modal.status').html(data).modal("setting", {
-                closable: false,
-                // When approving modal, submit form
-                onApprove: function($element, modalCtntURL) {
-                    var data = $('#change-status-form').serializeArray();
-
-                    $.ajax({
-                         type: 'POST',
-                         url: $(self).attr('data-url'),
-                         data: data,
-                         success: function (xhr, ajaxOptions, thrownError) {
-                             if ( $(xhr).find('.errorlist').length > 0 ) {
-                                 $('.ui.modal.status').html(xhr);
-                             } else {
-                                 $('.ui.modal.status').modal("hide");
-                                 location.reload();
-                             }
-                         },
-                     });
-                    return false; // don't hide modal until we have the response
-                },
-                // When denying modal, restore default value for status dropdown
-                onDeny: function($element) {
-                    $('.ui.modal.status').modal("hide");
-                }
-            }).modal('setting', 'autofocus', false).modal("show");
         });
     });
 

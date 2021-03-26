@@ -82,11 +82,23 @@ def get_orders_for_kitchen_count(order_statuses):
             'client__member__address__longitude'
         )
 
-def get_ordered_orders_for_kitchen_count():
-    return get_orders_for_kitchen_count(ORDER_STATUS_ORDERED)
 
-def get_cancelled_orders_for_kitchen_count():
-    return get_orders_for_kitchen_count(ORDER_STATUS_CANCELLED)
+def get_number_of_orders_in_status(orders, status):
+    return len([o for o in orders if o.status == status])
+
+
+def get_has_orders_in_status(orders, status):
+    return get_number_of_orders_in_status(orders, status) > 0
+
+
+def get_kitchen_count_context():
+    orders = get_orders_for_kitchen_count((ORDER_STATUS_ORDERED, ORDER_STATUS_CANCELLED))
+    return {
+        'orders': orders,
+        'has_ordered_orders': get_has_orders_in_status(orders, ORDER_STATUS_ORDERED),
+        'has_cancelled_orders': get_has_orders_in_status(orders, ORDER_STATUS_CANCELLED),
+        'nb_of_ordered_orders': get_number_of_orders_in_status(orders, ORDER_STATUS_ORDERED),
+    }
 
 
 class Orderlist(LoginRequiredMixin, PermissionRequiredMixin, FilterView):
@@ -107,11 +119,14 @@ class Orderlist(LoginRequiredMixin, PermissionRequiredMixin, FilterView):
             log = LogEntry.objects.latest('action_time')
             context['orders_refresh_date'] = log
 
-        ordered_orders = [o.status == 'O' for o in context['orders']]
-        cancelled_orders = [o.status == 'C' for o in context['orders']]
-        context['has_ordered_orders'] = not not ordered_orders
-        context['has_cancelled_orders'] = not not cancelled_orders
-
+        # See also get_kitchen_count_context, used for the "Generate orders" button.
+        context['has_ordered_orders'] = get_has_orders_in_status(
+            context['orders'], ORDER_STATUS_ORDERED)
+        context['has_cancelled_orders'] = get_has_orders_in_status(
+            context['orders'], ORDER_STATUS_CANCELLED)
+        context['nb_of_ordered_orders'] = get_number_of_orders_in_status(
+            context['orders'], ORDER_STATUS_ORDERED)
+        print(context)
         return context
 
 
@@ -1724,9 +1739,5 @@ class RefreshOrderView(
                 datetime.datetime.now().strftime('%m %d %Y %H:%M')),
             action_flag=ADDITION,
         )
-
-        context = {
-            'orders': get_ordered_orders_for_kitchen_count(),
-            'cancelled_orders': get_cancelled_orders_for_kitchen_count(),
-        }
+        context = get_kitchen_count_context()
         return render(request, 'partials/generated_orders.html', context)
