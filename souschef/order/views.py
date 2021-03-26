@@ -345,7 +345,7 @@ class UpdateOrderStatus(
         response = super(UpdateOrderStatus, self).form_valid(form)
         messages.add_message(
             self.request, messages.SUCCESS,
-            _("The status has been changed")
+            _("The order status was updated successfully.")
         )
         return response
 

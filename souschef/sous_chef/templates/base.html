@@ -35,7 +35,7 @@
             </div>
             <div class="ui main grid">
                 {% for message in messages %}
-                <div class="ui {{ message.tags }} message sixteen wide column">
+                <div class="ui large {{ message.tags }} message sixteen wide column">
                     <i class="close icon"></i>
                     <div class="center aligned header">{{ message|safe }}</div>
                 </div>

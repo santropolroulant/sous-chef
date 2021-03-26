@@ -11,6 +11,7 @@
 <div class="ui secondary pointing fluid menu">
     <h1 class="ui header">{% trans "Order" %} #{{ order.id }}</h1>
     <div class="right menu">
+        <h4 class="ui header" style="margin-top: 1.1em;">{% trans "Update Status:" %}</h4>
         <div class="ui item">
             <div id="order-status " class="ui dropdown order status{% if not can_edit_data %} disabled{% endif %}" data-url="{% url 'order:update_status' pk=order.id %}" data-csrf-token="{{ csrf_token }}">
                 <div class="ui large yellow label text">{{ order.get_status_display }}</div>
@@ -78,10 +79,10 @@
 
 {% if can_edit_data %}
 <div class="ui row">
-
-    <a class="ui basic red button order-delete" href="#" data-order-id="{{order.id}}"><i class="icon trash"></i>{% trans "Delete" %}</a>
-    <a class="ui basic green button" href="{% url 'order:update' pk=order.id %}"><i class="icon edit"></i>{% trans "Update" %}</a>
-
+    <div class="ui column right aligned">
+        <a class="ui basic red button order-delete" href="#" data-order-id="{{order.id}}"><i class="icon trash"></i>{% trans "Delete" %}</a>
+        <a class="ui blue button" href="{% url 'order:update' pk=order.id %}"><i class="icon edit"></i>{% trans "Modify" %}</a>
+    </div>
 </div>
 
 {% include 'order_confirm_delete.html' %}
