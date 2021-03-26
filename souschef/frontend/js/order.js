@@ -87,7 +87,7 @@ $(function() {
                     $.each(origdata, function (idx, ele) {
                         origdata_o[ele.name] = ele.value;  // build object
                     });
-                    if (origdata_o.reason_select !== 'other') {
+                    if (origdata_o.reason_select && origdata_o.reason_select !== 'other') {
                         origdata_o.reason = origdata_o.reason_select;
                     }
                     delete origdata_o.reason_select;
