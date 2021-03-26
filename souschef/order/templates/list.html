@@ -6,6 +6,12 @@
 
 {% block title %} {% trans 'Orders' %} {% endblock %}
 
+{% block extrajs %}
+<script type="application/javascript">
+enableGeneratedOrdersCancelButton();
+</script>
+{% endblock %}
+
 {% block content %}
 {% has_perm 'sous_chef.edit' request.user as can_edit_data %}
 
@@ -63,14 +69,13 @@
           <a class="ui basic icon button"  href="{% url 'order:view' pk=order.id %}"><i class="icon unhide"></i></a>
           {% if can_edit_data %}
             <a class="ui basic icon button" title="{% trans 'Edit the order.' %}" href="{% url 'order:update' pk=order.id %}"><i class="icon edit"></i></a>
-            {% if False and order.status == 'O' %}
-                <a class="ui basic icon button order-cancel" title="{% trans 'Cancel the order.' %}" href="#" data-order-id="{{order.id}}"><i class="icon ban"></i></a>
+            {% if order.status == 'O' %}
+            <a class="ui basic icon order cancel button" title="{% trans 'Cancel the order.' %}" data-url="{% url 'order:update_status' pk=order.id %}"><i class="icon ban"></i></a>
             {% endif %}
             <a class="ui basic icon button order-delete" title="{% trans 'Delete the order.' %}" href="#" data-order-id="{{order.id}}"><i class="icon trash"></i></a>
           {% endif %}
         </td>
       </tr>
-      {% include "order_confirm_cancel.html" %}
       {% include "order_confirm_delete.html" %}
     {% endfor %}
   </tbody>
@@ -108,6 +113,11 @@
 
 {% else %}
     <div class="ui row"><p>{% trans "Sorry, no result found" %}.</p></div>
+{% endif %}
+
+{# To display the cancel dialog. #}
+{% if can_edit_data %}
+  <div class="ui modal status"></div>
 {% endif %}
 
 {% endblock %}

@@ -35,12 +35,6 @@ $(function() {
       $('#form_create_batch').submit();
     });
 
-    $('.order-cancel').click(function(){
-        var order_id = $(this).data('orderId');
-        var selector = '.ui.basic.modal.order-cancel-' + order_id;
-        $(selector).modal('show');
-    });
-
     $('.order-delete').click(function(){
       var order_id = $(this).data('orderId');
       var selector = '.ui.basic.modal.order-delete-' + order_id;
