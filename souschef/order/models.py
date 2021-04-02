@@ -330,6 +330,7 @@ class OrderManager(models.Manager):
                     Order_item.objects.create(
                         order=order,
                         price=0,
+                        total_quantity=0,
                         billable_flag=False,
                         order_item_type=order_item_type)
 
@@ -630,7 +631,7 @@ class Order(models.Model):
                     size=None,
                     order_item_type="delivery",
                     remark=None,
-                    total_quantity=None,
+                    total_quantity=0,
                     component_group=None
                 )
         elif value is False:
@@ -1159,8 +1160,6 @@ class Order_item(models.Model):
 
     total_quantity = models.IntegerField(
         verbose_name=_('total quantity'),
-        null=True,
-        blank=True,
     )
 
     free_quantity = models.IntegerField(

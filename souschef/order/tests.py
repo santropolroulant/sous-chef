@@ -147,7 +147,8 @@ class OrderItemTestCase(TestCase):
             price=22.50,
             billable_flag=False,
             order_item_type='',
-            remark="12"
+            remark="12",
+            total_quantity=0,
         )
         cls.order = Order.objects.create(
             delivery_date=date(2016, 5, 10),
@@ -160,6 +161,7 @@ class OrderItemTestCase(TestCase):
             order_item_type='',
             remark="testing",
             size="R",
+            total_quantity=0,
         )
         Order_item.objects.create(
             order=cls.order,
@@ -168,6 +170,7 @@ class OrderItemTestCase(TestCase):
             order_item_type='',
             remark="testing",
             size="L",
+            total_quantity=0,
         )
         Order_item.objects.create(
             order=cls.order,
@@ -177,6 +180,7 @@ class OrderItemTestCase(TestCase):
             component_group='main_dish',
             remark="testing",
             size="L",
+            total_quantity=0,
         )
         Order_item.objects.create(
             order=cls.order,
@@ -186,6 +190,7 @@ class OrderItemTestCase(TestCase):
             component_group=None,
             remark="testing",
             size="L",
+            total_quantity=0,
         )
 
     def test_billable_flag(self):
@@ -280,6 +285,7 @@ class OrderItemTestCase(TestCase):
             component_group=None,
             remark="testing",
             size="L",
+            total_quantity=0,
         )
         self.assertEqual(Order_item.objects.filter(
             order=self.order,
