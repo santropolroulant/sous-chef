@@ -110,6 +110,7 @@
             </div>
           </td>
           <td class="right aligned" style="white-space:nowrap">
+            {% if can_edit_data %}<a class="ui basic icon button"  href="{% url 'note:edit' pk=note.id %}"><i class="icon edit"></i></a>{% endif %}
             {% if note.is_read %}
             <button class="ui tiny basic button" data-note-id="{{note.id}}" data-batch-commit-btn="#batch-commit-btn">
               {% trans 'Mark as unread' %}

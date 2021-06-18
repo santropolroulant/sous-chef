@@ -19,10 +19,25 @@ class NoteForm(forms.ModelForm):
         fields = ['note', 'client', 'priority', 'category']
 
         widgets = {
-            'note': forms.Textarea(attrs={'rows': 5}),
+            'note': forms.Textarea(attrs={'rows': 7}),
             'client': forms.Select(
                 attrs={'class': 'ui search dropdown'}
             ),
+            'priority': forms.Select(
+                attrs={'class': 'ui dropdown'}
+            ),
+            'category': forms.Select(
+                attrs={'class': 'ui dropdown'}
+            ),
+        }
+
+class NoteEditForm(forms.ModelForm):
+    class Meta:
+        model = Note
+        fields = ['note', 'priority', 'category']
+
+        widgets = {
+            'note': forms.Textarea(attrs={'rows': 7}),
             'priority': forms.Select(
                 attrs={'class': 'ui dropdown'}
             ),

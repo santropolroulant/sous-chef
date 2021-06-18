@@ -10,7 +10,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.http import HttpResponseRedirect
 
 from souschef.note.models import Note, NoteFilter
-from souschef.note.forms import NoteForm
+from souschef.note.forms import NoteEditForm, NoteForm
 from souschef.member.models import Client
 
 
@@ -147,3 +147,22 @@ class NoteBatchToggle(
             _("%(count)s note(s) have been updated.") % {'count': count}
         )
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+class NoteEditView(
+        LoginRequiredMixin, PermissionRequiredMixin,
+        generic.edit.UpdateView):
+    form_class = NoteEditForm
+    model = Note
+    permission_required = 'sous_chef.edit'
+    template_name = 'note_edit.html'
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.add_message(
+            self.request, messages.SUCCESS,
+            _("The note has been updated.")
+        )
+        return response
+
+    def get_success_url(self):
+        return reverse('note:note_list')
