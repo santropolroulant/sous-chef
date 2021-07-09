@@ -8,7 +8,7 @@
   <h1 class="ui header">
     {% block title %}
         {% blocktrans trimmed with firstname=note.client.member.firstname|title lastname=note.client.member.lastname|title%}
-            Edit Note for {{firstname}} {{lastname}}
+            Update Note for {{firstname}} {{lastname}}
         {% endblocktrans %}
     {% endblock %}
   </h1>
@@ -54,7 +54,7 @@
   </div>
 
   <div class="ui row">
-    <button class="ui primary button" type="submit">{% trans "Edit" %}</button>
+    <button class="ui primary button" type="submit">{% trans "Update note" %}</button>
     <a class="ui button" href="{% if not client %}{% url 'note:note_list' %}{% else %}{% url 'member:client_notes' client.pk %}{% endif %}">{% trans "Cancel" %}</a>
   </div>
 </form>

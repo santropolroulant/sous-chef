@@ -1,0 +1,10 @@
+.ui.table.notes-list {
+    & .read-unread-action.button {
+        white-space: nowrap;
+        min-width: 10em;
+    }
+    & .date-and-author {
+        font-style: italic;
+    }
+
+}
