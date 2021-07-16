@@ -27,11 +27,7 @@ class NoteList(
 
     def get_queryset(self):
         uf = NoteFilter(self.request.GET)
-        return uf.qs.select_related(
-            'client__member'
-        )
-
-        # The queryset must be client
+        return uf.qs.filter(is_deleted=0).select_related('client__member')
 
     def get_context_data(self, **kwargs):
         uf = NoteFilter(self.request.GET, queryset=self.get_queryset())
@@ -166,3 +162,13 @@ class NoteEditView(
 
     def get_success_url(self):
         return reverse('note:note_list')
+
+
+class NoteDeleteView(PermissionRequiredMixin, View):
+    permission_required = 'sous_chef.edit'
+
+    def post(self, request, *args, **kwargs):
+        pk = request.POST.get('pk')
+        note = get_object_or_404(Note, pk)
+        note.delete()
+        return HttpResponseRedirect(request.POST['next'])

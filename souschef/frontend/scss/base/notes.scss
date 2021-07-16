@@ -6,5 +6,9 @@
     & .date-and-author {
         font-style: italic;
     }
-
+    & td.action-buttons {
+        text-align: right;
+        vertical-align: top;
+        white-space: nowrap;
+    }
 }

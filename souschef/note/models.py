@@ -93,6 +93,11 @@ class Note(models.Model):
         on_delete=models.SET_NULL
     )
 
+    is_deleted = models.BooleanField(
+        verbose_name=_('Is deleted'),
+        default=False
+    )
+
     objects = NoteManager()
 
     unread = UnreadNoteManager()
@@ -101,16 +106,21 @@ class Note(models.Model):
         return self.note
 
     def mark_as_read(self):
-        """Mark a note as read."""
+        """ Mark a note as read. """
         if not self.is_read:
             self.is_read = True
             self.save()
 
     def mark_as_unread(self):
-        """Mark a note as nread."""
+        """ Mark a note as unread. """
         if self.is_read:
             self.is_read = False
             self.save()
+
+    def delete(self):
+        """ Mark a note as being deleted. """
+        self.is_deleted = True
+        self.save()
 
 
 class NoteFilter(FilterSet):
@@ -158,6 +168,4 @@ class NoteFilter(FilterSet):
             )
             name_contains |= lastname_contains
 
-        return queryset.filter(
-            name_contains
-        )
+        return queryset.filter(name_contains)

@@ -102,8 +102,11 @@
               {{ note.note|linebreaksbr }}
             </div>
           </td>
-          <td class="top aligned" style="white-space: nowrap;">
-            {% if can_edit_data %}<a class="ui basic icon button"  href="{% url 'note:edit' pk=note.id %}"><i class="icon edit"></i></a>{% endif %}
+          <td class="action-buttons">
+            {% if can_edit_data %}
+            <a class="ui basic icon button" href="{% url 'note:edit' pk=note.id %}"><i class="icon edit"></i></a>
+            <a class="ui basic icon button" href="#" data-note-id="{{note.id}}"><i class="icon trash"></i></a>
+            {% endif %}
             {% if note.is_read %}
             <button class="ui tiny basic button read-unread-action" data-note-id="{{note.id}}" data-batch-commit-btn="#batch-commit-btn">
               {% trans 'Mark as unread' %}
@@ -160,4 +163,9 @@
       </form>
     </div>
 </div>
+
+{% for note in notes %}
+{% include "note_confirm_delete.html" %}
+{% endfor %}
+
 {% endblock %}

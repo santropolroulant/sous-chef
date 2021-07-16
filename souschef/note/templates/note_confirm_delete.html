@@ -1,0 +1,19 @@
+{% load i18n %}
+
+<div class="ui basic modal note-delete-{{note.id}}">
+  <div class="ui icon header">
+      <i class="trash icon"></i>
+      {% trans "Delete Note" %}
+    </div>
+  <div class="content" style="font-size: 1.3em;">
+      <p>{% trans 'This note will be deleted.' %}</p>
+      <p>{% trans 'Are you sure?' %}</p>
+      <p style="font-style: italic;">{% trans 'Note: Deletes notes can be recovered using the admin inteface.' %}</p>
+  </div>
+  <div class="actions">
+    <form action="{% url 'note:note_delete' pk=note.id %}?next={% url 'note:note_list' %}%3F{{request.META.QUERY_STRING|urlencode}}" method="POST" id="note-{{note.id}}-delete-form">{% csrf_token %}
+       <div class="ui red cancel button"> <i class="remove icon"></i> {% trans "No" %} </div>
+       <button class="ui green button" type="submit"> <i class="checkmark icon"></i> {% trans "Yes" %} </button>
+   </form>
+     </div>
+ </div>

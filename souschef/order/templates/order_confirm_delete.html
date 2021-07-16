@@ -7,7 +7,7 @@
     </div>
   <div class="content" style="font-size: 1.3em;">
       <p>{% trans 'This order will be deleted.' %}</p>
-      <p>{% blocktrans with client_name=order.client.member %}Please note that will not prevent a new order from being generated in the Kitchen Count for <span class="confirm-client-name">{{ client_name }}</span> when pressing "Generate orders".{% endblocktrans %}
+      <p>{% blocktrans with client_name=order.client.member %}Please note, this will not prevent a new order from being generated in the Kitchen Count for <span class="confirm-client-name">{{ client_name }}</span> when pressing "Generate orders".{% endblocktrans %}
       <p>{% trans 'Are you sure?' %}</p>
   </div>
   <div class="actions">
