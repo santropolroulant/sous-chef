@@ -165,7 +165,8 @@ class BillingSummaryView(
                 'L': 0
             },
             'total_billable_sides': 0,
-            'total_amount': 0
+            'total_amount': 0,
+            'total_deliveries': 0,
         }
         # target dict
         summary = copy.deepcopy(zero_statistics)
@@ -186,6 +187,8 @@ class BillingSummaryView(
             summary['payment_types_dict'][t]['total_amount'] += (
                 client_summary['total_amount']
             )
+            nb_deliveries = client.number_of_deliveries_in_month(
+                billing.billing_year, billing.billing_month)
             summary['payment_types_dict'][t]['clients'].append({
                 'id': client.id,
                 'firstname': client.member.firstname,
@@ -196,7 +199,9 @@ class BillingSummaryView(
                     client.rate_type != 'default') else '',
                 'total_main_dishes': client_summary['total_main_dishes'],
                 'total_billable_sides': client_summary['total_billable_sides'],
-                'total_amount': client_summary['total_amount']
+                'total_amount': client_summary['total_amount'],
+                'delivery_type_verbose': client.delivery_type_verbose,
+                'number_of_deliveries_in_month': nb_deliveries,
             })
             summary['total_main_dishes']['R'] += (
                 client_summary['total_main_dishes']['R']
@@ -210,6 +215,7 @@ class BillingSummaryView(
             summary['total_amount'] += (
                 client_summary['total_amount']
             )
+            summary['total_deliveries'] += nb_deliveries
 
         # sort clients in each payment type group
         for payment_type, statistics in summary['payment_types_dict'].items():

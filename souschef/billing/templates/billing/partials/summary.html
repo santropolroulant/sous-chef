@@ -21,8 +21,10 @@
       <th class="bottom aligned">{% trans 'Client Name' as tr_cn %}{{ tr_cn|upper }}
         <i class="help-text question grey icon link no-print" data-content="{% trans 'Quickly access the client file.' %}"></i>
       </th>
-      <th width="1" class="center aligned bottom aligned padding-x">{% trans 'Payment Method' as tr_pm %}{{ tr_pm|upper }}</th>
+      <th class="bottom aligned">{% trans 'Delivery Status' as tr_cn %}{{ tr_cn|upper }}</th>
+      <th width="1" class="left aligned bottom aligned">{% trans 'Payment Method' as tr_pm %}{{ tr_pm|upper }}</th>
       <th width="1" class="center aligned bottom aligned padding-x">{% trans 'Price Scale' as tr_ps %}{{ tr_ps|upper }}</th>
+      <th width="1" class="center bottom aligned">{% trans 'Number of Orders' as tr_cn %}{{ tr_cn|upper }}</th>
       <th colspan="2" class="center aligned bottom aligned">
         {% trans 'Meals' as tr_m %}{{ tr_m|upper }}
         <i class="help-text question grey icon link no-print" data-content="{% trans 'Number of main dishes in total in this billing period.' %}"></i>
@@ -38,7 +40,7 @@
       <th class="no-print center aligned bottom aligned">{% trans 'Actions' %}</th>
     </tr>
     <tr class="border-top">
-      <th colspan="4"></th>
+      <th colspan="6"></th>
       <th class="center aligned border-right" style="font-weight:normal">{% trans 'Regular' %}</th>
       <th class="center aligned" style="font-weight:normal">{% trans 'Large' %}</th>
       <th colspan="2"></th>
@@ -51,8 +53,10 @@
     <tr>
       <td>{% comment 'column NEW' %}{% endcomment %}</td>
       <td class="nowrap"><a href="{% url 'member:client_information' pk=client.id %}">{{ client.lastname|upper }}, {{ client.firstname }}</a></td>
-      <td class="center aligned nowrap">{{client.payment_type}}</td>
+      <td>{{client.delivery_type_verbose}}</td>
+      <td>{{client.payment_type}}</td>
       <td class="center aligned nowrap padding-x">{{client.rate_type}}</td>
+      <td class="center aligned">{{client.number_of_deliveries_in_month}}</td>
       <td class="center aligned border-top border-right">{{client.total_main_dishes.R|default:""}}</td>
       <td class="center aligned border-top">{{client.total_main_dishes.L|default:""}}</td>
       <td class="center aligned border-top">{{client.total_billable_sides|default:""}}</td>
@@ -66,7 +70,7 @@
       {% endfor %}
     <tr>
       <th style="padding-bottom:3em"></th>
-      <th colspan="3" class="top aligned nowrap">{% trans 'Subtotal:' as tr_s %}{{ tr_s|upper }}</th>
+      <th colspan="5" class="top aligned nowrap">{% trans 'Subtotal:' as tr_s %}{{ tr_s|upper }}</th>
       <th class="center aligned border-top top aligned">{{statistics.total_main_dishes.R}}</th>
       <th class="center aligned border-top top aligned">{{statistics.total_main_dishes.L}}</th>
       <th class="center aligned border-top top aligned">{{statistics.total_billable_sides}}</th>
@@ -78,7 +82,8 @@
     {% comment 'tfoot' %}to fix Firefox printing issue: FF prints tfoot on every page!{% endcomment %}
     <tr class="border-top">
       <th>{% comment 'column NEW' %}{% endcomment %}</th>
-      <th colspan="3" class="nowrap">{% trans "Grand Total:" as gt %}{{ gt|upper }} {{ summary.total_main_dishes.R|add:summary.total_main_dishes.L }}</th>
+      <th colspan="4" class="nowrap">{% trans "Grand Total:" as gt %}{{ gt|upper }} {{ summary.total_main_dishes.R|add:summary.total_main_dishes.L }}</th>
+      <th class="center aligned">{{ summary.total_deliveries }}</th>
       <th class="center aligned">{{ summary.total_main_dishes.R }}</th>
       <th class="center aligned">{{ summary.total_main_dishes.L }}</th>
       <th class="center aligned">{{ summary.total_billable_sides }}</th>

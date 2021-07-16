@@ -670,11 +670,20 @@ class Client(models.Model):
         return dict(self.CLIENT_STATUS).get(self.status, _('Unknown'))
 
     @property
+    def delivery_type_verbose(self):
+        return dict(DELIVERY_TYPE).get(self.delivery_type, _('Unknown'))
+
+    @property
     def orders(self):
         """
         Returns orders associated to this client
         """
         return self.client_order.all()
+
+    def number_of_deliveries_in_month(self, year, month):
+        orders = self.client_order.filter(
+            status='D', delivery_date__year=year, delivery_date__month=month)
+        return len(orders)
 
     @property
     def upcoming_orders(self):
