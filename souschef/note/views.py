@@ -92,7 +92,7 @@ class NoteAdd(LoginRequiredMixin, PermissionRequiredMixin, generic.CreateView):
         response = super(NoteAdd, self).form_valid(form)
         messages.add_message(
             self.request, messages.SUCCESS,
-            _("The note has been created.")
+            _("The note was created successfully.")
         )
         return response
 
@@ -140,7 +140,7 @@ class NoteBatchToggle(
         ))
         messages.add_message(
             self.request, messages.SUCCESS,
-            _("%(count)s note(s) have been updated.") % {'count': count}
+            _("%(count)s note(s) were updated.") % {'count': count}
         )
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
@@ -156,7 +156,7 @@ class NoteEditView(
         response = super().form_valid(form)
         messages.add_message(
             self.request, messages.SUCCESS,
-            _("The note has been updated.")
+            _("Note updated.")
         )
         return response
 
@@ -167,8 +167,11 @@ class NoteEditView(
 class NoteDeleteView(PermissionRequiredMixin, View):
     permission_required = 'sous_chef.edit'
 
-    def post(self, request, *args, **kwargs):
-        pk = request.POST.get('pk')
-        note = get_object_or_404(Note, pk)
+    def post(self, request, pk, *args, **kwargs):
+        note = get_object_or_404(Note, pk=int(pk))
         note.delete()
-        return HttpResponseRedirect(request.POST['next'])
+        messages.add_message(
+            self.request, messages.SUCCESS,
+            _("Note deleted.")
+        )
+        return HttpResponseRedirect(request.GET['next'])

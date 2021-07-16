@@ -53,4 +53,10 @@ $(function () {
         fn();
         do_once = function () {};
     }
+
+    $('.note-delete.button').click(function(){
+      var note_id = $(this).data('noteId');
+      var selector = '.ui.basic.modal.note-delete-' + note_id;
+      $(selector).modal('show');
+    });
 });
