@@ -32,7 +32,7 @@
 
 
     <div class="ui row">
-      <form action="" method="get" class="ui form">
+      <form action="" method="get" class="ui form filter-form">
 
         <div class="inline fields">
           <div class="field">
@@ -64,16 +64,10 @@
               {{ filter.form.is_read|alter_field_class:'ui dropdown' }}
             </div>
           </div>
-          <div class="field">
-              <label>{% trans 'Date' %}</label>
-              <div class="field">
-                  <div class="ui calendar" id="note_date">
-                      <div class="ui input left icon">
-                            <i class="calendar icon"></i>
-                            {{ filter.form.date_modified }}
-                      </div>
-                  </div>
-              </div>
+          <div class="date_range field">
+            <label>{% trans 'Date' %}</label>
+            (YYYY-MM-DD)
+            <div class="date-modified-range-input">{{ filter.form.date_modified }}</div>
           </div>
         </div>
         <div class="field">

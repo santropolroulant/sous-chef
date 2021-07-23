@@ -1,6 +1,6 @@
 from django.db import models
 from django.db.models import Q
-from django_filters import ChoiceFilter, DateFilter, FilterSet, CharFilter
+from django_filters import ChoiceFilter, DateFromToRangeFilter, FilterSet, CharFilter
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -147,7 +147,7 @@ class NoteFilter(FilterSet):
         label=_('Search by name')
     )
 
-    date_modified = DateFilter(lookup_expr='contains')
+    date_modified = DateFromToRangeFilter(lookup_expr='contains')
 
     class Meta:
         model = Note

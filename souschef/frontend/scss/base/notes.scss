@@ -12,3 +12,13 @@
         white-space: nowrap;
     }
 }
+
+
+.ui.form.filter-form .inline.fields .date_range.field {
+    margin-left: 2.28em;
+
+    & .date-modified-range-input {
+        display: flex;
+        align-items: center;
+    }
+}
