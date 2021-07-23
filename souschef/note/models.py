@@ -47,7 +47,7 @@ class Note(models.Model):
 
     class Meta:
         verbose_name_plural = _('Notes')
-        ordering = ('-date', 'note')
+        ordering = ('-date_modified', 'note')
 
     note = models.TextField(
         verbose_name=_('Note')
@@ -60,8 +60,13 @@ class Note(models.Model):
         on_delete=models.SET_NULL
     )
 
-    date = models.DateTimeField(
-        verbose_name=_('Date'),
+    date_created = models.DateTimeField(
+        verbose_name=_('Date Created'),
+        default=timezone.now,
+    )
+
+    date_modified = models.DateTimeField(
+        verbose_name=_('Date Modified'),
         default=timezone.now,
     )
 
@@ -142,11 +147,11 @@ class NoteFilter(FilterSet):
         label=_('Search by name')
     )
 
-    date = DateFilter(lookup_expr='contains')
+    date_modified = DateFilter(lookup_expr='contains')
 
     class Meta:
         model = Note
-        fields = ['priority', 'is_read', 'date', 'category', ]
+        fields = ['priority', 'is_read', 'date_modified', 'category', ]
 
     def filter_search(self, queryset, field_name, value):
         if not value:

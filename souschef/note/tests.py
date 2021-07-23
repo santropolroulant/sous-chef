@@ -86,7 +86,7 @@ class NoteAddTestCase(NoteTestCase):
         note = Note.objects.get(note__contains="TEST_PHRASE")
         self.assertEqual(note.author, self.admin)
         self.assertEqual(note.is_read, False)
-        self.assertTrue(time_1 <= note.date <= time_2)
+        self.assertTrue(time_1 <= note.date_created <= time_2)
 
     def test_redirects_users_who_do_not_have_edit_permission(self):
         # Setup

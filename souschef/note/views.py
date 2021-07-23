@@ -6,6 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.db.models import Case, When
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from django.http import HttpResponseRedirect
 
@@ -157,6 +158,7 @@ class NoteEditView(
 
         # Updated notes must be marked as read.
         self.object.is_read = True
+        self.object.date_modified = timezone.now()
         self.object.save()
 
         messages.add_message(

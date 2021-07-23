@@ -70,7 +70,7 @@
                   <div class="ui calendar" id="note_date">
                       <div class="ui input left icon">
                             <i class="calendar icon"></i>
-                            {{ filter.form.date }}
+                            {{ filter.form.date_modified }}
                       </div>
                   </div>
               </div>
@@ -96,7 +96,7 @@
             <div>
               <a class="header" style="white-space: nowrap; font-weight: 700;" href="{% url 'member:client_information' pk=note.client.id %}">{{note.client}}</a>
               –
-              <small class="date-and-author">{{note.date}} {%if note.author %}{% trans 'by' %} {{note.author}}{% endif %}</small>
+              <small class="date-and-author">{{note.date_modified}} {%if note.author %}{% trans 'by' %} {{note.author}}{% endif %}</small>
             </div>
             <div class="description">
               {{ note.note|linebreaksbr }}
