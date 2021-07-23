@@ -9,7 +9,12 @@
         {% block title %}{% trans "Sous-Chef" %}{% endblock %}
     </title>
     <link rel="shortcut icon" href="{% static 'images/favicon.png' %}">
-    <link href="{% static 'css/main.min.css' %}" type="text/css" rel="stylesheet">
+    {% if debug %}
+        <link href="{% static 'css/main.min.css' %}?version={% now "U" %}" type="text/css" rel="stylesheet">
+    {% else %}
+        <link href="{% static 'css/main.min.css' %}?version={{ SC_VERSION }}" type="text/css" rel="stylesheet">
+    {% endif %}
+
     {% block extrahead %}{% endblock %}
 </head>
 
