@@ -154,10 +154,16 @@ class NoteEditView(
 
     def form_valid(self, form):
         response = super().form_valid(form)
+
+        # Updated notes must be marked as read.
+        self.object.is_read = True
+        self.object.save()
+
         messages.add_message(
             self.request, messages.SUCCESS,
             _("Note updated.")
         )
+
         return response
 
     def get_success_url(self):
