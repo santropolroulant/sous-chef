@@ -186,7 +186,7 @@ SOUSCHEF_ENVIRONMENT_NAME=DEV
 Then restart the service:
 
 ```
-systemctl start souschef
+systemctl restart souschef
 ```
 
 Django will then provide a detailed stack trace, enabling the debugging of the installation. Do not forget to turn off debugging once you fixed the issues as debugging creates a security risk and takes more memory.
