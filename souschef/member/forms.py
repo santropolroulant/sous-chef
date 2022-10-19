@@ -1,3 +1,6 @@
+from datetime import datetime
+import json
+
 from django import forms
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
@@ -245,6 +248,11 @@ class ClientRestrictionsInformation(forms.Form):
         )
     )
 
+    cancel_meal_dates = forms.CharField(
+        required=False,
+        label=_('Cancel dates'),
+    )
+
     def clean(self):
         """
         The meal defaults are required for the scheduled delivery days:
@@ -255,6 +263,16 @@ class ClientRestrictionsInformation(forms.Form):
         enforce the setting of its size.
         """
         super(ClientRestrictionsInformation, self).clean()
+
+        def to_cancel_date(str_date):
+            return datetime.strptime(
+                str_date, "%Y-%m-%d"
+            ).date()
+
+        if self.cleaned_data.get('cancel_meal_dates'):
+            self.cleaned_data['cancel_meal_dates'] = list(map(to_cancel_date,
+                                                              json.loads(self.cleaned_data['cancel_meal_dates'])))
+
 
         if self.cleaned_data.get('delivery_type') == 'O':
             # Ongoing
