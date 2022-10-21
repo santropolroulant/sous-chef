@@ -681,7 +681,7 @@ class OrderCreateBatchTestCase(SousChefTestMixin, TestCase):
                 order_item_type='delivery',
                 component_group__isnull=True,
                 size__isnull=True,
-                total_quantity__isnull=True
+                total_quantity=0
             ).count(), 1
         )
         # 2016-12-15
@@ -738,7 +738,7 @@ class OrderCreateBatchTestCase(SousChefTestMixin, TestCase):
                 order_item_type='pickup',
                 component_group__isnull=True,
                 size__isnull=True,
-                total_quantity__isnull=True
+                total_quantity=0
             ).count(), 1
         )
         # 2016-12-16
@@ -755,7 +755,7 @@ class OrderCreateBatchTestCase(SousChefTestMixin, TestCase):
                 order_item_type='visit',
                 component_group__isnull=True,
                 size__isnull=True,
-                total_quantity__isnull=True
+                total_quantity=0
             ).count(), 1
         )
 
