@@ -70,7 +70,10 @@ class OrderManagerTestCase(TestCase):
         must be 'O' (Ordered).
         """
         orders = Order.objects.get_shippable_orders()
-        self.assertEqual(len(orders), len(self.orders))
+        self.assertEqual(
+            len(orders),
+            len(self.orders) + len(self.paused_orders),
+        )
         past_order = Order.objects.get_shippable_orders(date(2015, 7, 15))
         self.assertEqual(len(past_order), 1)
 
@@ -81,7 +84,10 @@ class OrderManagerTestCase(TestCase):
         must be 'O' (Ordered).
         """
         orders = Order.objects.get_shippable_orders_by_route(self.route.id)
-        self.assertEqual(len(orders), len(self.orders))
+        self.assertEqual(
+            len(orders),
+            len(self.orders) + len(self.paused_orders),
+        )
 
     def test_order_str_includes_date(self):
         delivery_date = date.today()
@@ -1517,7 +1523,11 @@ class UpdateClientBillTestCase(SousChefTestMixin, OrderItemTestCase):
     def test_allow_access_to_users_with_edit_permission(self):
         # Setup
         user = User.objects.create_superuser(
-            username='foo', email='foo@example.com', password='secure')
+            username='foo',
+            email='foo@example.com',
+            password='secure',
+            is_active=True,
+        )
         user.save()
         self.client.login(username='foo', password='secure')
         url = reverse('order:update_client_bill', kwargs={'pk': 1})
