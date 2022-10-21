@@ -20,7 +20,10 @@ from django.views import generic
 from formtools.wizard.views import NamedUrlSessionWizardView
 
 from souschef.delivery.views import calculateRoutePointsEuclidean
-from souschef.meal.models import COMPONENT_GROUP_CHOICES, COMPONENT_GROUP_CHOICES_SIDES
+from souschef.meal.models import (
+    COMPONENT_GROUP_CHOICES,
+    COMPONENT_GROUP_CHOICES_SIDES,
+)
 from souschef.member.forms import (
     ClientScheduledStatusForm,
     ClientBasicInformation,
@@ -28,8 +31,10 @@ from souschef.member.forms import (
     ClientRestrictionsInformation,
     ClientPaymentInformation,
 )
-from souschef.member.formsets import (CreateRelationshipFormset,
-                             UpdateRelationshipFormset)
+from souschef.member.formsets import (
+    CreateRelationshipFormset,
+    UpdateRelationshipFormset,
+)
 from souschef.member.models import (
     Client,
     ClientScheduledStatus,

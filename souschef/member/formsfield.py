@@ -23,7 +23,7 @@ class CAPhoneNumberExtField(CAPhoneNumberField):
         try:
             return super(CAPhoneNumberExtField, self).clean(value)
         except forms.ValidationError as error:
-            value = re.sub('(\(|\)|\s+)', '', smart_text(value))
+            value = re.sub(r'(\(|\)|\s+)', '', smart_text(value))
             m = self.phone_digits_with_ext.search(value)
             if m:
                 return '%s-%s-%s #%s' % (m.group(1), m.group(2),

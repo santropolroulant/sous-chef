@@ -9,16 +9,37 @@ from django.urls import reverse_lazy, reverse
 from django.utils import timezone as tz
 from django.utils.translation import ugettext_lazy, ugettext
 
-from souschef.meal.models import (Menu, Component, Component_ingredient, Ingredient,
-                         COMPONENT_GROUP_CHOICES_SIDES)
-from souschef.meal.factories import (IngredientFactory, ComponentFactory,
-                            ComponentIngredientFactory,
-                            IncompatibilityFactory, RestrictedItemFactory)
+from souschef.meal.models import (
+    Menu,
+    Component,
+    Component_ingredient,
+    Ingredient,
+    COMPONENT_GROUP_CHOICES_SIDES,
+)
+from souschef.meal.factories import (
+    IngredientFactory,
+    ComponentFactory,
+    ComponentIngredientFactory,
+    IncompatibilityFactory,
+    RestrictedItemFactory,
+)
 from souschef.order.models import Order
-from souschef.member.models import (Client, Member, Route, Restriction, DAYS_OF_WEEK,
-                           Client_avoid_ingredient, DeliveryHistory)
-from souschef.member.factories import (AddressFactory, MemberFactory, ClientFactory,
-                              RouteFactory, DeliveryHistoryFactory)
+from souschef.member.models import (
+    Client,
+    Member,
+    Route,
+    Restriction,
+    DAYS_OF_WEEK,
+    Client_avoid_ingredient,
+    DeliveryHistory,
+)
+from souschef.member.factories import (
+    AddressFactory,
+    MemberFactory,
+    ClientFactory,
+    RouteFactory,
+    DeliveryHistoryFactory,
+)
 from souschef.sous_chef.tests import TestMixin as SousChefTestMixin
 
 from .filters import KitchenCountOrderFilter
@@ -1142,12 +1163,12 @@ class ExcludeMalconfiguredClientsTestCase(SousChefTestMixin, TestCase):
         # 1 dessert 1 L main_dish
         summary_line1 = response1.context['summary_lines']
         main_dish_line1 = next(
-            l for l in summary_line1 if l.component_group == 'main_dish'
+            ln for ln in summary_line1 if ln.component_group == 'main_dish'
         )
         self.assertEqual(main_dish_line1.rqty, 0)
         self.assertEqual(main_dish_line1.lqty, 1)
         dessert_line1 = next(
-            l for l in summary_line1 if l.component_group == 'dessert'
+            ln for ln in summary_line1 if ln.component_group == 'dessert'
         )
         self.assertEqual(dessert_line1.rqty, 1)
         # 1 client

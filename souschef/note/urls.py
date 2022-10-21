@@ -23,5 +23,9 @@ urlpatterns = [
     url(_(r'^batch_toggle/$'),
         NoteBatchToggle.as_view(), name='batch_toggle'),
     url(_(r'^edit/(?P<pk>\d+)/$'), NoteEditView.as_view(), name='edit'),
-    url(_(r'^delete/(?P<pk>\d+)/$'), NoteDeleteView.as_view(), name='note_delete'),
+    url(
+        _(r'^delete/(?P<pk>\d+)/$'),
+        NoteDeleteView.as_view(),
+        name='note_delete',
+    ),
 ]

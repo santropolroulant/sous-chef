@@ -9,7 +9,12 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.urls import reverse_lazy
 from django.db.models import Prefetch
 from django.views.generic import TemplateView
-from souschef.member.models import Client, Route, Client_option, DAYS_OF_WEEK
+from souschef.member.models import (
+    Client,
+    Route,
+    Client_option,
+    DAYS_OF_WEEK,
+)
 from souschef.order.models import Order
 from datetime import datetime
 
@@ -24,7 +29,8 @@ class HomeView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
         today = datetime.today()
         active_clients = Client.active.all().count()
         pending_clients = Client.pending.all().count()
-        birthday_clients = Client.birthday_contact.get_birthday_boys_and_girls()
+        birthday_clients = Client.birthday_contact.\
+            get_birthday_boys_and_girls()
         billable_orders = Order.objects.get_billable_orders(
             today.year, today.month
         ).count()
@@ -38,8 +44,10 @@ class HomeView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
         context['billable_orders_month'] = billable_orders
         context['billable_orders_year'] = billable_orders_year
         context['routes'] = route_table
-        context['total_scheduled_by_day'] = self.calculate_total_scheduled_by_day(route_table)
-        context['total_episodic_by_day'] = self.calculate_total_episodic_by_day(route_table)
+        context['total_scheduled_by_day'] = \
+            self.calculate_total_scheduled_by_day(route_table)
+        context['total_episodic_by_day'] = \
+            self.calculate_total_episodic_by_day(route_table)
         return context
 
     def calculate_route_table(self):
@@ -81,7 +89,9 @@ class HomeView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
                 if client.delivery_type == 'E':  # Episodic
                     meals_default = dict(client.meals_default)
                     for day, _ in DAYS_OF_WEEK:
-                        episodic_defaults[day] += meals_default[day].get('main_dish') or 0
+                        episodic_defaults[day] += meals_default[day].get(
+                            'main_dish',
+                        ) or 0
 
             route_table.append((route.name, episodic_defaults, schedules))
         return route_table

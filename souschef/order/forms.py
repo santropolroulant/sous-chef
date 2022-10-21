@@ -4,8 +4,15 @@ from extra_views import InlineFormSet
 
 from souschef.member.models import Client
 
-from souschef.meal.models import COMPONENT_GROUP_CHOICES, COMPONENT_GROUP_CHOICES_SIDES
-from souschef.order.models import Order_item, SIZE_CHOICES, OrderStatusChange
+from souschef.meal.models import (
+    COMPONENT_GROUP_CHOICES,
+    COMPONENT_GROUP_CHOICES_SIDES,
+)
+from souschef.order.models import (
+    Order_item,
+    SIZE_CHOICES,
+    OrderStatusChange,
+)
 
 
 class CreateOrderItem(InlineFormSet):

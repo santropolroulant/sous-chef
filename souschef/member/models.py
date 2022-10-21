@@ -8,7 +8,10 @@ from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 from django_filters import (
-    FilterSet, CharFilter, ChoiceFilter, MultipleChoiceFilter
+    FilterSet,
+    CharFilter,
+    ChoiceFilter,
+    MultipleChoiceFilter
 )
 from annoying.fields import JSONField
 
@@ -472,6 +475,7 @@ class ContactClientManager(ClientManager):
             Q(status=Client.PENDING)
         )
 
+
 class BirthdayContactClientManager(ClientManager):
 
     def get_queryset(self):
@@ -481,6 +485,7 @@ class BirthdayContactClientManager(ClientManager):
             Q(status=Client.PAUSED) |
             Q(status=Client.PENDING)
         )
+
 
 class Client(models.Model):
 
@@ -688,9 +693,12 @@ class Client(models.Model):
     @property
     def upcoming_orders(self):
         """
-        Returns upcoming orders associated to this client, regardless of order status.
+        Returns upcoming orders associated to this client, regardless
+        of order status.
         """
-        return self.client_order.filter(delivery_date__gte=datetime.date.today()).all()
+        return self.client_order.filter(
+            delivery_date__gte=datetime.date.today(),
+        ).all()
 
     @property
     def food_preparation(self):
@@ -777,7 +785,8 @@ class Client(models.Model):
 
     @property
     def is_in_error_for_the_kitchen_count(self):
-        """ Return True if the client is in error for the Kitchen Count orders list page.
+        """ Return True if the client is in error for the Kitchen Count
+        orders list page.
 
         The client is in error if either:
         - is not not geolocalized;

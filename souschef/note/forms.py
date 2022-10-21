@@ -31,6 +31,7 @@ class NoteForm(forms.ModelForm):
             ),
         }
 
+
 class NoteEditForm(forms.ModelForm):
     class Meta:
         model = Note

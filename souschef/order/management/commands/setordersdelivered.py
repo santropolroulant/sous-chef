@@ -1,5 +1,9 @@
 from django.core.management.base import BaseCommand
-from souschef.order.models import Order, ORDER_STATUS_ORDERED, ORDER_STATUS_DELIVERED
+from souschef.order.models import (
+    Order,
+    ORDER_STATUS_ORDERED,
+    ORDER_STATUS_DELIVERED,
+)
 from datetime import datetime
 from django.contrib.admin.models import LogEntry, ADDITION
 

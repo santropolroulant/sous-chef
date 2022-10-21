@@ -61,7 +61,10 @@ from .forms import DishIngredientsForm
 from . import tsp
 
 
-LOGO_IMAGE = os.path.join(settings.BASE_DIR, "160widthSR-Logo-Screen-PurpleGreen-HI-RGB1.jpg")
+LOGO_IMAGE = os.path.join(
+    settings.BASE_DIR,
+    "160widthSR-Logo-Screen-PurpleGreen-HI-RGB1.jpg",
+)
 DELIVERY_STARTING_POINT_LAT_LONG = (45.516564, -73.575145)  # Santropol Roulant
 
 
@@ -92,12 +95,27 @@ def get_has_orders_in_status(orders, status):
 
 
 def get_kitchen_count_context():
-    orders = get_orders_for_kitchen_count((ORDER_STATUS_ORDERED, ORDER_STATUS_CANCELLED))
+    orders = get_orders_for_kitchen_count(
+        (
+            ORDER_STATUS_ORDERED,
+            ORDER_STATUS_CANCELLED
+        )
+    )
+
     return {
         'orders': orders,
-        'has_ordered_orders': get_has_orders_in_status(orders, ORDER_STATUS_ORDERED),
-        'has_cancelled_orders': get_has_orders_in_status(orders, ORDER_STATUS_CANCELLED),
-        'nb_of_ordered_orders': get_number_of_orders_in_status(orders, ORDER_STATUS_ORDERED),
+        'has_ordered_orders': get_has_orders_in_status(
+            orders,
+            ORDER_STATUS_ORDERED
+        ),
+        'has_cancelled_orders': get_has_orders_in_status(
+            orders,
+            ORDER_STATUS_CANCELLED
+        ),
+        'nb_of_ordered_orders': get_number_of_orders_in_status(
+            orders,
+            ORDER_STATUS_ORDERED
+        ),
     }
 
 
@@ -110,7 +128,12 @@ class Orderlist(LoginRequiredMixin, PermissionRequiredMixin, FilterView):
     template_name = 'review_orders.html'
 
     def get_queryset(self):
-        return get_orders_for_kitchen_count((ORDER_STATUS_ORDERED, ORDER_STATUS_CANCELLED))
+        return get_orders_for_kitchen_count(
+            (
+                ORDER_STATUS_ORDERED,
+                ORDER_STATUS_CANCELLED
+            )
+        )
 
     def get_context_data(self, **kwargs):
         context = super(Orderlist, self).get_context_data(**kwargs)
@@ -119,7 +142,8 @@ class Orderlist(LoginRequiredMixin, PermissionRequiredMixin, FilterView):
             log = LogEntry.objects.latest('action_time')
             context['orders_refresh_date'] = log
 
-        # See also get_kitchen_count_context, used for the "Generate orders" button.
+        # See also get_kitchen_count_context, used for the
+        # "Generate orders" button.
         context['has_ordered_orders'] = get_has_orders_in_status(
             context['orders'], ORDER_STATUS_ORDERED)
         context['has_cancelled_orders'] = get_has_orders_in_status(
@@ -374,7 +398,9 @@ class RoutesInformation(
             try:
                 f = open(settings.ROUTE_SHEETS_FILE, "rb")
             except Exception:
-                raise Http404("File " + settings.ROUTE_SHEETS_FILE + " does not exist")
+                raise Http404(
+                    "File " + settings.ROUTE_SHEETS_FILE + " does not exist"
+                )
             response = HttpResponse(content_type='application/pdf')
             response['Content-Disposition'] = \
                 'attachment; filename="routesheets{}.pdf"'. \
@@ -817,11 +843,18 @@ class MultiRouteReport(object):
             # END for
 
             # build full document
-            doc.build(story,
-                      onFirstPage=drawHeader, onLaterPages=drawHeader)
+            doc.build(
+                story,
+                onFirstPage=drawHeader,
+                onLaterPages=drawHeader,
+            )
+
             # Copy the route sheets file to keep a history
-            destination_of_copy = f"{settings.ROUTE_SHEETS_FILE.rstrip('.pdf')}_{datetime.date.today().strftime('%Y%m%d')}.pdf"
+            name = settings.ROUTE_SHEETS_FILE.rstrip('.pdf')
+            time = datetime.date.today().strftime('%Y%m%d')
+            destination_of_copy = f"{name}_{time}.pdf"
             copyfile(settings.ROUTE_SHEETS_FILE, destination_of_copy)
+
             return doc.page  # number of last page
         # END def
         return go()  # returns number of pages generated
@@ -841,7 +874,9 @@ class KitchenCount(
             try:
                 f = open(settings.KITCHEN_COUNT_FILE, "rb")
             except Exception:
-                raise Http404("File " + settings.KITCHEN_COUNT_FILE + " does not exist")
+                raise Http404(
+                    "File " + settings.KITCHEN_COUNT_FILE + " does not exist"
+                )
             response = HttpResponse(content_type='application/pdf')
             response['Content-Disposition'] = \
                 'attachment; filename="kitchencount{}.pdf"'. \
@@ -1305,7 +1340,9 @@ def kcr_make_pages(date, component_lines, meal_lines):
         # build full document
         doc.build(story, onFirstPage=myFirstPage, onLaterPages=myLaterPages)
         # Copy the kitchen count file to keep a history
-        destination_of_copy = f"{settings.KITCHEN_COUNT_FILE.rstrip('.pdf')}_{datetime.date.today().strftime('%Y%m%d')}.pdf"
+        destination_of_copy = f"{settings.KITCHEN_COUNT_FILE.rstrip('.pdf')}" \
+                              f"_{datetime.date.today().strftime('%Y%m%d')}" \
+                              f".pdf"
         copyfile(settings.KITCHEN_COUNT_FILE, destination_of_copy)
         return doc.page
     return go()  # returns number of pages generated
@@ -1575,7 +1612,8 @@ def kcr_make_labels(date, kitchen_list,
     if sheet.label_count > 0:
         sheet.save(settings.MEAL_LABELS_FILE)
     # Copy the meal labels file to keep a history
-    destination_of_copy = f"{settings.MEAL_LABELS_FILE.rstrip('.pdf')}_{datetime.date.today().strftime('%Y%m%d')}.pdf"
+    destination_of_copy = f"{settings.MEAL_LABELS_FILE.rstrip('.pdf')}_" \
+                          f"{datetime.date.today().strftime('%Y%m%d')}.pdf"
     copyfile(settings.MEAL_LABELS_FILE, destination_of_copy)
     return sheet.label_count
 
@@ -1593,7 +1631,9 @@ class MealLabels(
         try:
             f = open(settings.MEAL_LABELS_FILE, "rb")
         except Exception:
-            raise Http404("File " + settings.MEAL_LABELS_FILE + " does not exist")
+            raise Http404(
+                "File " + settings.MEAL_LABELS_FILE + " does not exist"
+            )
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = \
             'attachment; filename="labels{}.pdf"'. \

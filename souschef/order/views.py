@@ -17,13 +17,28 @@ from extra_views import CreateWithInlinesView, UpdateWithInlinesView
 
 from datetime import datetime
 
-from souschef.order.models import ORDER_STATUS_CANCELLED, Order, OrderFilter, \
-    ORDER_STATUS, OrderStatusChange
-from souschef.order.mixins import AjaxableResponseMixin, FormValidAjaxableResponseMixin
-from souschef.order.forms import CreateOrderItem, UpdateOrderItem, \
-    CreateOrdersBatchForm, OrderStatusChangeForm
+from souschef.order.models import (
+    ORDER_STATUS_CANCELLED,
+    Order,
+    OrderFilter,
+    ORDER_STATUS,
+    OrderStatusChange,
+)
+from souschef.order.mixins import (
+    AjaxableResponseMixin,
+    FormValidAjaxableResponseMixin,
+)
+from souschef.order.forms import (
+    CreateOrderItem,
+    UpdateOrderItem,
+    CreateOrdersBatchForm,
+    OrderStatusChangeForm,
+)
 
-from souschef.meal.models import COMPONENT_GROUP_CHOICES, COMPONENT_GROUP_CHOICES_SIDES
+from souschef.meal.models import (
+    COMPONENT_GROUP_CHOICES,
+    COMPONENT_GROUP_CHOICES_SIDES,
+)
 from souschef.meal.settings import COMPONENT_SYSTEM_DEFAULT
 from souschef.member.models import Client, DAYS_OF_WEEK
 

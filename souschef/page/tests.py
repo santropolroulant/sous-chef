@@ -71,39 +71,82 @@ class HomeViewTestCase(TestCase):
             (Client.PENDING, 'E', route_factory1, 0, 2, 3, 4, 5, 6, 7),  # 1
             (Client.PENDING, 'E', route_factory2, 2, 3, 0, 1, 0, 3, 5),  # 2
             (Client.PENDING, 'E', route_factory2, 2, 0, 0, 1, 2, 3, 5),  # 3
-            (Client.ACTIVE,  'E', route_factory1, 1, 2, 3, 4, 5, 6, 0),  # 4
-            (Client.ACTIVE,  'E', route_factory1, 1, 0, 3, 0, 5, 6, 3),  # 5
-            (Client.ACTIVE,  'E', route_factory2, 2, 3, 4, 1, 2, 3, 1),  # 6
-            (Client.PAUSED,  'E', route_factory1, 1, 2, 3, 4, 0, 4, 3),  # 7
-            (Client.PAUSED,  'E', route_factory2, 2, 3, 0, 1, 2, 3, 5),  # 8
-            (Client.PAUSED,  'E', route_factory2, 2, 3, 4, 0, 2, 3, 5),  # 9
-            (Client.STOPNOCONTACT, 'E', route_factory1, 1, 2, 0, 4, 5, 6, 3),  # 10
-            (Client.STOPNOCONTACT, 'E', route_factory2, 0, 3, 4, 1, 2, 3, 1),  # 11
-            (Client.STOPCONTACT,   'E', route_factory1, 1, 2, 3, 4, 5, 6, 7),  # 12
-            (Client.STOPCONTACT,   'E', route_factory1, 1, 0, 3, 4, 5, 6, 7),  # 13
-            (Client.STOPCONTACT,   'E', route_factory2, 2, 3, 4, 1, 2, 3, 5),  # 14
-            (Client.DECEASED,  'E', route_factory1, 1, 2, 0, 4, 5, 6, 3),  # 15
-            (Client.DECEASED,  'E', route_factory2, 2, 3, 4, 1, 0, 3, 1),  # 16
+            (Client.ACTIVE, 'E', route_factory1, 1, 2, 3, 4, 5, 6, 0),  # 4
+            (Client.ACTIVE, 'E', route_factory1, 1, 0, 3, 0, 5, 6, 3),  # 5
+            (Client.ACTIVE, 'E', route_factory2, 2, 3, 4, 1, 2, 3, 1),  # 6
+            (Client.PAUSED, 'E', route_factory1, 1, 2, 3, 4, 0, 4, 3),  # 7
+            (Client.PAUSED, 'E', route_factory2, 2, 3, 0, 1, 2, 3, 5),  # 8
+            (Client.PAUSED, 'E', route_factory2, 2, 3, 4, 0, 2, 3, 5),  # 9
+            (
+                Client.STOPNOCONTACT, 'E', route_factory1,
+                1, 2, 0, 4, 5, 6, 3
+            ),  # 10
+            (
+                Client.STOPNOCONTACT, 'E', route_factory2,
+                0, 3, 4, 1, 2, 3, 1
+            ),  # 11
+            (
+                Client.STOPCONTACT, 'E', route_factory1,
+                1, 2, 3, 4, 5, 6, 7
+            ),  # 12
+            (
+                Client.STOPCONTACT, 'E', route_factory1,
+                1, 0, 3, 4, 5, 6, 7
+            ),  # 13
+            (
+                Client.STOPCONTACT, 'E', route_factory2,
+                2, 3, 4, 1, 2, 3, 5
+            ),  # 14
+            (
+                Client.DECEASED, 'E', route_factory1,
+                1, 2, 0, 4, 5, 6, 3
+            ),  # 15
+            (
+                Client.DECEASED, 'E', route_factory2,
+                2, 3, 4, 1, 0, 3, 1
+            ),  # 16
 
             (Client.PENDING, 'O', route_factory1, 1, 2, 3, 4, 5, 6, 7),  # 51
             (Client.PENDING, 'O', route_factory1, 7, 6, 5, 4, 3, 2, 1),  # 52
             (Client.PENDING, 'O', route_factory2, 2, 0, 4, 1, 2, 3, 5),  # 53
-            (Client.ACTIVE,  'O', route_factory1, 6, 5, 0, 3, 2, 1, 5),  # 54
-            (Client.ACTIVE,  'O', route_factory2, 2, 3, 0, 1, 0, 3, 1),  # 55
-            (Client.ACTIVE,  'O', route_factory2, 2, 0, 4, 1, 2, 3, 1),  # 56
-            (Client.PAUSED,  'O', route_factory1, 1, 2, 0, 4, 0, 4, 3),  # 57
-            (Client.PAUSED,  'O', route_factory1, 1, 0, 3, 4, 2, 4, 3),  # 58
-            (Client.PAUSED,  'O', route_factory2, 0, 3, 0, 1, 0, 3, 5),  # 59
-            (Client.STOPNOCONTACT, 'O', route_factory1, 1, 2, 3, 4, 5, 6, 3),  # 60
-            (Client.STOPNOCONTACT, 'O', route_factory2, 2, 3, 4, 1, 2, 3, 1),  # 61
-            (Client.STOPCONTACT,   'O', route_factory1, 1, 2, 3, 4, 5, 6, 7),  # 62
-            (Client.STOPCONTACT,   'O', route_factory1, 1, 0, 3, 4, 5, 6, 7),  # 63
-            (Client.STOPCONTACT,   'O', route_factory2, 2, 3, 4, 1, 2, 3, 5),  # 64
-            (Client.DECEASED,  'O', route_factory1, 1, 2, 3, 4, 5, 6, 3),  # 65
-            (Client.DECEASED,  'O', route_factory2, 2, 3, 4, 1, 2, 3, 1),  # 66
+            (Client.ACTIVE, 'O', route_factory1, 6, 5, 0, 3, 2, 1, 5),  # 54
+            (Client.ACTIVE, 'O', route_factory2, 2, 3, 0, 1, 0, 3, 1),  # 55
+            (Client.ACTIVE, 'O', route_factory2, 2, 0, 4, 1, 2, 3, 1),  # 56
+            (Client.PAUSED, 'O', route_factory1, 1, 2, 0, 4, 0, 4, 3),  # 57
+            (Client.PAUSED, 'O', route_factory1, 1, 0, 3, 4, 2, 4, 3),  # 58
+            (Client.PAUSED, 'O', route_factory2, 0, 3, 0, 1, 0, 3, 5),  # 59
+            (
+                Client.STOPNOCONTACT, 'O', route_factory1,
+                1, 2, 3, 4, 5, 6, 3
+            ),  # 60
+            (
+                Client.STOPNOCONTACT, 'O', route_factory2,
+                2, 3, 4, 1, 2, 3, 1
+            ),  # 61
+            (
+                Client.STOPCONTACT, 'O', route_factory1,
+                1, 2, 3, 4, 5, 6, 7
+            ),  # 62
+            (
+                Client.STOPCONTACT, 'O', route_factory1,
+                1, 0, 3, 4, 5, 6, 7
+            ),  # 63
+            (
+                Client.STOPCONTACT, 'O', route_factory2,
+                2, 3, 4, 1, 2, 3, 5
+            ),  # 64
+            (
+                Client.DECEASED, 'O', route_factory1,
+                1, 2, 3, 4, 5, 6, 3
+            ),  # 65
+            (
+                Client.DECEASED, 'O', route_factory2,
+                2, 3, 4, 1, 2, 3, 1
+            ),  # 66
         )
 
-        for status, delivery_type, route_factory, mon, tue, wed, thu, fri, sat, sun in test_clients:
+        for status, delivery_type, route_factory, mon, tue, wed, thu, \
+                fri, sat, sun in test_clients:
             client_factory = ClientFactory(
                 status=status,
                 delivery_type=delivery_type,

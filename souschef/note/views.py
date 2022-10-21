@@ -145,6 +145,7 @@ class NoteBatchToggle(
         )
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
+
 class NoteEditView(
         LoginRequiredMixin, PermissionRequiredMixin,
         generic.edit.UpdateView):

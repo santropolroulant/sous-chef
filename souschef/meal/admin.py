@@ -1,11 +1,16 @@
 from django.contrib import admin
 from django.db.models.functions import Lower
-from souschef.meal.models import (Component, Restricted_item,
-                         Ingredient, Component_ingredient,
-                         Incompatibility, Menu,
-                         COMPONENT_GROUP_CHOICES,
-                         INGREDIENT_GROUP_CHOICES,
-                         RESTRICTED_ITEM_GROUP_CHOICES)
+from souschef.meal.models import (
+    Component,
+    Restricted_item,
+    Ingredient,
+    Component_ingredient,
+    Incompatibility,
+    Menu,
+    COMPONENT_GROUP_CHOICES,
+    INGREDIENT_GROUP_CHOICES,
+    RESTRICTED_ITEM_GROUP_CHOICES,
+)
 
 
 class ComponentsInline(admin.TabularInline):
@@ -94,6 +99,7 @@ class Restricted_itemAdmin(admin.ModelAdmin):
             queryset |= self.model.objects.filter(
                 restricted_item_group__in=search_list)
         return queryset, use_distinct
+
 
 admin.site.register(Component, ComponentAdmin)
 admin.site.register(Restricted_item, Restricted_itemAdmin)

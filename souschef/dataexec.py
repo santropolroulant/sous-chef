@@ -14,4 +14,5 @@ def run():
     from dataload import insert_all
     insert_all()
 
+
 run()

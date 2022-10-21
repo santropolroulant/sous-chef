@@ -4,6 +4,8 @@ from souschef.order.models import Order, Order_item, OrderStatusChange
 
 def make_delivered(modeladmin, request, queryset):
     queryset.update(status='D')
+
+
 make_delivered.short_description = "Mark selected orders as delivered"
 
 
@@ -38,6 +40,7 @@ class OrderAdmin(admin.ModelAdmin):
     inlines = [
         OrderItemInline
     ]
+
 
 admin.site.register(Order, OrderAdmin)
 admin.site.register(Order_item, OrderItemAdmin)
