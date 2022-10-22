@@ -2197,7 +2197,7 @@ class ClientUpdatePaymentInformationTestCase(ClientUpdateTestCase):
             'city': None,
             'apartment': None,
             'postal_code': None,
-            'member': '{0} {1} {2} Not Valid'.format(
+            'member': '[0] Not Valid'.format(
                 client.billing_member.id,
                 client.billing_member.firstname,
                 client.billing_member.lastname
