@@ -1773,11 +1773,5 @@ class RefreshOrderView(
         delivery_date = date.today()
         clients = Client.ongoing.all()
         Order.objects.auto_create_orders(delivery_date, clients)
-        LogEntry.objects.log_action(
-            user_id=1, content_type_id=1,
-            object_id="", object_repr="Generation of orders for " + str(
-                datetime.datetime.now().strftime('%m %d %Y %H:%M')),
-            action_flag=ADDITION,
-        )
         context = get_kitchen_count_context()
         return render(request, 'partials/generated_orders.html', context)
