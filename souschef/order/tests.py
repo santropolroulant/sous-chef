@@ -1530,7 +1530,7 @@ class UpdateClientBillTestCase(SousChefTestMixin, OrderItemTestCase):
         )
         user.save()
         self.client.login(username='foo', password='secure')
-        url = reverse('order:update_client_bill', kwargs={'pk': 1})
+        url = reverse('order:update_client_bill', kwargs={'pk': self.order.id})
         # Run
         response = self.client.get(url)
         # Check
