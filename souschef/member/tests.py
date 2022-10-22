@@ -2584,7 +2584,6 @@ class RedirectAnonymousUserTestCase(SousChefTestMixin, TestCase):
         }))
         check(reverse('member:list'))
         check(reverse('member:search'))
-        check(reverse('member:view', kwargs={'pk': 1}))
         check(reverse('member:list_orders', kwargs={'pk': 1}))
         check(reverse('member:client_information', kwargs={'pk': 1}))
         check(reverse('member:client_payment', kwargs={'pk': 1}))
