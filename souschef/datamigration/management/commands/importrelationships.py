@@ -4,7 +4,9 @@ from datetime import date
 from django.core.management.base import BaseCommand
 
 from souschef.member.models import (
-    Client, Member, Referencing, EmergencyContact
+    Client,
+    Member,
+    Relationship,
 )
 
 
@@ -51,37 +53,51 @@ class Command(BaseCommand):
 
                         relationship, created = \
                             Member.objects.update_or_create(
-                                rid=row[self.ROW_RID], defaults={
+                                rid=row[self.ROW_RID],
+                                defaults={
                                     "firstname": row[
-                                        self.ROW_FIRSTNAME], "lastname": row[
-                                        self.ROW_LASTNAME],
+                                        self.ROW_FIRSTNAME
+                                    ],
+                                    "lastname": row[
+                                        self.ROW_LASTNAME
+                                    ],
                                     "work_information": row[
-                                        self.ROW_WORK_INFORMATION]})
-
-                        if row[self.ROW_EMERGENCY] == '1':
-                            EmergencyContact.objects.create(
-                                client=client,
-                                member=relationship,
-                                relationship=row[self.ROW_RELATIONSHIP]
+                                        self.ROW_WORK_INFORMATION
+                                    ]
+                                }
                             )
-                            self.stdout.write(
-                                self.style.SUCCESS(
-                                    'Added an emergency Relationship.'
-                                ))
+
+                        type_of_relation = []
+                        extra_fields = {}
+                        if row[self.ROW_REFERENT] == '1':
+                            type_of_relation.append(Relationship.REFERENT)
+                            extra_fields['referral_reason'] = row[self.ROW_REASON]
+                            extra_fields['referral_date'] = str(date.today())
+                        if row[self.ROW_EMERGENCY] == '1':
+                            type_of_relation.append(Relationship.EMERGENCY)
+
+                        Relationship.objects.create(
+                            client=client,
+                            member=relationship,
+                            type=type_of_relation,
+                            nature=row[self.ROW_RELATIONSHIP],
+                            extra_fields=extra_fields,
+                        )
+
+                        self.stdout.write(
+                            self.style.SUCCESS(
+                                'Added a new Relationship.'
+                            )
+                        )
+
                         if row[self.ROW_BILLTO] == '1':
                             self.stdout.write(
                                 self.style.SUCCESS(
                                     'Added a blling Relationship.'
-                                ))
+                                )
+                            )
                             client.billing_member = relationship
-                        if row[self.ROW_REFERENT] == '1':
-                            Referencing.objects.create(
-                                referent=relationship,
-                                client=client,
-                                referral_reason=row[self.ROW_REASON],
-                                date=date.today(), )
-
-                        client.save()
+                            client.save()
 
                 except Member.DoesNotExist:
                     self.stdout.write(

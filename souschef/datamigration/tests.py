@@ -2,7 +2,12 @@ from datetime import date
 from django.core.management import call_command
 from django.test import TestCase
 
-from souschef.member.models import Member, Client, Address
+from souschef.member.models import (
+    Member,
+    Client,
+    Address,
+    Relationship,
+)
 from souschef.member.models import Option
 from souschef.order.models import Order
 
@@ -125,23 +130,42 @@ class ImportMemberRelationshipsTestCase(TestCase):
         self.assertEquals(dorothy.billing_member.rid, 2884)
         self.assertIn(
             dorothy.billing_member.pk,
-            [c.pk for c in dorothy.emergency_contacts.all()]
+            [Relationship.objects.get(client=dorothy).member.id]
         )
         self.assertIn(
             'daughter',
-            [ce.relationship for ce in dorothy.emergencycontact_set.all()]
+            [Relationship.objects.get(client=dorothy).nature]
         )
-        self.assertEquals(dorothy.client_referent.all().count(), 0)
+        self.assertEquals(
+            Relationship.objects.filter(
+                client=dorothy,
+                type__contains=Relationship.REFERENT,
+            ).all().count(),
+            0,
+        )
+
         marie = Client.objects.get(member__mid=93)
         marion = Member.objects.get(rid=865)
-        self.assertEquals(marie.client_referent.all().count(), 1)
-        referencing = marie.client_referent.first()
-        self.assertEquals(referencing.referent, marion)
         self.assertEquals(
-            referencing.referent.work_information,
+            Relationship.objects.filter(
+                client=marie,
+                type__contains=Relationship.REFERENT,
+            ).all().count(),
+            1,
+        )
+        referencing = Relationship.objects.filter(
+            client=marie,
+            type__contains=Relationship.REFERENT,
+        ).first()
+        self.assertEquals(referencing.member, marion)
+        self.assertEquals(
+            referencing.member.work_information,
             'CLSC St-Louis du Parc'
         )
-        self.assertEquals(referencing.referral_reason, 'Low mobility')
+        self.assertEquals(
+            referencing.extra_fields['referral_reason'],
+            'Low mobility',
+        )
 
 
 class ImportMemberMealsTestCase(TestCase):
