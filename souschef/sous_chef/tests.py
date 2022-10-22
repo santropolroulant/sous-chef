@@ -52,7 +52,17 @@ class TestMigrations(TransactionTestCase):
     """
     @property
     def app(self):
-        return apps.get_containing_app_config(type(self).__module__).name
+        name = apps.get_containing_app_config(type(self).__module__).name
+
+        # We want the name of the app and not all the module path
+        # sous-chef.member -> member
+        #
+        # Actually all apps use the name of the folder, so we can just get
+        # the second part of a split
+        # todo: enhance this logic to use the content of apps.py
+        short_name = name.split('.')[1]
+
+        return short_name
 
     migrate_from = None
     migrate_to = None
