@@ -6,6 +6,13 @@ from souschef.member.models import Option, Client_option
 
 
 class Command(BaseCommand):
+    """
+    **Warning!**
+    This command has been modified without keeping trace of why a long time
+    ago and the tests were outdated. Please try to avoid using this function
+    since we will try to deprecate it in the future.
+    """
+
     help = 'Data: import clients relationships from given csv file.'
 
     ROW_MID = 0
