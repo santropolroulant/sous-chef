@@ -8,8 +8,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
       - name: Build docker-compose
         run: docker-compose build
+      - name: Compile assets
+        run: bash ./tools/compile_assets.sh
       - name: Check Black
         run: docker-compose run --rm web black --check .
+      - name: Check tests
+        run: docker-compose run -e CI=1 --rm web /code/wait-for-it.sh db:3306 --strict -- python3 /code/souschef/manage.py test

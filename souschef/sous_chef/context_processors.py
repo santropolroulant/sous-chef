@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
+import os
 import pkg_resources
-
 from django.conf import settings
 from souschef.member.models import Client, Route
 from souschef.order.models import Order, ORDER_STATUS_ORDERED
@@ -9,6 +9,9 @@ import datetime
 
 
 def get_sous_chef_version():
+    if os.environ.get("CI") == "1":
+        return "dev"
+
     return pkg_resources.require("souschef")[0].version
 
 
