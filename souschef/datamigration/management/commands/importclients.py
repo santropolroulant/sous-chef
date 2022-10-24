@@ -7,7 +7,7 @@ from souschef.member.models import Client, Member, Route
 
 
 class Command(BaseCommand):
-    help = 'Data: import clients from given csv file.'
+    help = "Data: import clients from given csv file."
 
     ROW_MID = 0
     ROW_FIRSTNAME = 1
@@ -25,28 +25,30 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--file',
+            "--file",
             default=False,
-            help='Import mock data instead of actual data',
+            help="Import mock data instead of actual data",
         )
 
     def handle(self, *args, **options):
         # Load fixtures for the routes
-        fixture_filename = 'routes.json'
-        call_command('loaddata', fixture_filename)
+        fixture_filename = "routes.json"
+        call_command("loaddata", fixture_filename)
 
-        if options['file']:
-            file = 'mock_clients.csv'
+        if options["file"]:
+            file = "mock_clients.csv"
         else:
-            file = 'clients.csv'
+            file = "clients.csv"
 
         with open(file) as f:
-            reader = csv.reader(f, delimiter=';')
+            reader = csv.reader(f, delimiter=";")
             for row in reader:
 
-                row_created = row[
-                    self.ROW_CREATED] if row[
-                    self.ROW_CREATED] != '' else date.today()
+                row_created = (
+                    row[self.ROW_CREATED]
+                    if row[self.ROW_CREATED] != ""
+                    else date.today()
+                )
 
                 member, created = Member.objects.update_or_create(
                     mid=row[self.ROW_MID],
@@ -54,12 +56,10 @@ class Command(BaseCommand):
                         "firstname": row[self.ROW_FIRSTNAME],
                         "lastname": row[self.ROW_LASTNAME],
                         "updated_at": row_created,
-                    }
+                    },
                 )
 
-                route, created = Route.objects.get_or_create(
-                    name=row[self.ROW_ROUTE]
-                )
+                route, created = Route.objects.get_or_create(name=row[self.ROW_ROUTE])
                 if created:
                     err_msg = "A new route has been created."
                     self.stdout.write(self.style.WARNING(err_msg))
@@ -76,16 +76,18 @@ class Command(BaseCommand):
                         "delivery_type": row[self.ROW_DELIVERY_TYPE],
                         "delivery_note": row[self.ROW_DELIVERY_NOTES],
                         "route": route,
-                        'language': row[self.ROW_LANG],
-                        'rate_type': row[self.ROW_PAYSCALE],
-                    }
+                        "language": row[self.ROW_LANG],
+                        "rate_type": row[self.ROW_PAYSCALE],
+                    },
                 )
 
                 self.stdout.write(
                     self.style.SUCCESS(
-                        '{} successfully {}.'.format(
-                            client,
-                            'created' if created else 'updated')))
+                        "{} successfully {}.".format(
+                            client, "created" if created else "updated"
+                        )
+                    )
+                )
 
                 # Override creation date
                 client.member.created_at = row_created

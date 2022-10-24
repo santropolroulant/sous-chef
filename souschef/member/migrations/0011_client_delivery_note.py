@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('member', '0010_auto_20160803_2052'),
+        ("member", "0010_auto_20160803_2052"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='client',
-            name='delivery_note',
-            field=models.TextField(blank=True, null=True, verbose_name='Delivery Note'),
+            model_name="client",
+            name="delivery_note",
+            field=models.TextField(blank=True, null=True, verbose_name="Delivery Note"),
         ),
     ]

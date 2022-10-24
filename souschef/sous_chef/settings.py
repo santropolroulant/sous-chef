@@ -23,109 +23,115 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get(
-    'SOUSCHEF_DJANGO_SECRET_KEY',
-    '15ine$#^qas4_h2u7yk&lxat*&g*b8+)@wp$2x@vi2#v9)i2#u')  # For dev purposes
+    "SOUSCHEF_DJANGO_SECRET_KEY", "15ine$#^qas4_h2u7yk&lxat*&g*b8+)@wp$2x@vi2#v9)i2#u"
+)  # For dev purposes
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('SOUSCHEF_ENVIRONMENT_NAME') == 'DEV'
+DEBUG = os.environ.get("SOUSCHEF_ENVIRONMENT_NAME") == "DEV"
 
 # This IP may change for different computers and should be the
 # request.META.get('REMOTE_ADDR') for your local computer.
 # Don't run with this in production and don't
 # commit any changes to this INTERNAL_IPS settings.
 # WE NEED THIS IN ORDER TO USE 'debug' IN TEMPLATES!!!
-INTERNAL_IPS = os.environ.get(
-    'SOUSCHEF_DJANGO_INTERNAL_IPS',
-    # Default value is an example: use space-separated string in env
-    '172.19.0.1  172.22.0.1').strip().split()
+INTERNAL_IPS = (
+    os.environ.get(
+        "SOUSCHEF_DJANGO_INTERNAL_IPS",
+        # Default value is an example: use space-separated string in env
+        "172.19.0.1  172.22.0.1",
+    )
+    .strip()
+    .split()
+)
 
-ALLOWED_HOSTS = os.environ.get(
-    'SOUSCHEF_DJANGO_ALLOWED_HOSTS',
-    # Default value is an example: use space-separated string in env
-    'localhost souschef.example.com test.souschef.example.com').strip().split()
+ALLOWED_HOSTS = (
+    os.environ.get(
+        "SOUSCHEF_DJANGO_ALLOWED_HOSTS",
+        # Default value is an example: use space-separated string in env
+        "localhost souschef.example.com test.souschef.example.com",
+    )
+    .strip()
+    .split()
+)
 
 
 # Application definition
 
 INSTALLED_APPS = [
     # Django apps
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
     # Third party apps
-    'annoying',
-    'avatar',
-    'django_crontab',
-    'django_filters',
-    'formtools',
-    'leaflet',
-    'rules.apps.AutodiscoverRulesConfig',
-
+    "annoying",
+    "avatar",
+    "django_crontab",
+    "django_filters",
+    "formtools",
+    "leaflet",
+    "rules.apps.AutodiscoverRulesConfig",
     # Sous-chef apps
-    'souschef.sous_chef',
-    'souschef.billing',
-    'souschef.datamigration',
-    'souschef.delivery',
-    'souschef.meal',
-    'souschef.member',
-    'souschef.order',
-    'souschef.notification',
-    'souschef.page',
-    'souschef.note',
+    "souschef.sous_chef",
+    "souschef.billing",
+    "souschef.datamigration",
+    "souschef.delivery",
+    "souschef.meal",
+    "souschef.member",
+    "souschef.order",
+    "souschef.notification",
+    "souschef.page",
+    "souschef.note",
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.middleware.locale.LocaleMiddleware',
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.auth.middleware.SessionAuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
 ]
 
-ROOT_URLCONF = 'souschef.sous_chef.urls'
+ROOT_URLCONF = "souschef.sous_chef.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [
-            BASE_DIR + '/sous_chef/templates/'
-        ],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.i18n',
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-                'souschef.sous_chef.context_processors.total',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [BASE_DIR + "/sous_chef/templates/"],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.i18n",
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+                "souschef.sous_chef.context_processors.total",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'souschef.sous_chef.wsgi.application'
+WSGI_APPLICATION = "souschef.sous_chef.wsgi.application"
 
 
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ.get('SOUSCHEF_DJANGO_DB_NAME', 'feast'),
-        'USER': os.environ.get('SOUSCHEF_DJANGO_DB_USER', 'root'),
-        'PASSWORD': os.environ.get('SOUSCHEF_DJANGO_DB_PASSWORD', '123456'),
-        'HOST': os.environ.get('SOUSCHEF_DJANGO_DB_HOST', 'db'),
-        'port': os.environ.get('SOUSCHEF_DJANGO_DB_PORT', '3306'),
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": os.environ.get("SOUSCHEF_DJANGO_DB_NAME", "feast"),
+        "USER": os.environ.get("SOUSCHEF_DJANGO_DB_USER", "root"),
+        "PASSWORD": os.environ.get("SOUSCHEF_DJANGO_DB_PASSWORD", "123456"),
+        "HOST": os.environ.get("SOUSCHEF_DJANGO_DB_HOST", "db"),
+        "port": os.environ.get("SOUSCHEF_DJANGO_DB_PORT", "3306"),
     }
 }
 
@@ -135,36 +141,33 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.'
-                'UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation."
+        "UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.'
-                'MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation." "MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.'
-                'CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation." "CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.'
-                'NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation." "NumericPasswordValidator",
     },
 ]
 
-LOGIN_URL = reverse_lazy('page:login')
-LOGIN_REDIRECT_URL = reverse_lazy('page:home')
+LOGIN_URL = reverse_lazy("page:login")
+LOGIN_REDIRECT_URL = reverse_lazy("page:home")
 
 AUTHENTICATION_BACKENDS = (
-    'rules.permissions.ObjectPermissionBackend',
-    'django.contrib.auth.backends.ModelBackend',
+    "rules.permissions.ObjectPermissionBackend",
+    "django.contrib.auth.backends.ModelBackend",
 )
 
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.9/topics/i18n/
 
-LANGUAGE_CODE = 'en'
+LANGUAGE_CODE = "en"
 USE_I18N = True
 USE_L10N = True
 
@@ -172,68 +175,63 @@ USE_L10N = True
 USE_TZ = True
 
 # Use this timezone when displaying datetimes
-TIME_ZONE = 'America/Montreal'
+TIME_ZONE = "America/Montreal"
 
 # List of supported languages
 LANGUAGES = (
-    ('fr', 'Français'),
-    ('en', 'English'),
+    ("fr", "Français"),
+    ("en", "English"),
 )
 
-LOCALE_PATHS = tuple(map(
-    lambda path: os.path.join(BASE_DIR, path),
-    (
-        'meal/locale/',
-        'member/locale/',
-        'notification/locale/',
-        'order/locale/',
-        'page/locale/',
-        'delivery/locale/',
-        'billing/locale',
-        'note/locale',
-    ),
-))
-
-FORMAT_MODULE_PATH = (
-    'souschef.sous_chef.formats',
+LOCALE_PATHS = tuple(
+    map(
+        lambda path: os.path.join(BASE_DIR, path),
+        (
+            "meal/locale/",
+            "member/locale/",
+            "notification/locale/",
+            "order/locale/",
+            "page/locale/",
+            "delivery/locale/",
+            "billing/locale",
+            "note/locale",
+        ),
+    )
 )
+
+FORMAT_MODULE_PATH = ("souschef.sous_chef.formats",)
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
-STATICFILES_DIRS = (
-    BASE_DIR + '/sous_chef/assets/',
-)
-STATIC_URL = '/static/'
+STATICFILES_DIRS = (BASE_DIR + "/sous_chef/assets/",)
+STATIC_URL = "/static/"
 
 GENERATED_DOCS_DIR = os.environ.get(
-    'SOUSCHEF_GENERATED_DOCS_DIR',
-    '/var/local/souschef')
+    "SOUSCHEF_GENERATED_DOCS_DIR", "/var/local/souschef"
+)
 
-CRONJOBS = [
-    ('0 0 * * *', 'souschef.pycrons.cleaning.clean_old_pdf_files')
-]
+CRONJOBS = [("0 0 * * *", "souschef.pycrons.cleaning.clean_old_pdf_files")]
 
 if DEBUG:
     # When using the development server, serve files directly from /media/
     # https://docs.djangoproject.com/en/1.11/howto/static-files/#serving-files-uploaded-by-a-user-during-development
-    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-    MEDIA_URL = '/media/'
-    GENERATED_DOCS_DIR = os.environ.get(
-        'SOUSCHEF_GENERATED_DOCS_DIR', BASE_DIR)
+    MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+    MEDIA_URL = "/media/"
+    GENERATED_DOCS_DIR = os.environ.get("SOUSCHEF_GENERATED_DOCS_DIR", BASE_DIR)
 else:
     # In non development mode, serve files from /static/ using nginx as
     # dedicated server
     # https://docs.djangoproject.com/en/1.11/howto/static-files/deployment/#serving-static-files-from-a-dedicated-server
-    MEDIA_ROOT = os.path.join(STATIC_ROOT, 'media')
-    MEDIA_URL = '/static/media/'
+    MEDIA_ROOT = os.path.join(STATIC_ROOT, "media")
+    MEDIA_URL = "/static/media/"
 
 # Avatar files
 AVATAR_PROVIDERS = (
-    'avatar.providers.PrimaryAvatarProvider',
-    'avatar.providers.GravatarAvatarProvider',
-    'avatar.providers.DefaultAvatarProvider',
+    "avatar.providers.PrimaryAvatarProvider",
+    "avatar.providers.GravatarAvatarProvider",
+    "avatar.providers.DefaultAvatarProvider",
 )
 
 MEAL_LABELS_FILE = os.path.join(GENERATED_DOCS_DIR, "meal_labels.pdf")
@@ -241,11 +239,11 @@ KITCHEN_COUNT_FILE = os.path.join(GENERATED_DOCS_DIR, "kitchen_count.pdf")
 ROUTE_SHEETS_FILE = os.path.join(GENERATED_DOCS_DIR, "route_sheets.pdf")
 
 # Displayable information
-SOUSCHEF_ENVIRONMENT_NAME = os.environ.get('SOUSCHEF_ENVIRONMENT_NAME') or ''
+SOUSCHEF_ENVIRONMENT_NAME = os.environ.get("SOUSCHEF_ENVIRONMENT_NAME") or ""
 
 try:
-    GIT_HEAD = subprocess.check_output(['git', 'rev-parse', 'HEAD'])
-    GIT_TAG = subprocess.check_output(['git', 'describe', '--tags'])
+    GIT_HEAD = subprocess.check_output(["git", "rev-parse", "HEAD"])
+    GIT_TAG = subprocess.check_output(["git", "describe", "--tags"])
 except Exception:
     GIT_HEAD = None
     GIT_TAG = None

@@ -9,23 +9,42 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('member', '0026_change_to_emergency_contacts'),
+        ("member", "0026_change_to_emergency_contacts"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='client',
-            name='billing_member',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='+', to='member.Member', verbose_name='billing member'),
+            model_name="client",
+            name="billing_member",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="+",
+                to="member.Member",
+                verbose_name="billing member",
+            ),
         ),
         migrations.AlterField(
-            model_name='member',
-            name='address',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='member.Address', verbose_name='address'),
+            model_name="member",
+            name="address",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="member.Address",
+                verbose_name="address",
+            ),
         ),
         migrations.AlterField(
-            model_name='route',
-            name='vehicle',
-            field=models.CharField(choices=[('cycling', 'Cycling'), ('walking', 'Walking'), ('driving', 'Driving')], default='cycling', max_length=20, verbose_name='vehicle'),
+            model_name="route",
+            name="vehicle",
+            field=models.CharField(
+                choices=[
+                    ("cycling", "Cycling"),
+                    ("walking", "Walking"),
+                    ("driving", "Driving"),
+                ],
+                default="cycling",
+                max_length=20,
+                verbose_name="vehicle",
+            ),
         ),
     ]

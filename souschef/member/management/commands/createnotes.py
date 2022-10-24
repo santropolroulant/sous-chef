@@ -3,12 +3,8 @@ from souschef.member.factories import NoteFactory
 
 
 class Command(BaseCommand):
-    help = 'Creates notes related to members.'
+    help = "Creates notes related to members."
 
     def handle(self, *args, **options):
         notes = NoteFactory.create_batch(20)
-        self.stdout.write(
-            self.style.SUCCESS(
-                'Successfully created notes "%s"' % notes
-            )
-        )
+        self.stdout.write(self.style.SUCCESS('Successfully created notes "%s"' % notes))

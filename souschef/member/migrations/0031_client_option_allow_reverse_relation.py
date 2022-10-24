@@ -9,18 +9,26 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('member', '0030_route_deliveryhistory'),
+        ("member", "0030_route_deliveryhistory"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='client_option',
-            name='client',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='member.Client', verbose_name='client'),
+            model_name="client_option",
+            name="client",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                to="member.Client",
+                verbose_name="client",
+            ),
         ),
         migrations.AlterField(
-            model_name='client_option',
-            name='option',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='member.Option', verbose_name='option'),
+            model_name="client_option",
+            name="option",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                to="member.Option",
+                verbose_name="option",
+            ),
         ),
     ]

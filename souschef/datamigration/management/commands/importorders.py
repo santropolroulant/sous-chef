@@ -6,7 +6,7 @@ from souschef.order.models import Order
 
 
 class Command(BaseCommand):
-    help = 'Data: import clients relationships from given csv file.'
+    help = "Data: import clients relationships from given csv file."
 
     ROW_MID = 0
     ROW_DATE = 1
@@ -21,19 +21,19 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--file',
+            "--file",
             default=False,
-            help='Import mock data instead of actual data',
+            help="Import mock data instead of actual data",
         )
 
     def handle(self, *args, **options):
-        if options['file']:
-            file = 'mock_orders.csv'
+        if options["file"]:
+            file = "mock_orders.csv"
         else:
-            file = 'clients_orders.csv'
+            file = "clients_orders.csv"
 
         with open(file) as f:
-            reader = csv.reader(f, delimiter=';')
+            reader = csv.reader(f, delimiter=";")
             for row in reader:
                 try:
                     member = Member.objects.get(mid=row[self.ROW_MID])
@@ -41,20 +41,18 @@ class Command(BaseCommand):
                     delivery_date = row[self.ROW_DATE]
                     prices = Order.objects.get_client_prices(client)
                     items = {
-                        'main_dish_default_quantity':
-                            int(row[self.ROW_MAIN_DISH_QUANTITY]),
-                        'dessert_default_quantity':
-                            int(row[self.ROW_DESSERT]),
-                        'diabetic_default_quantity':
-                            int(row[self.ROW_DIABETIC_DESSERT]),
-                        'fruit_salad_default_quantity':
-                            int(row[self.ROW_FRUIT_SALAD]),
-                        'green_salad_default_quantity':
-                            int(row[self.ROW_GREEN_SALAD]),
-                        'pudding_default_quantity':
-                            int(row[self.ROW_PUDDING]),
-                        'compote_default_quantity': 0,
-                        'size_default': row[self.ROW_SIZE],
+                        "main_dish_default_quantity": int(
+                            row[self.ROW_MAIN_DISH_QUANTITY]
+                        ),
+                        "dessert_default_quantity": int(row[self.ROW_DESSERT]),
+                        "diabetic_default_quantity": int(
+                            row[self.ROW_DIABETIC_DESSERT]
+                        ),
+                        "fruit_salad_default_quantity": int(row[self.ROW_FRUIT_SALAD]),
+                        "green_salad_default_quantity": int(row[self.ROW_GREEN_SALAD]),
+                        "pudding_default_quantity": int(row[self.ROW_PUDDING]),
+                        "compote_default_quantity": 0,
+                        "size_default": row[self.ROW_SIZE],
                     }
 
                     order = Order.objects.create_order(
@@ -65,8 +63,6 @@ class Command(BaseCommand):
                     order.save()
 
                 except Member.DoesNotExist:
-                    self.stdout.write(
-                        self.style.WARNING('Non existing member'))
+                    self.stdout.write(self.style.WARNING("Non existing member"))
                 except Client.DoesNotExist:
-                    self.stdout.write(
-                        self.style.WARNING('Non existing client'))
+                    self.stdout.write(self.style.WARNING("Non existing client"))

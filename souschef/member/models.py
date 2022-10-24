@@ -7,31 +7,23 @@ from django.forms import ValidationError
 from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
-from django_filters import (
-    FilterSet,
-    CharFilter,
-    ChoiceFilter,
-    MultipleChoiceFilter
-)
+from django_filters import FilterSet, CharFilter, ChoiceFilter, MultipleChoiceFilter
 from annoying.fields import JSONField
 
 from souschef.member.formsfield import CAPhoneNumberExtField
-from souschef.meal.models import (
-    COMPONENT_GROUP_CHOICES,
-    COMPONENT_GROUP_CHOICES_SIDES
-)
+from souschef.meal.models import COMPONENT_GROUP_CHOICES, COMPONENT_GROUP_CHOICES_SIDES
 from souschef.note.models import Note
 
 
-HOME = 'Home phone'
-CELL = 'Cell phone'
-WORK = 'Work phone'
-EMAIL = 'Email'
+HOME = "Home phone"
+CELL = "Cell phone"
+WORK = "Work phone"
+EMAIL = "Email"
 
 GENDER_CHOICES = (
-    ('F', _('Female')),
-    ('M', _('Male')),
-    ('O', _('Other')),
+    ("F", _("Female")),
+    ("M", _("Male")),
+    ("O", _("Other")),
 )
 
 CONTACT_TYPE_CHOICES = (
@@ -42,93 +34,80 @@ CONTACT_TYPE_CHOICES = (
 )
 
 RATE_TYPE = (
-    ('default', _('Default')),
-    ('low income', _('Low income')),
-    ('solidary', _('Solidary')),
+    ("default", _("Default")),
+    ("low income", _("Low income")),
+    ("solidary", _("Solidary")),
 )
 
 RATE_TYPE_LOW_INCOME = RATE_TYPE[1][0]
 RATE_TYPE_SOLIDARY = RATE_TYPE[2][0]
 
 PAYMENT_TYPE = (
-    (' ', _('----')),
-    ('3rd', _('3rd Party')),
-    ('cash', _('Cash')),
-    ('cheque', _('Cheque')),
-    ('credit', _('Credit card')),
-    ('eft', _('EFT')),
-    ('etransfert', _('e-Transfer')),
+    (" ", _("----")),
+    ("3rd", _("3rd Party")),
+    ("cash", _("Cash")),
+    ("cheque", _("Cheque")),
+    ("credit", _("Credit card")),
+    ("eft", _("EFT")),
+    ("etransfert", _("e-Transfer")),
 )
 
 DELIVERY_TYPE = (
-    ('O', _('Ongoing')),
-    ('E', _('Episodic')),
+    ("O", _("Ongoing")),
+    ("E", _("Episodic")),
 )
 
 OPTION_GROUP_CHOICES = (
-    ('main dish size', _('Main dish size')),
-    ('dish', _('Dish')),
-    ('preparation', _('Preparation')),
-    ('other order item', _('Other order item')),
+    ("main dish size", _("Main dish size")),
+    ("dish", _("Dish")),
+    ("preparation", _("Preparation")),
+    ("other order item", _("Other order item")),
 )
 
 OPTION_GROUP_CHOICES_PREPARATION = OPTION_GROUP_CHOICES[2][0]
 
 DAYS_OF_WEEK = (
-    ('monday', _('Monday')),
-    ('tuesday', _('Tuesday')),
-    ('wednesday', _('Wednesday')),
-    ('thursday', _('Thursday')),
-    ('friday', _('Friday')),
-    ('saturday', _('Saturday')),
-    ('sunday', _('Sunday')),
+    ("monday", _("Monday")),
+    ("tuesday", _("Tuesday")),
+    ("wednesday", _("Wednesday")),
+    ("thursday", _("Thursday")),
+    ("friday", _("Friday")),
+    ("saturday", _("Saturday")),
+    ("sunday", _("Sunday")),
 )
 
 ROUTE_VEHICLES = (
     # Vehicles should be supported by mapbox.
-    ('cycling', _('Cycling')),
-    ('walking', _('Walking')),
-    ('driving', _('Driving')),
+    ("cycling", _("Cycling")),
+    ("walking", _("Walking")),
+    ("driving", _("Driving")),
 )
 
 DEFAULT_VEHICLE = ROUTE_VEHICLES[0][0]
 
 
 class Member(models.Model):
-
     class Meta:
-        verbose_name_plural = _('members')
+        verbose_name_plural = _("members")
 
-    mid = models.IntegerField(
-        blank=True,
-        null=True
-    )
+    mid = models.IntegerField(blank=True, null=True)
 
-    rid = models.IntegerField(
-        blank=True,
-        null=True
-    )
+    rid = models.IntegerField(blank=True, null=True)
 
     # Member information
-    firstname = models.CharField(
-        max_length=50,
-        verbose_name=_('First name')
-    )
+    firstname = models.CharField(max_length=50, verbose_name=_("First name"))
 
-    lastname = models.CharField(
-        max_length=50,
-        verbose_name=_('Last name')
-    )
+    lastname = models.CharField(max_length=50, verbose_name=_("Last name"))
 
     address = models.OneToOneField(
-        'member.Address',
-        verbose_name=_('address'),
+        "member.Address",
+        verbose_name=_("address"),
         null=True,
-        on_delete=models.SET_NULL
+        on_delete=models.SET_NULL,
     )
 
     work_information = models.TextField(
-        verbose_name=_('Work information'),
+        verbose_name=_("Work information"),
         blank=True,
         null=True,
     )
@@ -202,8 +181,7 @@ class Member(models.Model):
     def email(self):
         try:
             return next(
-                mc.value for mc in self.member_contact.all()
-                if mc.type == EMAIL
+                mc.value for mc in self.member_contact.all() if mc.type == EMAIL
             )
         except Exception:
             return ""
@@ -216,61 +194,47 @@ class Member(models.Model):
         """
         created = False
         if value is None:
-            value = ''
+            value = ""
 
-        if force_update or value != '':
+        if force_update or value != "":
             contact, created = Contact.objects.update_or_create(
-                member=self, type=type,
-                defaults={
-                    'value': value,
-                    'member': self
-                }
+                member=self, type=type, defaults={"value": value, "member": self}
             )
         return created
 
 
 class Address(models.Model):
-
     class Meta:
-        verbose_name_plural = _('addresses')
-        ordering = ['number', 'street', 'apartment']
+        verbose_name_plural = _("addresses")
+        ordering = ["number", "street", "apartment"]
 
     # Member address information
     number = models.PositiveIntegerField(
-        verbose_name=_('street number'),
+        verbose_name=_("street number"),
         blank=True,
         null=True,
     )
 
-    street = models.CharField(
-        max_length=100,
-        verbose_name=_('street')
-    )
+    street = models.CharField(max_length=100, verbose_name=_("street"))
 
     # Can look like B02 so can't be an IntegerField
     apartment = models.CharField(
         max_length=10,
-        verbose_name=_('apartment'),
+        verbose_name=_("apartment"),
         blank=True,
         null=True,
     )
 
     floor = models.IntegerField(
-        verbose_name=_('floor'),
+        verbose_name=_("floor"),
         blank=True,
         null=True,
     )
 
-    city = models.CharField(
-        max_length=50,
-        verbose_name=_('city')
-    )
+    city = models.CharField(max_length=50, verbose_name=_("city"))
 
     # Montreal postal code look like H3E 1C2
-    postal_code = models.CharField(
-        max_length=7,
-        verbose_name=_('postal code')
-    )
+    postal_code = models.CharField(max_length=7, verbose_name=_("postal code"))
 
     longitude = models.DecimalField(
         max_digits=9,
@@ -308,27 +272,21 @@ class Address(models.Model):
 
 
 class Contact(models.Model):
-
     class Meta:
-        verbose_name_plural = _('contacts')
+        verbose_name_plural = _("contacts")
 
     # Member contact information
     type = models.CharField(
-        max_length=100,
-        choices=CONTACT_TYPE_CHOICES,
-        verbose_name=_('contact type')
+        max_length=100, choices=CONTACT_TYPE_CHOICES, verbose_name=_("contact type")
     )
 
-    value = models.CharField(
-        max_length=50,
-        verbose_name=_('value')
-    )
+    value = models.CharField(max_length=50, verbose_name=_("value"))
 
     member = models.ForeignKey(
-        'member.Member',
-        verbose_name=_('member'),
-        related_name='member_contact',
-        on_delete=models.CASCADE
+        "member.Member",
+        verbose_name=_("member"),
+        related_name="member_contact",
+        on_delete=models.CASCADE,
     )
 
     def display_value(self):
@@ -347,18 +305,14 @@ class Contact(models.Model):
 
 
 class Route(models.Model):
-
     class Meta:
-        verbose_name_plural = _('Routes')
-        ordering = ['name']
+        verbose_name_plural = _("Routes")
+        ordering = ["name"]
 
-    name = models.CharField(
-        max_length=50,
-        verbose_name=_('name')
-    )
+    name = models.CharField(max_length=50, verbose_name=_("name"))
 
     description = models.TextField(
-        verbose_name=_('description'),
+        verbose_name=_("description"),
         blank=True,
         null=True,
     )
@@ -366,13 +320,12 @@ class Route(models.Model):
     vehicle = models.CharField(
         max_length=20,
         choices=ROUTE_VEHICLES,
-        verbose_name=_('vehicle'),
-        default=DEFAULT_VEHICLE
+        verbose_name=_("vehicle"),
+        default=DEFAULT_VEHICLE,
     )
 
     client_id_sequence = JSONField(
-        verbose_name=_('IDs of clients on this route (as a JSON list)'),
-        default=[]
+        verbose_name=_("IDs of clients on this route (as a JSON list)"), default=[]
     )
 
     def __str__(self):
@@ -380,33 +333,27 @@ class Route(models.Model):
 
 
 class DeliveryHistory(models.Model):
-
     class Meta:
-        verbose_name = _('Delivery History')
-        verbose_name_plural = _('Delivery Histories')
-        ordering = ['route', '-date']
-        unique_together = ('route', 'date')
+        verbose_name = _("Delivery History")
+        verbose_name_plural = _("Delivery Histories")
+        ordering = ["route", "-date"]
+        unique_together = ("route", "date")
 
     route = models.ForeignKey(
-        'member.Route',
+        "member.Route",
         on_delete=models.CASCADE,
-        verbose_name=_('route'),
-        related_name='delivery_histories'
+        verbose_name=_("route"),
+        related_name="delivery_histories",
     )
-    date = models.DateField(
-        verbose_name=_('date of the delivery')
-    )
+    date = models.DateField(verbose_name=_("date of the delivery"))
     vehicle = models.CharField(
-        max_length=20,
-        choices=ROUTE_VEHICLES,
-        verbose_name=_('vehicle')
+        max_length=20, choices=ROUTE_VEHICLES, verbose_name=_("vehicle")
     )
     client_id_sequence = JSONField(
-        verbose_name=_('IDs of clients on this route (as a JSON list)'),
-        default=[]
+        verbose_name=_("IDs of clients on this route (as a JSON list)"), default=[]
     )
     comments = models.TextField(
-        verbose_name=_('comments'),
+        verbose_name=_("comments"),
         blank=True,
         null=True,
     )
@@ -418,7 +365,6 @@ class DeliveryHistory(models.Model):
 
 
 class ClientManager(models.Manager):
-
     def get_birthday_boys_and_girls(self):
 
         today = datetime.datetime.now()
@@ -428,7 +374,7 @@ class ClientManager(models.Manager):
             birthdate__month=today.month,
             birthdate__day__gte=today.day,
             birthdate__day__lte=today.day + 7,
-        ).order_by(Extract('birthdate', 'day'))
+        ).order_by(Extract("birthdate", "day"))
 
         today = datetime.date.today()
         for client in clients:
@@ -438,52 +384,59 @@ class ClientManager(models.Manager):
 
 
 class ActiveClientManager(ClientManager):
-
     def get_queryset(self):
 
-        return super(ActiveClientManager, self).get_queryset().filter(
-            status=Client.ACTIVE
+        return (
+            super(ActiveClientManager, self).get_queryset().filter(status=Client.ACTIVE)
         )
 
 
 class OngoingClientManager(ClientManager):
-
     def get_queryset(self):
 
-        return super(OngoingClientManager, self).get_queryset().filter(
-            status=Client.ACTIVE, delivery_type='O'
+        return (
+            super(OngoingClientManager, self)
+            .get_queryset()
+            .filter(status=Client.ACTIVE, delivery_type="O")
         )
 
 
 class PendingClientManager(ClientManager):
-
     def get_queryset(self):
 
-        return super(PendingClientManager, self).get_queryset().filter(
-            status=Client.PENDING
+        return (
+            super(PendingClientManager, self)
+            .get_queryset()
+            .filter(status=Client.PENDING)
         )
 
 
 class ContactClientManager(ClientManager):
-
     def get_queryset(self):
 
-        return super(ContactClientManager, self).get_queryset().filter(
-            Q(status=Client.ACTIVE) |
-            Q(status=Client.STOPCONTACT) |
-            Q(status=Client.PAUSED) |
-            Q(status=Client.PENDING)
+        return (
+            super(ContactClientManager, self)
+            .get_queryset()
+            .filter(
+                Q(status=Client.ACTIVE)
+                | Q(status=Client.STOPCONTACT)
+                | Q(status=Client.PAUSED)
+                | Q(status=Client.PENDING)
+            )
         )
 
 
 class BirthdayContactClientManager(ClientManager):
-
     def get_queryset(self):
 
-        return super(BirthdayContactClientManager, self).get_queryset().filter(
-            Q(status=Client.ACTIVE) |
-            Q(status=Client.PAUSED) |
-            Q(status=Client.PENDING)
+        return (
+            super(BirthdayContactClientManager, self)
+            .get_queryset()
+            .filter(
+                Q(status=Client.ACTIVE)
+                | Q(status=Client.PAUSED)
+                | Q(status=Client.PENDING)
+            )
         )
 
 
@@ -491,42 +444,42 @@ class Client(models.Model):
 
     # Characters are used to keep a backward-compatibility
     # with the previous system.
-    PENDING = 'D'
-    ACTIVE = 'A'
-    PAUSED = 'S'
-    STOPNOCONTACT = 'N'
-    STOPCONTACT = 'C'
-    DECEASED = 'I'
+    PENDING = "D"
+    ACTIVE = "A"
+    PAUSED = "S"
+    STOPNOCONTACT = "N"
+    STOPCONTACT = "C"
+    DECEASED = "I"
 
     CLIENT_STATUS = (
-        (PENDING, _('Pending')),
-        (ACTIVE, _('Active')),
-        (PAUSED, _('Paused')),
-        (STOPNOCONTACT, _('Stop: no contact')),
-        (STOPCONTACT, _('Stop: contact')),
-        (DECEASED, _('Deceased')),
+        (PENDING, _("Pending")),
+        (ACTIVE, _("Active")),
+        (PAUSED, _("Paused")),
+        (STOPNOCONTACT, _("Stop: no contact")),
+        (STOPCONTACT, _("Stop: contact")),
+        (DECEASED, _("Deceased")),
     )
 
     LANGUAGES = (
-        ('en', _('English')),
-        ('fr', _('French')),
-        ('al', _('Allophone')),
+        ("en", _("English")),
+        ("fr", _("French")),
+        ("al", _("Allophone")),
     )
 
     class Meta:
-        verbose_name_plural = _('clients')
+        verbose_name_plural = _("clients")
         ordering = ["-member__created_at"]
 
     billing_member = models.ForeignKey(
-        'member.Member',
-        related_name='+',
-        verbose_name=_('billing member'),
+        "member.Member",
+        related_name="+",
+        verbose_name=_("billing member"),
         # A client must have a billing member
-        on_delete=models.PROTECT
+        on_delete=models.PROTECT,
     )
 
     billing_payment_type = models.CharField(
-        verbose_name=_('Payment Type'),
+        verbose_name=_("Payment Type"),
         max_length=10,
         null=True,
         blank=True,
@@ -534,95 +487,62 @@ class Client(models.Model):
     )
 
     rate_type = models.CharField(
-        verbose_name=_('rate type'),
-        max_length=10,
-        choices=RATE_TYPE,
-        default='default'
+        verbose_name=_("rate type"), max_length=10, choices=RATE_TYPE, default="default"
     )
 
     member = models.ForeignKey(
-        'member.Member',
-        verbose_name=_('member'),
-        on_delete=models.CASCADE
+        "member.Member", verbose_name=_("member"), on_delete=models.CASCADE
     )
 
-    status = models.CharField(
-        max_length=1,
-        choices=CLIENT_STATUS,
-        default=PENDING
-    )
+    status = models.CharField(max_length=1, choices=CLIENT_STATUS, default=PENDING)
 
-    language = models.CharField(
-        max_length=2,
-        choices=LANGUAGES,
-        default='fr'
-    )
+    language = models.CharField(max_length=2, choices=LANGUAGES, default="fr")
 
     alert = models.TextField(
-        verbose_name=_('alert client'),
+        verbose_name=_("alert client"),
         blank=True,
         null=True,
     )
 
-    delivery_type = models.CharField(
-        max_length=1,
-        choices=DELIVERY_TYPE,
-        default='O'
-    )
+    delivery_type = models.CharField(max_length=1, choices=DELIVERY_TYPE, default="O")
 
     gender = models.CharField(
         max_length=1,
-        default='U',
+        default="U",
         blank=True,
         null="True",
         choices=GENDER_CHOICES,
     )
 
     birthdate = models.DateField(
-        auto_now=False,
-        auto_now_add=False,
-        default=timezone.now,
-        blank=True,
-        null=True
+        auto_now=False, auto_now_add=False, default=timezone.now, blank=True, null=True
     )
 
     route = models.ForeignKey(
-        'member.Route',
+        "member.Route",
         on_delete=models.SET_NULL,
-        verbose_name=_('route'),
+        verbose_name=_("route"),
         blank=True,
-        null=True
+        null=True,
     )
 
-    meal_default_week = JSONField(
-        blank=True, null=True
-    )
+    meal_default_week = JSONField(blank=True, null=True)
 
     delivery_note = models.TextField(
-        verbose_name=_('Delivery Note'),
-        blank=True,
-        null=True
+        verbose_name=_("Delivery Note"), blank=True, null=True
     )
 
     ingredients_to_avoid = models.ManyToManyField(
-        'meal.Ingredient',
-        through='Client_avoid_ingredient'
+        "meal.Ingredient", through="Client_avoid_ingredient"
     )
 
     components_to_avoid = models.ManyToManyField(
-        'meal.Component',
-        through='Client_avoid_component'
+        "meal.Component", through="Client_avoid_component"
     )
 
-    options = models.ManyToManyField(
-        'member.option',
-        through='Client_option'
-    )
+    options = models.ManyToManyField("member.option", through="Client_option")
 
-    restrictions = models.ManyToManyField(
-        'meal.Restricted_item',
-        through='Restriction'
-    )
+    restrictions = models.ManyToManyField("meal.Restricted_item", through="Restriction")
 
     def __str__(self):
         return "{} {}".format(self.member.firstname, self.member.lastname)
@@ -640,8 +560,10 @@ class Client(models.Model):
         """
         Returns if the client's address is properly geolocalized.
         """
-        if self.member.address.latitude is None or \
-                self.member.address.longitude is None:
+        if (
+            self.member.address.latitude is None
+            or self.member.address.longitude is None
+        ):
             return False
         return True
 
@@ -663,8 +585,9 @@ class Client(models.Model):
         today = datetime.date.today()
         if today < self.birthdate:
             age = 0
-        elif datetime.date(2000, self.birthdate.month, self.birthdate.day) <= \
-                datetime.date(2000, today.month, today.day):
+        elif datetime.date(
+            2000, self.birthdate.month, self.birthdate.day
+        ) <= datetime.date(2000, today.month, today.day):
             age = today.year - self.birthdate.year
         else:
             age = today.year - self.birthdate.year - 1
@@ -672,11 +595,11 @@ class Client(models.Model):
 
     @property
     def status_verbose(self):
-        return dict(self.CLIENT_STATUS).get(self.status, _('Unknown'))
+        return dict(self.CLIENT_STATUS).get(self.status, _("Unknown"))
 
     @property
     def delivery_type_verbose(self):
-        return dict(DELIVERY_TYPE).get(self.delivery_type, _('Unknown'))
+        return dict(DELIVERY_TYPE).get(self.delivery_type, _("Unknown"))
 
     @property
     def orders(self):
@@ -687,7 +610,8 @@ class Client(models.Model):
 
     def number_of_deliveries_in_month(self, year, month):
         orders = self.client_order.filter(
-            status='D', delivery_date__year=year, delivery_date__month=month)
+            status="D", delivery_date__year=year, delivery_date__month=month
+        )
         return len(orders)
 
     @property
@@ -705,7 +629,7 @@ class Client(models.Model):
         """
         Returns specific food preparation associated to this client
         """
-        return self.options.filter(option_group='preparation')
+        return self.options.filter(option_group="preparation")
 
     @property
     def notes(self):
@@ -721,7 +645,7 @@ class Client(models.Model):
         days.
         """
         for co in self.client_option_set.all():
-            if co.option.name == 'meals_schedule':
+            if co.option.name == "meals_schedule":
                 try:
                     return json.loads(co.value)
                 except (ValueError, TypeError):  # JSON error
@@ -747,16 +671,12 @@ class Client(models.Model):
             for component, label in COMPONENT_GROUP_CHOICES:
                 if component is COMPONENT_GROUP_CHOICES_SIDES:
                     continue  # skip "Sides"
-                item = self.meal_default_week.get(
-                    component + '_' + day + '_quantity'
-                )
+                item = self.meal_default_week.get(component + "_" + day + "_quantity")
                 current[component] = item
                 numeric_fields.append(item)
 
-            size = self.meal_default_week.get(
-                'size_' + day
-            )
-            current['size'] = size
+            size = self.meal_default_week.get("size_" + day)
+            current["size"] = size
 
             defaults.append((day, current))
 
@@ -775,7 +695,7 @@ class Client(models.Model):
         prefs = []
         simple_meals_schedule = self.simple_meals_schedule
 
-        if self.delivery_type == 'E' or simple_meals_schedule is None:
+        if self.delivery_type == "E" or simple_meals_schedule is None:
             return ()
         else:
             for day, meal_schedule in defaults:
@@ -785,7 +705,7 @@ class Client(models.Model):
 
     @property
     def is_in_error_for_the_kitchen_count(self):
-        """ Return True if the client is in error for the Kitchen Count
+        """Return True if the client is in error for the Kitchen Count
         orders list page.
 
         The client is in error if either:
@@ -793,11 +713,7 @@ class Client(models.Model):
         - it has no route;
         - it is not active.
         """
-        return (
-            not self.is_geolocalized or
-            not self.route or
-            self.status != 'A'
-        )
+        return not self.is_geolocalized or not self.route or self.status != "A"
 
     def set_simple_meals_schedule(self, schedule):
         """
@@ -805,63 +721,52 @@ class Client(models.Model):
         @param schedule
             A python list of days.
         """
-        meal_schedule_option, _ = Option.objects.get_or_create(
-            name='meals_schedule')
+        meal_schedule_option, _ = Option.objects.get_or_create(name="meals_schedule")
         client_option, _ = Client_option.objects.update_or_create(
-            client=self, option=meal_schedule_option,
-            defaults={'value': json.dumps(schedule)})
+            client=self,
+            option=meal_schedule_option,
+            defaults={"value": json.dumps(schedule)},
+        )
 
 
 class ClientScheduledStatus(models.Model):
 
-    START = 'START'
-    END = 'END'
+    START = "START"
+    END = "END"
 
     CHANGE_STATUS = (
-        (START, _('Start')),
-        (END, _('End')),
+        (START, _("Start")),
+        (END, _("End")),
     )
 
-    TOBEPROCESSED = 'NEW'
-    PROCESSED = 'PRO'
-    ERROR = 'ERR'
+    TOBEPROCESSED = "NEW"
+    PROCESSED = "PRO"
+    ERROR = "ERR"
 
     OPERATION_STATUS = (
-        (TOBEPROCESSED, _('To be processed')),
-        (PROCESSED, _('Processed')),
-        (ERROR, _('Error')),
+        (TOBEPROCESSED, _("To be processed")),
+        (PROCESSED, _("Processed")),
+        (ERROR, _("Error")),
     )
 
     client = models.ForeignKey(
-        Client,
-        on_delete=models.CASCADE,
-        related_name='scheduled_statuses'
+        Client, on_delete=models.CASCADE, related_name="scheduled_statuses"
     )
 
     pair = models.OneToOneField(
-        'self',
+        "self",
         verbose_name=_("Client Scheduled Status Pair"),
         related_name="my_pair",
         on_delete=models.CASCADE,
         blank=True,
-        null=True
+        null=True,
     )
 
-    status_from = models.CharField(
-        max_length=1,
-        choices=Client.CLIENT_STATUS
-    )
+    status_from = models.CharField(max_length=1, choices=Client.CLIENT_STATUS)
 
-    status_to = models.CharField(
-        max_length=1,
-        choices=Client.CLIENT_STATUS
-    )
+    status_to = models.CharField(max_length=1, choices=Client.CLIENT_STATUS)
 
-    reason = models.CharField(
-        max_length=200,
-        blank=True,
-        default=''
-    )
+    reason = models.CharField(max_length=200, blank=True, default="")
 
     change_date = models.DateField(
         auto_now=False,
@@ -869,27 +774,21 @@ class ClientScheduledStatus(models.Model):
         default=timezone.now,
     )
 
-    change_state = models.CharField(
-        max_length=5,
-        choices=CHANGE_STATUS,
-        default=START
-    )
+    change_state = models.CharField(max_length=5, choices=CHANGE_STATUS, default=START)
 
     operation_status = models.CharField(
-        max_length=3,
-        choices=OPERATION_STATUS,
-        default=TOBEPROCESSED
+        max_length=3, choices=OPERATION_STATUS, default=TOBEPROCESSED
     )
 
     class Meta:
-        ordering = ['change_date']
+        ordering = ["change_date"]
 
     def __str__(self):
         return "Update {} status: from {} to {}, on {}".format(
             self.client.member,
             self.get_status_from_display(),
             self.get_status_to_display(),
-            self.change_date
+            self.change_date,
         )
 
     @property
@@ -905,7 +804,7 @@ class ClientScheduledStatus(models.Model):
             return None
 
     def process(self):
-        """ Process a scheduled change if valid."""
+        """Process a scheduled change if valid."""
         if self.is_valid():
             # Update the client status
             self.client.status = self.status_to
@@ -922,9 +821,11 @@ class ClientScheduledStatus(models.Model):
             return False
 
     def is_valid(self):
-        """ Returns True if a scheduled change must be applied."""
-        return self.client.status == self.status_from \
+        """Returns True if a scheduled change must be applied."""
+        return (
+            self.client.status == self.status_from
             and self.operation_status == self.TOBEPROCESSED
+        )
 
     def add_note_to_client(self, author=None):
         note = Note(
@@ -940,52 +841,40 @@ class ClientScheduledStatus(models.Model):
         Return True if the status is ERROR or the scheduled date has passed.
         """
         return (self.operation_status == self.ERROR) or (
-            self.change_date <= timezone.datetime.date(
-                timezone.datetime.today()))
+            self.change_date <= timezone.datetime.date(timezone.datetime.today())
+        )
 
 
 class ClientScheduledStatusFilter(FilterSet):
-
     class Meta:
         model = ClientScheduledStatus
-        fields = ['operation_status']
+        fields = ["operation_status"]
 
 
 class ClientFilter(FilterSet):
 
-    name = CharFilter(
-        method='filter_search',
-        label=_('Search by name')
-    )
+    name = CharFilter(method="filter_search", label=_("Search by name"))
 
-    status = MultipleChoiceFilter(
-        choices=Client.CLIENT_STATUS
-    )
+    status = MultipleChoiceFilter(choices=Client.CLIENT_STATUS)
 
-    delivery_type = ChoiceFilter(
-        choices=(('', ''),) + DELIVERY_TYPE
-    )
+    delivery_type = ChoiceFilter(choices=(("", ""),) + DELIVERY_TYPE)
 
     class Meta:
         model = Client
-        fields = ['route', 'status', 'delivery_type']
+        fields = ["route", "status", "delivery_type"]
 
     def filter_search(self, queryset, field_name, value):
         if not value:
             return queryset
 
         name_contains = Q()
-        names = value.split(' ')
+        names = value.split(" ")
 
         for name in names:
 
-            firstname_contains = Q(
-                member__firstname__icontains=name
-            )
+            firstname_contains = Q(member__firstname__icontains=name)
 
-            lastname_contains = Q(
-                member__lastname__icontains=name
-            )
+            lastname_contains = Q(member__lastname__icontains=name)
 
             name_contains |= firstname_contains | lastname_contains
 
@@ -993,16 +882,16 @@ class ClientFilter(FilterSet):
 
 
 class Relationship(models.Model):
-    REFERENT = 'referent'
-    EMERGENCY = 'emergency'
+    REFERENT = "referent"
+    EMERGENCY = "emergency"
     TYPE_CHOICES = (
-        (REFERENT, _('Referent')),
-        (EMERGENCY, _('Emergency')),
+        (REFERENT, _("Referent")),
+        (EMERGENCY, _("Emergency")),
     )
     TYPE_CHOICES_DICT = dict(TYPE_CHOICES)
 
-    member = models.ForeignKey('member.Member', on_delete=models.CASCADE)
-    client = models.ForeignKey('member.Client', on_delete=models.CASCADE)
+    member = models.ForeignKey("member.Member", on_delete=models.CASCADE)
+    client = models.ForeignKey("member.Client", on_delete=models.CASCADE)
     nature = models.CharField(max_length=100)
     # Relationship.type is linked with a forms.MultipleChoiceField
     type = JSONField(default=[], blank=True)
@@ -1011,19 +900,25 @@ class Relationship(models.Model):
 
     def __str__(self):
         return "{} {} is {} member of {} {}".format(
-            self.member.firstname, self.member.lastname,
+            self.member.firstname,
+            self.member.lastname,
             self.get_type_display(),
-            self.client.member.firstname, self.client.member.lastname)
+            self.client.member.firstname,
+            self.client.member.lastname,
+        )
 
     def get_type_display(self):
-        return '+'.join(map(
-            force_text,
-            list(map(lambda t: self.TYPE_CHOICES_DICT[t], self.type)) or (
-                [_('Unknown type')])))
+        return "+".join(
+            map(
+                force_text,
+                list(map(lambda t: self.TYPE_CHOICES_DICT[t], self.type))
+                or ([_("Unknown type")]),
+            )
+        )
 
     class Meta:
-        verbose_name_plural = _('relationships')
-        unique_together = ('client', 'member')
+        verbose_name_plural = _("relationships")
+        unique_together = ("client", "member")
 
     def is_referent(self):
         return self.REFERENT in self.type
@@ -1033,26 +928,20 @@ class Relationship(models.Model):
 
 
 class Option(models.Model):
-
     class Meta:
-        verbose_name_plural = _('options')
+        verbose_name_plural = _("options")
 
     # Information about options added to the meal
-    name = models.CharField(
-        max_length=50,
-        verbose_name=_('name')
-    )
+    name = models.CharField(max_length=50, verbose_name=_("name"))
 
     description = models.TextField(
-        verbose_name=_('description'),
+        verbose_name=_("description"),
         blank=True,
         null=True,
     )
 
     option_group = models.CharField(
-        max_length=100,
-        choices=OPTION_GROUP_CHOICES,
-        verbose_name=_('option group')
+        max_length=100, choices=OPTION_GROUP_CHOICES, verbose_name=_("option group")
     )
 
     def __str__(self):
@@ -1061,22 +950,14 @@ class Option(models.Model):
 
 class Client_option(models.Model):
     client = models.ForeignKey(
-        'member.Client',
-        verbose_name=_('client'),
-        on_delete=models.CASCADE
+        "member.Client", verbose_name=_("client"), on_delete=models.CASCADE
     )
 
     option = models.ForeignKey(
-        'member.option',
-        verbose_name=_('option'),
-        on_delete=models.CASCADE
+        "member.option", verbose_name=_("option"), on_delete=models.CASCADE
     )
 
-    value = models.CharField(
-        max_length=255,
-        null=True,
-        verbose_name=_('value')
-    )
+    value = models.CharField(max_length=255, null=True, verbose_name=_("value"))
     #  value contents depends on option_group of option occurence pointed to:
     #    if option_group = main_dish_size : 'Regular' or 'Large'
     #    if option_group = dish : qty Monday to Sunday ex. '1110120'
@@ -1084,69 +965,75 @@ class Client_option(models.Model):
     #    if option_group = other_order_item : No occurrence of Client_option
 
     def __str__(self):
-        return "{} {} <has> {}".format(self.client.member.firstname,
-                                       self.client.member.lastname,
-                                       self.option.name)
+        return "{} {} <has> {}".format(
+            self.client.member.firstname, self.client.member.lastname, self.option.name
+        )
 
 
 class Restriction(models.Model):
     client = models.ForeignKey(
-        'member.Client',
-        verbose_name=_('client'),
-        related_name='+',
-        on_delete=models.CASCADE
+        "member.Client",
+        verbose_name=_("client"),
+        related_name="+",
+        on_delete=models.CASCADE,
     )
 
     restricted_item = models.ForeignKey(
-        'meal.Restricted_item',
-        verbose_name=_('restricted item'),
-        related_name='+',
-        on_delete=models.CASCADE
+        "meal.Restricted_item",
+        verbose_name=_("restricted item"),
+        related_name="+",
+        on_delete=models.CASCADE,
     )
 
     def __str__(self):
-        return "{} {} <restricts> {}".format(self.client.member.firstname,
-                                             self.client.member.lastname,
-                                             self.restricted_item.name)
+        return "{} {} <restricts> {}".format(
+            self.client.member.firstname,
+            self.client.member.lastname,
+            self.restricted_item.name,
+        )
 
 
 class Client_avoid_ingredient(models.Model):
     client = models.ForeignKey(
-        'member.Client',
-        verbose_name=_('client'),
-        related_name='+',
-        on_delete=models.CASCADE
+        "member.Client",
+        verbose_name=_("client"),
+        related_name="+",
+        on_delete=models.CASCADE,
     )
 
     ingredient = models.ForeignKey(
-        'meal.Ingredient',
-        verbose_name=_('ingredient'),
-        related_name='+',
-        on_delete=models.CASCADE
+        "meal.Ingredient",
+        verbose_name=_("ingredient"),
+        related_name="+",
+        on_delete=models.CASCADE,
     )
 
     def __str__(self):
-        return "{} {} <has> {}".format(self.client.member.firstname,
-                                       self.client.member.lastname,
-                                       self.ingredient.name)
+        return "{} {} <has> {}".format(
+            self.client.member.firstname,
+            self.client.member.lastname,
+            self.ingredient.name,
+        )
 
 
 class Client_avoid_component(models.Model):
     client = models.ForeignKey(
-        'member.Client',
-        verbose_name=_('client'),
-        related_name='+',
-        on_delete=models.CASCADE
+        "member.Client",
+        verbose_name=_("client"),
+        related_name="+",
+        on_delete=models.CASCADE,
     )
 
     component = models.ForeignKey(
-        'meal.Component',
-        verbose_name=_('component'),
-        related_name='+',
-        on_delete=models.CASCADE
+        "meal.Component",
+        verbose_name=_("component"),
+        related_name="+",
+        on_delete=models.CASCADE,
     )
 
     def __str__(self):
-        return "{} {} <has> {}".format(self.client.member.firstname,
-                                       self.client.member.lastname,
-                                       self.component.name)
+        return "{} {} <has> {}".format(
+            self.client.member.firstname,
+            self.client.member.lastname,
+            self.component.name,
+        )

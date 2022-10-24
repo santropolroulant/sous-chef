@@ -8,13 +8,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('order', '0014_auto_20161209_2045'),
+        ("order", "0014_auto_20161209_2045"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='order_item',
-            name='size',
-            field=models.CharField(blank=True, choices=[('', ''), ('R', 'Regular'), ('L', 'Large')], max_length=1, null=True, verbose_name='size'),
+            model_name="order_item",
+            name="size",
+            field=models.CharField(
+                blank=True,
+                choices=[("", ""), ("R", "Regular"), ("L", "Large")],
+                max_length=1,
+                null=True,
+                verbose_name="size",
+            ),
         ),
     ]

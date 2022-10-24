@@ -12,20 +12,35 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('member', '0001_fix161f'),
+        ("member", "0001_fix161f"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Notification',
+            name="Notification",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('description', models.TextField(verbose_name='description')),
-                ('date', models.DateField(default=django.utils.timezone.now)),
-                ('member', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='member.Member', verbose_name='member')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("description", models.TextField(verbose_name="description")),
+                ("date", models.DateField(default=django.utils.timezone.now)),
+                (
+                    "member",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="member.Member",
+                        verbose_name="member",
+                    ),
+                ),
             ],
             options={
-                'verbose_name_plural': 'notifications',
+                "verbose_name_plural": "notifications",
             },
         ),
     ]

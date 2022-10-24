@@ -8,18 +8,18 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('member', '0007_auto_20160726_1703'),
+        ("member", "0007_auto_20160726_1703"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='address',
-            old_name='lat',
-            new_name='latitude',
+            model_name="address",
+            old_name="lat",
+            new_name="latitude",
         ),
         migrations.RenameField(
-            model_name='address',
-            old_name='lon',
-            new_name='longitude',
+            model_name="address",
+            old_name="lon",
+            new_name="longitude",
         ),
     ]

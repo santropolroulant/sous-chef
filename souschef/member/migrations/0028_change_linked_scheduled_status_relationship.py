@@ -7,9 +7,11 @@ import django.db.models.deletion
 
 
 def migrate_linked_scheduled_status(apps, schema_editor):
-    ClientScheduledStatus = apps.get_model('member', 'ClientScheduledStatus')
+    ClientScheduledStatus = apps.get_model("member", "ClientScheduledStatus")
 
-    for css in ClientScheduledStatus.objects.filter(linked_scheduled_status__isnull=False):
+    for css in ClientScheduledStatus.objects.filter(
+        linked_scheduled_status__isnull=False
+    ):
         css.pair = css.linked_scheduled_status
         # remove linked_scheduled_status relationship
         css.linked_scheduled_status = None
@@ -17,7 +19,7 @@ def migrate_linked_scheduled_status(apps, schema_editor):
 
 
 def reverse_linked_scheduled_status(apps, schema_editor):
-    ClientScheduledStatus = apps.get_model('member', 'ClientScheduledStatus')
+    ClientScheduledStatus = apps.get_model("member", "ClientScheduledStatus")
 
     for css in ClientScheduledStatus.objects.filter(pair__isnull=False):
         # make exactly the opposite of 'migrate_linked_scheduled_status'
@@ -34,22 +36,27 @@ class Migration(migrations.Migration):
     """
 
     dependencies = [
-        ('member', '0027_auto_20170313_1442'),
+        ("member", "0027_auto_20170313_1442"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='clientscheduledstatus',
-            name='pair',
+            model_name="clientscheduledstatus",
+            name="pair",
             field=models.OneToOneField(
-                blank=True, null=True, on_delete=django.db.models.deletion.CASCADE,
-                related_name='my_pair', to='member.ClientScheduledStatus',
-                verbose_name='Client Scheduled Status Pair'
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="my_pair",
+                to="member.ClientScheduledStatus",
+                verbose_name="Client Scheduled Status Pair",
             ),
         ),
-        migrations.RunPython(migrate_linked_scheduled_status, reverse_linked_scheduled_status),
+        migrations.RunPython(
+            migrate_linked_scheduled_status, reverse_linked_scheduled_status
+        ),
         migrations.RemoveField(
-            model_name='clientscheduledstatus',
-            name='linked_scheduled_status',
+            model_name="clientscheduledstatus",
+            name="linked_scheduled_status",
         ),
     ]

@@ -9,13 +9,18 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('order', '0001_fix161f'),
+        ("order", "0001_fix161f"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='order_item',
-            name='order',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='orders', to='order.Order', verbose_name='order'),
+            model_name="order_item",
+            name="order",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="orders",
+                to="order.Order",
+                verbose_name="order",
+            ),
         ),
     ]

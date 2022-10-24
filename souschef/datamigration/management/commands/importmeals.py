@@ -13,7 +13,7 @@ class Command(BaseCommand):
     since we will try to deprecate it in the future.
     """
 
-    help = 'Data: import clients relationships from given csv file.'
+    help = "Data: import clients relationships from given csv file."
 
     ROW_MID = 0
     ROW_MON = 1
@@ -29,26 +29,22 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--file',
+            "--file",
             default=False,
-            help='Import mock data instead of actual data',
+            help="Import mock data instead of actual data",
         )
 
     def handle(self, *args, **options):
-        if options['file']:
-            file = 'mock_meals.csv'
+        if options["file"]:
+            file = "mock_meals.csv"
         else:
-            file = 'clients_meals.csv'
+            file = "clients_meals.csv"
 
-        food_prep_puree = Option.objects.get(
-            name='Puree all'
-        )
-        food_prep_cut = Option.objects.get(
-            name='Cut up meat'
-        )
+        food_prep_puree = Option.objects.get(name="Puree all")
+        food_prep_cut = Option.objects.get(name="Cut up meat")
 
         with open(file) as f:
-            reader = csv.reader(f, delimiter=';')
+            reader = csv.reader(f, delimiter=";")
             for row in reader:
                 try:
                     member = Member.objects.get(mid=row[self.ROW_MID])
@@ -59,7 +55,7 @@ class Command(BaseCommand):
                         self.ROW_WED,
                         self.ROW_THU,
                         self.ROW_FRI,
-                        self.ROW_SAT
+                        self.ROW_SAT,
                     ]
                     meals_schedule = []
                     prefs = {}
@@ -72,40 +68,43 @@ class Command(BaseCommand):
                             if delivery_day > 3:
                                 delivery_day -= 1
 
-                            prefs['size_' + row[day]] = \
-                                row[11 + (delivery_day * 10) + 1]
-                            prefs['main_dish_' + row[day] + '_quantity'] = \
-                                int(row[11 + (delivery_day * 10) + 0])
-                            prefs['dessert_' + row[day] + '_quantity'] = \
-                                int(row[11 + (delivery_day * 10) + 5])
-                            prefs['fruit_salad_' + row[day] + '_quantity'] = \
-                                int(row[11 + (delivery_day * 10) + 2])
-                            prefs['green_salad_' + row[day] + '_quantity'] = \
-                                int(row[11 + (delivery_day * 10) + 3])
-                            prefs['pudding_' + row[day] + '_quantity'] = \
-                                int(row[11 + (delivery_day * 10) + 6])
-                            prefs['diabetic_' + row[day] + '_quantity'] = \
-                                int(row[11 + (delivery_day * 10) + 4])
+                            prefs["size_" + row[day]] = row[
+                                11 + (delivery_day * 10) + 1
+                            ]
+                            prefs["main_dish_" + row[day] + "_quantity"] = int(
+                                row[11 + (delivery_day * 10) + 0]
+                            )
+                            prefs["dessert_" + row[day] + "_quantity"] = int(
+                                row[11 + (delivery_day * 10) + 5]
+                            )
+                            prefs["fruit_salad_" + row[day] + "_quantity"] = int(
+                                row[11 + (delivery_day * 10) + 2]
+                            )
+                            prefs["green_salad_" + row[day] + "_quantity"] = int(
+                                row[11 + (delivery_day * 10) + 3]
+                            )
+                            prefs["pudding_" + row[day] + "_quantity"] = int(
+                                row[11 + (delivery_day * 10) + 6]
+                            )
+                            prefs["diabetic_" + row[day] + "_quantity"] = int(
+                                row[11 + (delivery_day * 10) + 4]
+                            )
 
                     client.set_simple_meals_schedule(meals_schedule)
                     client.meal_default_week = prefs
                     client.save()
 
                     # Food preparation
-                    if row[self.ROW_FOOD_PREP_CUT] == '1':
+                    if row[self.ROW_FOOD_PREP_CUT] == "1":
                         Client_option.objects.create(
-                            client=client,
-                            option=food_prep_cut
+                            client=client, option=food_prep_cut
                         )
-                    if row[self.ROW_FOOD_PREP_PUREE] == '1':
+                    if row[self.ROW_FOOD_PREP_PUREE] == "1":
                         Client_option.objects.create(
-                            client=client,
-                            option=food_prep_puree
+                            client=client, option=food_prep_puree
                         )
 
                 except Member.DoesNotExist:
-                    self.stdout.write(
-                        self.style.WARNING('Non existing member'))
+                    self.stdout.write(self.style.WARNING("Non existing member"))
                 except Client.DoesNotExist:
-                    self.stdout.write(
-                        self.style.WARNING('Non existing client'))
+                    self.stdout.write(self.style.WARNING("Non existing client"))

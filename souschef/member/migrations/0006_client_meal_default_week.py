@@ -9,13 +9,13 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('member', '0005_fix004a'),
+        ("member", "0005_fix004a"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='client',
-            name='meal_default_week',
+            model_name="client",
+            name="meal_default_week",
             field=annoying.fields.JSONField(blank=True, null=True),
         ),
     ]

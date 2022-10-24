@@ -7,7 +7,7 @@ from django.db import migrations, models
 
 def set_initial_categories(apps, schema_editor):
     # set NoteCategory initial
-    NoteCategory = apps.get_model('note', 'NoteCategory')
+    NoteCategory = apps.get_model("note", "NoteCategory")
     NoteCategory.objects.create(name="Follow-up needed")
     NoteCategory.objects.create(name="No Charge")
     NoteCategory.objects.create(name="Orders/Cancellations")
@@ -20,19 +20,25 @@ def set_initial_categories(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('note', '0006_change_priority_field'),
+        ("note", "0006_change_priority_field"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='NoteCategory',
+            name="NoteCategory",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=150, verbose_name='Name')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=150, verbose_name="Name")),
             ],
-            options={
-                'ordering': ('name',), 'verbose_name_plural': 'Note categories'
-            },
+            options={"ordering": ("name",), "verbose_name_plural": "Note categories"},
         ),
         migrations.RunPython(set_initial_categories),
     ]

@@ -10,9 +10,9 @@ def separate_shared_address_instances(apps, schema_editor):
     """
     Before changing ForeignKey to OneToOneField, make sure that members use different address instances.
     """
-    Member = apps.get_model('member', 'Member')
+    Member = apps.get_model("member", "Member")
     address_ids = set()
-    for m in Member.objects.select_related('address').all():
+    for m in Member.objects.select_related("address").all():
         a = m.address
         if a is None:
             continue
@@ -32,23 +32,27 @@ def separate_shared_address_instances(apps, schema_editor):
             assert a.pk not in address_ids
             address_ids.add(a.pk)
             m.address = a
-            m.save(update_fields=['address'])
+            m.save(update_fields=["address"])
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('member', '0028_change_linked_scheduled_status_relationship'),
+        ("member", "0028_change_linked_scheduled_status_relationship"),
     ]
 
     operations = [
         migrations.RunPython(
-            separate_shared_address_instances,
-            reverse_code=migrations.RunPython.noop
+            separate_shared_address_instances, reverse_code=migrations.RunPython.noop
         ),
         migrations.AlterField(
-            model_name='member',
-            name='address',
-            field=models.OneToOneField(null=True, on_delete=django.db.models.deletion.SET_NULL, to='member.Address', verbose_name='address'),
+            model_name="member",
+            name="address",
+            field=models.OneToOneField(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="member.Address",
+                verbose_name="address",
+            ),
         ),
     ]

@@ -18,7 +18,7 @@ from souschef.order.models import (
 class CreateOrderItem(InlineFormSet):
     model = Order_item
     extra = 1
-    fields = '__all__'
+    fields = "__all__"
 
 
 class UpdateOrderItem(CreateOrderItem):
@@ -26,78 +26,58 @@ class UpdateOrderItem(CreateOrderItem):
 
 
 class CreateOrdersBatchForm(forms.Form):
-
     def __init__(self, *args, **kwargs):
-        if 'delivery_dates' in kwargs:
-            delivery_dates = kwargs['delivery_dates']
-            del kwargs['delivery_dates']
+        if "delivery_dates" in kwargs:
+            delivery_dates = kwargs["delivery_dates"]
+            del kwargs["delivery_dates"]
         else:
             delivery_dates = None
         super(CreateOrdersBatchForm, self).__init__(*args, **kwargs)
 
         if delivery_dates:
             for d in delivery_dates:
-                self.fields['size_{}'.format(d)] = forms.ChoiceField(
+                self.fields["size_{}".format(d)] = forms.ChoiceField(
                     choices=SIZE_CHOICES,
-                    widget=forms.Select(attrs={'class': ''}),
-                    required=True
+                    widget=forms.Select(attrs={"class": ""}),
+                    required=True,
                 )
-                self.fields['delivery_{}'.format(d)] = forms.BooleanField(
+                self.fields["delivery_{}".format(d)] = forms.BooleanField(
                     required=False
                 )
-                self.fields['pickup_{}'.format(d)] = forms.BooleanField(
-                    required=False
-                )
-                self.fields['visit_{}'.format(d)] = forms.BooleanField(
-                    required=False
-                )
+                self.fields["pickup_{}".format(d)] = forms.BooleanField(required=False)
+                self.fields["visit_{}".format(d)] = forms.BooleanField(required=False)
 
                 for meal, meal_translation in COMPONENT_GROUP_CHOICES:
                     if meal is COMPONENT_GROUP_CHOICES_SIDES:
                         continue  # don't put "sides" on the form
-                    self.fields[
-                        '{}_{}_quantity'.format(meal, d)
-                    ] = forms.IntegerField(
-                        min_value=0,
-                        required=True
+                    self.fields["{}_{}_quantity".format(meal, d)] = forms.IntegerField(
+                        min_value=0, required=True
                     )
 
     client = forms.ModelChoiceField(
         required=True,
-        label=_('Client'),
-        widget=forms.Select(attrs={'class': 'ui search dropdown'}),
-        queryset=Client.active.select_related(
-            'member'
-        ).only(
-            'member__firstname',
-            'member__lastname'
-        ).order_by('member__lastname')
+        label=_("Client"),
+        widget=forms.Select(attrs={"class": "ui search dropdown"}),
+        queryset=Client.active.select_related("member")
+        .only("member__firstname", "member__lastname")
+        .order_by("member__lastname"),
     )
 
     delivery_dates = forms.CharField(
-        required=True,
-        label=_('Delivery dates'),
-        max_length=200
+        required=True, label=_("Delivery dates"), max_length=200
     )
 
     override_dates = forms.CharField(
-        required=False,
-        label=_('Override dates'),
-        max_length=200
+        required=False, label=_("Override dates"), max_length=200
     )
 
-    is_submit = forms.IntegerField(
-        required=True,
-        label=_('Is form submit')
-    )
+    is_submit = forms.IntegerField(required=True, label=_("Is form submit"))
 
     def clean_is_submit(self):
-        is_submit = self.cleaned_data['is_submit']
+        is_submit = self.cleaned_data["is_submit"]
         if is_submit != 1:
             # prevents form submit and force a form refresh
-            raise forms.ValidationError(
-                _("This field must be 1 to submit the form.")
-            )
+            raise forms.ValidationError(_("This field must be 1 to submit the form."))
         return is_submit
 
     def clean(self):
@@ -106,67 +86,67 @@ class CreateOrdersBatchForm(forms.Form):
         not be all empty. Refs #803.
         """
         cleaned_data = super(CreateOrdersBatchForm, self).clean()
-        delivery_dates_str = cleaned_data.get('delivery_dates')
+        delivery_dates_str = cleaned_data.get("delivery_dates")
         if delivery_dates_str:
-            delivery_dates = delivery_dates_str.split('|')
+            delivery_dates = delivery_dates_str.split("|")
         else:
             delivery_dates = []
         fields_not_null_check = [
-            ('delivery_{}', lambda x: x is True),
-            ('pickup_{}', lambda x: x is True),
-            ('visit_{}', lambda x: x is True),
+            ("delivery_{}", lambda x: x is True),
+            ("pickup_{}", lambda x: x is True),
+            ("visit_{}", lambda x: x is True),
         ]
         for meal, meal_translation in COMPONENT_GROUP_CHOICES:
             if meal is COMPONENT_GROUP_CHOICES_SIDES:
                 continue  # "sides" not in the form
             else:
                 fields_not_null_check.append(
-                    ('%s_{}_quantity' % meal, lambda x: x and x > 0))
+                    ("%s_{}_quantity" % meal, lambda x: x and x > 0)
+                )
         for delivery_date in delivery_dates:
-            if all([
-                    bool(check_fn(
-                        cleaned_data.get(field_template.format(delivery_date))
-                    )) is False
+            if all(
+                [
+                    bool(
+                        check_fn(cleaned_data.get(field_template.format(delivery_date)))
+                    )
+                    is False
                     for field_template, check_fn in fields_not_null_check
-            ]):
+                ]
+            ):
                 # Error-highlight all fields on that date.
                 for field_template, check_fn in fields_not_null_check:
                     self.add_error(
                         field_template.format(delivery_date),
                         forms.ValidationError(
-                            _("Empty order is not allowed."),
-                            code='empty_delivery_date'
-                        )
+                            _("Empty order is not allowed."), code="empty_delivery_date"
+                        ),
                     )
 
         return cleaned_data
 
 
 class OrderStatusChangeForm(forms.ModelForm):
-
     class Meta:
         model = OrderStatusChange
-        fields = [
-            'order', 'status_from', 'status_to', 'reason'
-        ]
+        fields = ["order", "status_from", "status_to", "reason"]
         widgets = {
-            'status_to': forms.Select(
-                attrs={'class': 'ui status_to dropdown disabled'}
+            "status_to": forms.Select(
+                attrs={"class": "ui status_to dropdown disabled"}
             ),
-            'reason': forms.Textarea(attrs={'rows': 2}),
+            "reason": forms.Textarea(attrs={"rows": 2}),
         }
 
     def clean(self):
         cleaned_data = super(OrderStatusChangeForm, self).clean()
-        status_to = cleaned_data.get('status_to')
-        reason = cleaned_data.get('reason')
+        status_to = cleaned_data.get("status_to")
+        reason = cleaned_data.get("reason")
 
-        if status_to == 'N' and not reason:  # No Charge without reason
+        if status_to == "N" and not reason:  # No Charge without reason
             self.add_error(
-                'reason',
+                "reason",
                 forms.ValidationError(
-                    _('A reason is required for No Charge order.'),
-                    code='no_charge_reason_required'
-                )
+                    _("A reason is required for No Charge order."),
+                    code="no_charge_reason_required",
+                ),
             )
         return cleaned_data

@@ -10,89 +10,217 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Component',
+            name="Component",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=50, verbose_name='name')),
-                ('description', models.TextField(blank=True, null=True, verbose_name='description')),
-                ('component_group', models.CharField(choices=[('main dish', 'main dish'), ('vegetable', 'Vegetable'), ('side dish', 'side dish'), ('seasonal', 'Seasonal')], max_length=100, verbose_name='component group')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=50, verbose_name="name")),
+                (
+                    "description",
+                    models.TextField(blank=True, null=True, verbose_name="description"),
+                ),
+                (
+                    "component_group",
+                    models.CharField(
+                        choices=[
+                            ("main dish", "main dish"),
+                            ("vegetable", "Vegetable"),
+                            ("side dish", "side dish"),
+                            ("seasonal", "Seasonal"),
+                        ],
+                        max_length=100,
+                        verbose_name="component group",
+                    ),
+                ),
             ],
             options={
-                'verbose_name_plural': 'components',
+                "verbose_name_plural": "components",
             },
         ),
         migrations.CreateModel(
-            name='Component_ingredient',
+            name="Component_ingredient",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('component', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='+', to='meal.Component', verbose_name='component')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "component",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="+",
+                        to="meal.Component",
+                        verbose_name="component",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Incompatibility',
+            name="Incompatibility",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Ingredient',
+            name="Ingredient",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=50, verbose_name='name')),
-                ('description', models.TextField(blank=True, null=True, verbose_name='description')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=50, verbose_name="name")),
+                (
+                    "description",
+                    models.TextField(blank=True, null=True, verbose_name="description"),
+                ),
             ],
             options={
-                'verbose_name_plural': 'meals',
+                "verbose_name_plural": "meals",
             },
         ),
         migrations.CreateModel(
-            name='Menu',
+            name="Menu",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date', models.DateField(verbose_name='date')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("date", models.DateField(verbose_name="date")),
             ],
             options={
-                'verbose_name_plural': 'menus',
+                "verbose_name_plural": "menus",
             },
         ),
         migrations.CreateModel(
-            name='Menu_component',
+            name="Menu_component",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('component', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='+', to='meal.Component', verbose_name='component')),
-                ('menu', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='+', to='meal.Menu', verbose_name='menu')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "component",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="+",
+                        to="meal.Component",
+                        verbose_name="component",
+                    ),
+                ),
+                (
+                    "menu",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="+",
+                        to="meal.Menu",
+                        verbose_name="menu",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Restricted_item',
+            name="Restricted_item",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=50, verbose_name='name')),
-                ('description', models.TextField(blank=True, null=True, verbose_name='description')),
-                ('restricted_item_group', models.CharField(choices=[('meat', 'Meat'), ('vegetables', 'Vegetables'), ('seafood', 'Seafood'), ('seeds and nuts', 'Seeds and nuts'), ('other', 'Other')], max_length=100, verbose_name='restricted item group')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=50, verbose_name="name")),
+                (
+                    "description",
+                    models.TextField(blank=True, null=True, verbose_name="description"),
+                ),
+                (
+                    "restricted_item_group",
+                    models.CharField(
+                        choices=[
+                            ("meat", "Meat"),
+                            ("vegetables", "Vegetables"),
+                            ("seafood", "Seafood"),
+                            ("seeds and nuts", "Seeds and nuts"),
+                            ("other", "Other"),
+                        ],
+                        max_length=100,
+                        verbose_name="restricted item group",
+                    ),
+                ),
             ],
             options={
-                'verbose_name_plural': 'restricted items',
+                "verbose_name_plural": "restricted items",
             },
         ),
         migrations.AddField(
-            model_name='incompatibility',
-            name='ingredient',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='+', to='meal.Ingredient', verbose_name='ingredient'),
+            model_name="incompatibility",
+            name="ingredient",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="+",
+                to="meal.Ingredient",
+                verbose_name="ingredient",
+            ),
         ),
         migrations.AddField(
-            model_name='incompatibility',
-            name='restricted_item',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='+', to='meal.Restricted_item', verbose_name='restricted item'),
+            model_name="incompatibility",
+            name="restricted_item",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="+",
+                to="meal.Restricted_item",
+                verbose_name="restricted item",
+            ),
         ),
         migrations.AddField(
-            model_name='component_ingredient',
-            name='ingredient',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='+', to='meal.Ingredient', verbose_name='ingredient'),
+            model_name="component_ingredient",
+            name="ingredient",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="+",
+                to="meal.Ingredient",
+                verbose_name="ingredient",
+            ),
         ),
     ]

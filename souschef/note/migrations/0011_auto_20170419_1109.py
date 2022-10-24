@@ -9,18 +9,30 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('note', '0010_auto_20170313_1442'),
+        ("note", "0010_auto_20170313_1442"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='note',
-            name='category',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='notes', to='note.NoteCategory', verbose_name='Category'),
+            model_name="note",
+            name="category",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="notes",
+                to="note.NoteCategory",
+                verbose_name="Category",
+            ),
         ),
         migrations.AlterField(
-            model_name='note',
-            name='priority',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='notes', to='note.NotePriority', verbose_name='Priority'),
+            model_name="note",
+            name="priority",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="notes",
+                to="note.NotePriority",
+                verbose_name="Priority",
+            ),
         ),
     ]

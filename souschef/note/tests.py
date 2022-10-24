@@ -11,14 +11,14 @@ from souschef.sous_chef.tests import TestMixin as SousChefTestMixin
 
 class NoteTestCase(TestCase):
 
-    fixtures = ['routes.json']
+    fixtures = ["routes.json"]
 
     @classmethod
     def setUpTestData(cls):
         cls.clients = ClientFactory()
         cls.admin = User.objects.create_superuser(
-            username='admin', email='testadmin@example.com',
-            password='test1234')
+            username="admin", email="testadmin@example.com", password="test1234"
+        )
         cls.note = NoteFactory.create(
             client=cls.clients,
             author=cls.admin,
@@ -47,40 +47,36 @@ class NoteTestCase(TestCase):
 
     def test_str_includes_note(self):
         """An note listing must include the note text"""
-        note = Note.objects.create(
-            client=self.clients,
-            author=self.admin,
-            note='x123y'
-        )
-        self.assertTrue('x123y' in note.note)
+        note = Note.objects.create(client=self.clients, author=self.admin, note="x123y")
+        self.assertTrue("x123y" in note.note)
 
     def test_anonymous_user_gets_redirected_to_login_page(self):
         self.client.logout()
-        response = self.client.get('/note/')
+        response = self.client.get("/note/")
         self.assertRedirects(
-            response,
-            reverse('page:login') + '?next=/note/',
-            status_code=302
+            response, reverse("page:login") + "?next=/note/", status_code=302
         )
 
 
 class NoteAddTestCase(NoteTestCase):
-
     def setUp(self):
-        self.client.force_login(
-            self.admin, 'django.contrib.auth.backends.ModelBackend')
+        self.client.force_login(self.admin, "django.contrib.auth.backends.ModelBackend")
 
     def test_create_set_fields(self):
         """
         Test if author, date, is_read are correctly set.
         """
         time_1 = timezone.now()
-        response = self.client.post(reverse('note:note_add'), {
-            'note': "test note TEST_PHRASE",
-            "client": ClientFactory().pk,
-            "priority": '1',
-            "category": '1'
-        }, follow=False)
+        response = self.client.post(
+            reverse("note:note_add"),
+            {
+                "note": "test note TEST_PHRASE",
+                "client": ClientFactory().pk,
+                "priority": "1",
+                "category": "1",
+            },
+            follow=False,
+        )
         time_2 = timezone.now()
         self.assertEqual(response.status_code, 302)  # successful creation
         note = Note.objects.get(note__contains="TEST_PHRASE")
@@ -91,11 +87,12 @@ class NoteAddTestCase(NoteTestCase):
     def test_redirects_users_who_do_not_have_edit_permission(self):
         # Setup
         user = User.objects.create_user(
-            username='foo', email='foo@example.com', password='secure')
+            username="foo", email="foo@example.com", password="secure"
+        )
         user.is_staff = True
         user.save()
-        self.client.login(username='foo', password='secure')
-        url = reverse('note:note_add')
+        self.client.login(username="foo", password="secure")
+        url = reverse("note:note_add")
         # Run
         response = self.client.get(url)
         # Check
@@ -104,32 +101,37 @@ class NoteAddTestCase(NoteTestCase):
     def test_allow_access_to_users_with_edit_permission(self):
         # Setup
         user = User.objects.create_superuser(
-            username='foo', email='foo@example.com', password='secure')
+            username="foo", email="foo@example.com", password="secure"
+        )
         user.save()
-        self.client.login(username='foo', password='secure')
-        url = reverse('note:note_add')
+        self.client.login(username="foo", password="secure")
+        url = reverse("note:note_add")
         # Run
-        response = self.client.post(url, {
-            'note': "test note TEST_PHRASE",
-            "client": ClientFactory().pk,
-            "priority": '1'
-        }, follow=True)
+        response = self.client.post(
+            url,
+            {
+                "note": "test note TEST_PHRASE",
+                "client": ClientFactory().pk,
+                "priority": "1",
+            },
+            follow=True,
+        )
         # Check
         self.assertEqual(response.status_code, 200)
 
 
 class ClientNoteAddTestCase(NoteTestCase):
-
     def setUp(self):
         self.client.force_login(
-            self.admin, 'django.contrib.auth.backends.ModelBackend',)
+            self.admin,
+            "django.contrib.auth.backends.ModelBackend",
+        )
 
     def test_get_with_client_pk(self):
         client = ClientFactory()
-        response = self.client.get(reverse(
-            'member:client_notes_add',
-            kwargs={'pk': client.pk}
-        ))
+        response = self.client.get(
+            reverse("member:client_notes_add", kwargs={"pk": client.pk})
+        )
         self.assertEqual(response.status_code, 200)
         content = str(response.content, encoding=response.charset)
         self.assertIn(str(client.pk), content)
@@ -139,12 +141,13 @@ class ClientNoteAddTestCase(NoteTestCase):
     def test_redirects_users_who_do_not_have_edit_permission(self):
         # Setup
         user = User.objects.create_user(
-            username='foo', email='foo@example.com', password='secure')
+            username="foo", email="foo@example.com", password="secure"
+        )
         user.is_staff = True
         user.save()
-        self.client.login(username='foo', password='secure')
+        self.client.login(username="foo", password="secure")
         client = ClientFactory()
-        url = reverse('member:client_notes_add', kwargs={'pk': client.pk})
+        url = reverse("member:client_notes_add", kwargs={"pk": client.pk})
         # Run
         response = self.client.get(url)
         # Check
@@ -153,11 +156,12 @@ class ClientNoteAddTestCase(NoteTestCase):
     def test_allow_access_to_users_with_edit_permission(self):
         # Setup
         user = User.objects.create_superuser(
-            username='foo', email='foo@example.com', password='secure')
+            username="foo", email="foo@example.com", password="secure"
+        )
         user.save()
-        self.client.login(username='foo', password='secure')
+        self.client.login(username="foo", password="secure")
         client = ClientFactory()
-        url = reverse('member:client_notes_add', kwargs={'pk': client.pk})
+        url = reverse("member:client_notes_add", kwargs={"pk": client.pk})
         # Run
         response = self.client.get(url)
         # Check
@@ -166,37 +170,39 @@ class ClientNoteAddTestCase(NoteTestCase):
 
 class RedirectAnonymousUserTestCase(SousChefTestMixin, TestCase):
 
-    fixtures = ['routes.json']
+    fixtures = ["routes.json"]
 
     def test_anonymous_user_gets_redirect_to_login_page(self):
         check = self.assertRedirectsWithAllMethods
-        check(reverse('note:note_list'))
-        check(reverse('note:read', kwargs={'id': 1}))
-        check(reverse('note:unread', kwargs={'id': 1}))
-        check(reverse('note:note_add'))
-        check(reverse('note:batch_toggle'))
+        check(reverse("note:note_list"))
+        check(reverse("note:read", kwargs={"id": 1}))
+        check(reverse("note:unread", kwargs={"id": 1}))
+        check(reverse("note:note_add"))
+        check(reverse("note:batch_toggle"))
 
 
 class NoteListViewTestCase(SousChefTestMixin, TestCase):
-    fixtures = ['routes.json']
+    fixtures = ["routes.json"]
 
     def test_redirects_users_who_do_not_have_read_permission(self):
         # Setup
         User.objects.create_user(
-            username='foo', email='foo@example.com', password='secure')
-        self.client.login(username='foo', password='secure')
-        url = reverse('note:note_list')
+            username="foo", email="foo@example.com", password="secure"
+        )
+        self.client.login(username="foo", password="secure")
+        url = reverse("note:note_list")
         # Run & check
         self.assertRedirectsWithAllMethods(url)
 
     def test_allow_access_to_users_with_read_permission(self):
         # Setup
         user = User.objects.create_user(
-            username='foo', email='foo@example.com', password='secure')
+            username="foo", email="foo@example.com", password="secure"
+        )
         user.is_staff = True
         user.save()
-        self.client.login(username='foo', password='secure')
-        url = reverse('note:note_list')
+        self.client.login(username="foo", password="secure")
+        url = reverse("note:note_list")
         # Run
         response = self.client.get(url)
         # Check
@@ -207,18 +213,9 @@ class NoteListViewTestCase(SousChefTestMixin, TestCase):
         Search text should be contained by either firstname or
         lastname.
         """
-        client1 = ClientFactory(
-            member__firstname='tessst',
-            member__lastname='woooo'
-        )
-        client2 = ClientFactory(
-            member__firstname='woooo',
-            member__lastname='tessst'
-        )
-        client3 = ClientFactory(
-            member__firstname='woooo',
-            member__lastname='woooo'
-        )
+        client1 = ClientFactory(member__firstname="tessst", member__lastname="woooo")
+        client2 = ClientFactory(member__firstname="woooo", member__lastname="tessst")
+        client3 = ClientFactory(member__firstname="woooo", member__lastname="woooo")
         note1a = NoteFactory(client=client1)
         note1b = NoteFactory(client=client1)
         note2a = NoteFactory(client=client2)
@@ -227,13 +224,10 @@ class NoteListViewTestCase(SousChefTestMixin, TestCase):
         note3b = NoteFactory(client=client3)
 
         self.force_login()
-        url = reverse('note:note_list')
-        response = self.client.get(
-            url,
-            {'name': 'esss'}
-        )
+        url = reverse("note:note_list")
+        response = self.client.get(url, {"name": "esss"})
         self.assertEqual(response.status_code, 200)
-        notes = response.context['notes']
+        notes = response.context["notes"]
         self.assertIn(note1a, notes)
         self.assertIn(note1b, notes)
         self.assertIn(note2a, notes)
@@ -243,7 +237,6 @@ class NoteListViewTestCase(SousChefTestMixin, TestCase):
 
 
 class NoteBatchToggleViewTestCase(SousChefTestMixin, TestCase):
-
     @classmethod
     def setUpTestData(cls):
         RouteFactory()  # prerequisite
@@ -253,12 +246,16 @@ class NoteBatchToggleViewTestCase(SousChefTestMixin, TestCase):
     def test_toggle(self):
         self.force_login()
         response = self.client.post(
-            reverse('note:batch_toggle'),
-            {'note': list(map(
-                lambda n: n.id,
-                itertools.chain(self.unread_notes, self.read_notes)
-            ))},
-            redirect=False
+            reverse("note:batch_toggle"),
+            {
+                "note": list(
+                    map(
+                        lambda n: n.id,
+                        itertools.chain(self.unread_notes, self.read_notes),
+                    )
+                )
+            },
+            redirect=False,
         )
         self.assertEqual(response.status_code, 302)  # should redirect
 

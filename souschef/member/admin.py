@@ -1,9 +1,15 @@
 from django.contrib import admin
 
 from souschef.member.models import (
-    Member, Client, Contact, Address,
-    Route, Option, Relationship,
-    DeliveryHistory, ClientScheduledStatus
+    Member,
+    Client,
+    Contact,
+    Address,
+    Route,
+    Option,
+    Relationship,
+    DeliveryHistory,
+    ClientScheduledStatus,
 )
 
 
@@ -33,48 +39,50 @@ class RelationshipInline(admin.TabularInline):
 
 
 class MemberAdmin(admin.ModelAdmin):
-    search_fields = ['lastname', 'firstname']
-    list_display = ('full_name', 'address', 'work_information', 'updated_at')
-    inlines = [
-        ContactInline
-    ]
+    search_fields = ["lastname", "firstname"]
+    list_display = ("full_name", "address", "work_information", "updated_at")
+    inlines = [ContactInline]
 
     def full_name(self, obj):
-        return ("%s %s" % (obj.firstname, obj.lastname))
-    full_name.short_description = 'Name'
+        return "%s %s" % (obj.firstname, obj.lastname)
+
+    full_name.short_description = "Name"
 
 
 class ClientAdmin(admin.ModelAdmin):
-    search_fields = ['member__lastname', 'member__firstname']
-    list_filter = ('status', 'route', 'delivery_type')
-    list_display = (
-        'member',
-        'status',
-        'language',
-        'delivery_type',
-        'gender',
-        'route')
+    search_fields = ["member__lastname", "member__firstname"]
+    list_filter = ("status", "route", "delivery_type")
+    list_display = ("member", "status", "language", "delivery_type", "gender", "route")
     inlines = [
         RelationshipInline,
         OptionsInline,
         RestrictionsInline,
         ComponentsToAvoidInline,
-        IngredientsToAvoidInline
+        IngredientsToAvoidInline,
     ]
 
 
 class ContactAdmin(admin.ModelAdmin):
-    search_fields = ['member__lastname', 'member__firstname']
-    list_display = ('member', 'type', 'value', )
-    list_filter = ('type',)
+    search_fields = ["member__lastname", "member__firstname"]
+    list_display = (
+        "member",
+        "type",
+        "value",
+    )
+    list_filter = ("type",)
 
 
 class RelationshipAdmin(admin.ModelAdmin):
-    search_fields = ['member__lastname', 'member__firstname',
-                     'client__member__lastname', 'client__member__firstname',
-                     'type', 'nature', 'extra_fields']
-    list_display = ('__str__', 'member', 'type', 'nature', 'client',
-                    'extra_fields')
+    search_fields = [
+        "member__lastname",
+        "member__firstname",
+        "client__member__lastname",
+        "client__member__firstname",
+        "type",
+        "nature",
+        "extra_fields",
+    ]
+    list_display = ("__str__", "member", "type", "nature", "client", "extra_fields")
 
 
 admin.site.register(Member, MemberAdmin)

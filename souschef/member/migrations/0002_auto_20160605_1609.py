@@ -9,13 +9,18 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('member', '0001_fix161f'),
+        ("member", "0001_fix161f"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='member',
-            name='address',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='member.Address', verbose_name='address'),
+            model_name="member",
+            name="address",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="member.Address",
+                verbose_name="address",
+            ),
         ),
     ]

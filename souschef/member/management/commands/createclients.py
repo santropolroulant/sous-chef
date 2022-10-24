@@ -4,16 +4,14 @@ from django.core.management import call_command
 
 
 class Command(BaseCommand):
-    help = 'Creates a happy bunch of clients without orders'
+    help = "Creates a happy bunch of clients without orders"
 
     def handle(self, *args, **options):
         # Load fixtures for the routes
-        fixture_filename = 'routes.json'
-        call_command('loaddata', fixture_filename)
+        fixture_filename = "routes.json"
+        call_command("loaddata", fixture_filename)
 
         client = ClientFactory.create_batch(10)
         self.stdout.write(
-            self.style.SUCCESS(
-                'Successfully created client "%s"' % client
-            )
+            self.style.SUCCESS('Successfully created client "%s"' % client)
         )

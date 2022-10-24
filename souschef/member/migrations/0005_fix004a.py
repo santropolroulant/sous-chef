@@ -9,13 +9,19 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('member', '0004_fix004a'),
+        ("member", "0004_fix004a"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='client',
-            name='route',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='member.Route', verbose_name='route'),
+            model_name="client",
+            name="route",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="member.Route",
+                verbose_name="route",
+            ),
         ),
     ]

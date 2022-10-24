@@ -9,13 +9,18 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('member', '0036_member_addresses'),
+        ("member", "0036_member_addresses"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='member',
-            name='address',
-            field=models.OneToOneField(null=True, on_delete=django.db.models.deletion.SET_NULL, to='member.Address', verbose_name='address'),
+            model_name="member",
+            name="address",
+            field=models.OneToOneField(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="member.Address",
+                verbose_name="address",
+            ),
         ),
     ]

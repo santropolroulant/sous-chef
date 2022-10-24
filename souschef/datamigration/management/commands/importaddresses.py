@@ -5,7 +5,7 @@ from souschef.member.models import Member, Address, Contact, EMAIL, HOME
 
 
 class Command(BaseCommand):
-    help = 'Data: import clients from given csv file.'
+    help = "Data: import clients from given csv file."
 
     ROW_MID = 0
     ROW_ADDRESS1 = 3
@@ -17,19 +17,19 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--file',
+            "--file",
             default=False,
-            help='Import mock data instead of actual data',
+            help="Import mock data instead of actual data",
         )
 
     def handle(self, *args, **options):
-        if options['file']:
-            file = 'mock_addresses.csv'
+        if options["file"]:
+            file = "mock_addresses.csv"
         else:
-            file = 'clients_address.csv'
+            file = "clients_address.csv"
 
         with open(file) as f:
-            reader = csv.reader(f, delimiter=';')
+            reader = csv.reader(f, delimiter=";")
             for row in reader:
                 try:
                     member = Member.objects.get(mid=row[self.ROW_MID])
@@ -48,19 +48,14 @@ class Command(BaseCommand):
                     contacts = Contact.objects.filter(member=member)
                     contacts.delete()
 
-                    if row[self.ROW_PHONE] != '':
+                    if row[self.ROW_PHONE] != "":
                         Contact.objects.create(
-                            type=HOME,
-                            value=row[self.ROW_PHONE],
-                            member=member
+                            type=HOME, value=row[self.ROW_PHONE], member=member
                         )
-                    if row[self.ROW_EMAIL] != '':
+                    if row[self.ROW_EMAIL] != "":
                         Contact.objects.create(
-                            type=EMAIL,
-                            value=row[self.ROW_EMAIL],
-                            member=member
+                            type=EMAIL, value=row[self.ROW_EMAIL], member=member
                         )
 
                 except Member.DoesNotExist:
-                    self.stdout.write(
-                        self.style.WARNING('Non existing member'))
+                    self.stdout.write(self.style.WARNING("Non existing member"))

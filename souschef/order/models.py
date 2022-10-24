@@ -23,12 +23,12 @@ from souschef.meal.models import (
 
 
 ORDER_STATUS = (
-    ('O', _('Ordered')),
-    ('D', _('Delivered')),
-    ('N', _('No Charge')),
-    ('C', _('Cancelled')),
-    ('B', _('Billed')),
-    ('P', _('Paid')),
+    ("O", _("Ordered")),
+    ("D", _("Delivered")),
+    ("N", _("No Charge")),
+    ("C", _("Cancelled")),
+    ("B", _("Billed")),
+    ("P", _("Paid")),
 )
 
 ORDER_STATUS_ORDERED = ORDER_STATUS[0][0]
@@ -36,20 +36,19 @@ ORDER_STATUS_DELIVERED = ORDER_STATUS[1][0]
 ORDER_STATUS_CANCELLED = ORDER_STATUS[3][0]
 
 SIZE_CHOICES = (
-    ('', ''),
-    ('R', _('Regular')),
-    ('L', _('Large')),
+    ("", ""),
+    ("R", _("Regular")),
+    ("L", _("Large")),
 )
 
 SIZE_CHOICES_REGULAR = SIZE_CHOICES[1][0]
 SIZE_CHOICES_LARGE = SIZE_CHOICES[2][0]
 
 ORDER_ITEM_TYPE_CHOICES = (
-    ('meal_component',
-        _('Meal component (main dish, vegetable, side dish, seasonal)')),
-    ('delivery', _('Delivery (general store item, invitation, ...)')),
-    ('pickup', _('Pickup (payment)')),
-    ('visit', _('Visit')),
+    ("meal_component", _("Meal component (main dish, vegetable, side dish, seasonal)")),
+    ("delivery", _("Delivery (general store item, invitation, ...)")),
+    ("pickup", _("Pickup (payment)")),
+    ("visit", _("Visit")),
 )
 
 ORDER_ITEM_TYPE_CHOICES_COMPONENT = ORDER_ITEM_TYPE_CHOICES[0][0]
@@ -63,23 +62,19 @@ SIDE_PRICE_SOLIDARY = 0.50
 
 
 class OrderManager(models.Manager):
-    def get_orders(self,
-                   delivery_date=None,
-                   order_statuses=None):
+    def get_orders(self, delivery_date=None, order_statuses=None):
         # If no date is passed, use the current day
         if delivery_date is None:
             delivery_date = date.today()
         extra_kwargs = {}
         if order_statuses:
-            extra_kwargs['status__in'] = order_statuses
+            extra_kwargs["status__in"] = order_statuses
         return self.get_queryset().filter(
             delivery_date=delivery_date,
             **extra_kwargs,
         )
 
-    def get_shippable_orders(self,
-                             delivery_date=None,
-                             exclude_non_geolocalized=False):
+    def get_shippable_orders(self, delivery_date=None, exclude_non_geolocalized=False):
         """
         Return the orders ready to be delivered for a given date.
         A shippable order must be created in the database, and its ORDER_STATUS
@@ -90,17 +85,15 @@ class OrderManager(models.Manager):
             delivery_date = date.today()
         extra_kwargs = {}
         if exclude_non_geolocalized is True:
-            extra_kwargs['client__member__address__latitude__isnull'] = False
-            extra_kwargs['client__member__address__longitude__isnull'] = False
+            extra_kwargs["client__member__address__latitude__isnull"] = False
+            extra_kwargs["client__member__address__longitude__isnull"] = False
         return self.get_queryset().filter(
-            delivery_date=delivery_date,
-            status=ORDER_STATUS_ORDERED,
-            **extra_kwargs)
+            delivery_date=delivery_date, status=ORDER_STATUS_ORDERED, **extra_kwargs
+        )
 
-    def get_shippable_orders_by_route(self,
-                                      route_id,
-                                      delivery_date=None,
-                                      exclude_non_geolocalized=False):
+    def get_shippable_orders_by_route(
+        self, route_id, delivery_date=None, exclude_non_geolocalized=False
+    ):
         """
         Return the orders ready to be delivered for a given route.
         If delivery date is not provided, it is assumed to today.
@@ -111,13 +104,14 @@ class OrderManager(models.Manager):
             delivery_date = date.today()
         extra_kwargs = {}
         if exclude_non_geolocalized is True:
-            extra_kwargs['client__member__address__latitude__isnull'] = False
-            extra_kwargs['client__member__address__longitude__isnull'] = False
+            extra_kwargs["client__member__address__latitude__isnull"] = False
+            extra_kwargs["client__member__address__longitude__isnull"] = False
         return self.get_queryset().filter(
             delivery_date=delivery_date,
             status=ORDER_STATUS_ORDERED,
             client__route=route_id,
-            **extra_kwargs)
+            **extra_kwargs,
+        )
 
     def get_billable_orders(self, year, month):
         """
@@ -128,7 +122,7 @@ class OrderManager(models.Manager):
         return self.get_queryset().filter(
             delivery_date__year=year,
             delivery_date__month=month,
-            status='D',
+            status="D",
         )
 
     def get_billable_orders_client(self, month, year, client):
@@ -156,7 +150,7 @@ class OrderManager(models.Manager):
             main_price = MAIN_PRICE_DEFAULT
             side_price = SIDE_PRICE_DEFAULT
 
-        return {'main': main_price, 'side': side_price}
+        return {"main": main_price, "side": side_price}
 
     def auto_create_orders(self, delivery_date, clients):
         """
@@ -173,11 +167,10 @@ class OrderManager(models.Manager):
         """
         created_orders = []
         weekday = delivery_date.weekday()  # Monday is 0, Sunday is 6
-        day = DAYS_OF_WEEK[weekday][0]     # 0 -> 'monday', 6 -> 'sunday'
+        day = DAYS_OF_WEEK[weekday][0]  # 0 -> 'monday', 6 -> 'sunday'
         for client in clients:
             try:
-                order = Order.objects.get(client=client,
-                                          delivery_date=delivery_date)
+                order = Order.objects.get(client=client, delivery_date=delivery_date)
                 created_orders.append(order)
                 continue
             except Order.DoesNotExist:
@@ -188,9 +181,7 @@ class OrderManager(models.Manager):
                 if items is None:
                     continue
 
-                filtered_items = {
-                    k: v for k, v in items.items() if v is not None
-                }
+                filtered_items = {k: v for k, v in items.items() if v is not None}
 
                 # Skip this client if nothing to order
                 if not filtered_items:
@@ -198,10 +189,10 @@ class OrderManager(models.Manager):
 
                 individual_items = {}
                 for key, value in filtered_items.items():
-                    if 'size' in key:
-                        replaced_key = key + '_default'
+                    if "size" in key:
+                        replaced_key = key + "_default"
                     else:
-                        replaced_key = key + '_default_quantity'
+                        replaced_key = key + "_default_quantity"
                     individual_items[replaced_key] = value
 
                 prices = self.get_client_prices(client)
@@ -212,8 +203,7 @@ class OrderManager(models.Manager):
                 created_orders.append(order)
         return created_orders
 
-    def create_batch_orders(self, delivery_dates, client, items,
-                            override_dates=[]):
+    def create_batch_orders(self, delivery_dates, client, items, override_dates=[]):
         """
         Create orders for one or multiple days, for a given client.
         Order items will be created based on client's meals schedule.
@@ -233,9 +223,7 @@ class OrderManager(models.Manager):
         prices = self.get_client_prices(client)
 
         for delivery_date_str in delivery_dates:
-            delivery_date = datetime.strptime(
-                delivery_date_str, "%Y-%m-%d"
-            ).date()
+            delivery_date = datetime.strptime(delivery_date_str, "%Y-%m-%d").date()
             prior_order = Order.objects.filter(
                 client=client, delivery_date=delivery_date
             )
@@ -243,21 +231,16 @@ class OrderManager(models.Manager):
                 if delivery_date_str in override_dates:
                     # If an order is already created, override the original(s)
                     for x in prior_order:
-                        x.status = 'C'
+                        x.status = "C"
                         x.save()
                 else:
                     continue
             individual_items = {}
             for key, value in items.items():
                 if delivery_date_str in key:
-                    replaced_key = key.replace(
-                        delivery_date_str,
-                        'default'
-                    )
+                    replaced_key = key.replace(delivery_date_str, "default")
                     individual_items[replaced_key] = value
-            order = self.create_order(
-                delivery_date, client, individual_items, prices
-            )
+            order = self.create_order(delivery_date, client, individual_items, prices)
             created_orders.append(order)
 
         return created_orders
@@ -277,35 +260,33 @@ class OrderManager(models.Manager):
             }
         Every main dish comes with a free side dish. (thus not billable)
         """
-        order = Order.objects.create(client=client,
-                                     delivery_date=delivery_date)
-        free_side_dishes = items.get('main_dish_default_quantity') or 0
+        order = Order.objects.create(client=client, delivery_date=delivery_date)
+        free_side_dishes = items.get("main_dish_default_quantity") or 0
 
         for component_group, trans in COMPONENT_GROUP_CHOICES:
             if component_group != COMPONENT_GROUP_CHOICES_SIDES:
-                item_qty = items.get(
-                    component_group + '_default_quantity'
-                ) or 0
+                item_qty = items.get(component_group + "_default_quantity") or 0
                 if item_qty == 0:
                     continue
 
                 common_kwargs = {
-                    'order': order,
-                    'component_group': component_group,
-                    'order_item_type': ORDER_ITEM_TYPE_CHOICES_COMPONENT
+                    "order": order,
+                    "component_group": component_group,
+                    "order_item_type": ORDER_ITEM_TYPE_CHOICES_COMPONENT,
                 }
 
-                if (component_group == COMPONENT_GROUP_CHOICES_MAIN_DISH):
-                    price = item_qty * prices['main']
-                    if items['size_default'] == 'L':
-                        price += item_qty * prices['side']
+                if component_group == COMPONENT_GROUP_CHOICES_MAIN_DISH:
+                    price = item_qty * prices["main"]
+                    if items["size_default"] == "L":
+                        price += item_qty * prices["side"]
                     # main dish
                     Order_item.objects.create(
-                        size=items['size_default'],
+                        size=items["size_default"],
                         total_quantity=item_qty,
                         price=price,
                         billable_flag=True,
-                        **common_kwargs)
+                        **common_kwargs,
+                    )
                 else:
                     # side dish: deduct+billable
                     deduct = min(free_side_dishes, item_qty)
@@ -315,9 +296,10 @@ class OrderManager(models.Manager):
                         Order_item.objects.create(
                             size=None,
                             total_quantity=deduct,
-                            price=deduct * prices['side'],
+                            price=deduct * prices["side"],
                             billable_flag=False,
-                            **common_kwargs)
+                            **common_kwargs,
+                        )
 
                     billable = item_qty - deduct
                     if billable > 0:
@@ -325,67 +307,64 @@ class OrderManager(models.Manager):
                         Order_item.objects.create(
                             size=None,
                             total_quantity=billable,
-                            price=billable * prices['side'],
+                            price=billable * prices["side"],
                             billable_flag=True,
-                            **common_kwargs)
+                            **common_kwargs,
+                        )
 
         for order_item_type, trans in ORDER_ITEM_TYPE_CHOICES:
             if order_item_type != ORDER_ITEM_TYPE_CHOICES_COMPONENT:
-                additional = items.get('{0}_default'.format(order_item_type))
+                additional = items.get("{0}_default".format(order_item_type))
                 if additional:
                     Order_item.objects.create(
                         order=order,
                         price=0,
                         total_quantity=0,
                         billable_flag=False,
-                        order_item_type=order_item_type)
+                        order_item_type=order_item_type,
+                    )
 
         return order
 
     """
     Allow changing status of multiple orders at once.
     """
+
     def update_orders_status(self, orders, new):
         count = orders.update(status=new)
         return count
 
 
 class Order(models.Model):
-
     class Meta:
-        verbose_name_plural = _('orders')
-        ordering = ['-delivery_date']
+        verbose_name_plural = _("orders")
+        ordering = ["-delivery_date"]
 
     # Order information
-    creation_date = models.DateField(
-        verbose_name=_('creation date'),
-        auto_now_add=True
-    )
+    creation_date = models.DateField(verbose_name=_("creation date"), auto_now_add=True)
 
-    delivery_date = models.DateField(
-        verbose_name=_('delivery date')
-    )
+    delivery_date = models.DateField(verbose_name=_("delivery date"))
 
     status = models.CharField(
         max_length=1,
         choices=ORDER_STATUS,
-        verbose_name=_('order status'),
-        default=ORDER_STATUS_ORDERED
+        verbose_name=_("order status"),
+        default=ORDER_STATUS_ORDERED,
     )
 
     client = models.ForeignKey(
-        'member.Client',
-        verbose_name=_('client'),
-        related_name='client_order',
+        "member.Client",
+        verbose_name=_("client"),
+        related_name="client_order",
         blank=False,
         default="",
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
     )
 
     objects = OrderManager()
 
     def get_absolute_url(self):
-        return reverse('order:view', kwargs={'pk': self.pk})
+        return reverse("order:view", kwargs={"pk": self.pk})
 
     @property
     def price(self):
@@ -403,18 +382,16 @@ class Order(models.Model):
         """
         Returns a simple summary of the accompanying order items.
         """
-        return ", ".join([
-            "{0}x {1}".format(
-                x.total_quantity, x.get_component_group_display())
-            for x in self.orders.all()
-            if x.order_item_type == 'meal_component' or x.component_group
-        ])
+        return ", ".join(
+            [
+                "{0}x {1}".format(x.total_quantity, x.get_component_group_display())
+                for x in self.orders.all()
+                if x.order_item_type == "meal_component" or x.component_group
+            ]
+        )
 
     def __str__(self):
-        return "client={}, delivery_date={}".format(
-            self.client,
-            self.delivery_date
-        )
+        return "client={}, delivery_date={}".format(self.client, self.delivery_date)
 
     @staticmethod
     def get_kitchen_items(delivery_date):
@@ -438,47 +415,49 @@ class Order(models.Model):
         # Day's avoid ingredients clashes.
         for row in day_avoid_ingredient(delivery_date):
             check_for_new_client(kitchen_list, row)
-            if (row.oiorderid and row.menucompid and
-                    row.component_group == COMPONENT_GROUP_CHOICES_MAIN_DISH):
+            if (
+                row.oiorderid
+                and row.menucompid
+                and row.component_group == COMPONENT_GROUP_CHOICES_MAIN_DISH
+            ):
                 # found avoid ingredient clash in main dish
                 # should be a sorted set (or ordered dict ?)
-                kitchen_list[row.cid].incompatible_ingredients.append(
-                    row.ingredient)
+                kitchen_list[row.cid].incompatible_ingredients.append(row.ingredient)
             # we Know that it is not incompatible with main dish
-            if (row.oiorderid and row.menucompid and
-                    row.component_group == COMPONENT_GROUP_CHOICES_SIDES and
-                    row.ingredient not in
-                    kitchen_list[row.cid].sides_clashes):
+            if (
+                row.oiorderid
+                and row.menucompid
+                and row.component_group == COMPONENT_GROUP_CHOICES_SIDES
+                and row.ingredient not in kitchen_list[row.cid].sides_clashes
+            ):
                 # found new avoid ingredient clash in sides
-                kitchen_list[row.cid].sides_clashes.append(
-                    row.ingredient)
-            if (row.ingredient not in
-                    kitchen_list[row.cid].avoid_ingredients):
+                kitchen_list[row.cid].sides_clashes.append(row.ingredient)
+            if row.ingredient not in kitchen_list[row.cid].avoid_ingredients:
                 # remember ingredient to avoid
-                kitchen_list[row.cid].avoid_ingredients.append(
-                    row.ingredient)
+                kitchen_list[row.cid].avoid_ingredients.append(row.ingredient)
 
         # Day's restrictions.
         for row in day_restrictions(delivery_date):
             check_for_new_client(kitchen_list, row)
-            if (row.oiorderid and row.menucompid and
-                    row.component_group == COMPONENT_GROUP_CHOICES_MAIN_DISH):
+            if (
+                row.oiorderid
+                and row.menucompid
+                and row.component_group == COMPONENT_GROUP_CHOICES_MAIN_DISH
+            ):
                 # found restriction clash in main dish
                 # should be a sorted set
-                kitchen_list[row.cid].incompatible_ingredients.append(
-                    row.ingredient)
-            if (row.oiorderid and row.menucompid and
-                    row.component_group == COMPONENT_GROUP_CHOICES_SIDES and
-                    row.restricted_item not in
-                    kitchen_list[row.cid].sides_clashes):
+                kitchen_list[row.cid].incompatible_ingredients.append(row.ingredient)
+            if (
+                row.oiorderid
+                and row.menucompid
+                and row.component_group == COMPONENT_GROUP_CHOICES_SIDES
+                and row.restricted_item not in kitchen_list[row.cid].sides_clashes
+            ):
                 # found new restriction clash in sides
-                kitchen_list[row.cid].sides_clashes.append(
-                    row.restricted_item)
-            if (row.restricted_item not in
-                    kitchen_list[row.cid].restricted_items):
+                kitchen_list[row.cid].sides_clashes.append(row.restricted_item)
+            if row.restricted_item not in kitchen_list[row.cid].restricted_items:
                 # remember restricted_item
-                kitchen_list[row.cid].restricted_items.append(
-                    row.restricted_item)
+                kitchen_list[row.cid].restricted_items.append(row.restricted_item)
 
         # Day's preparations.
         for row in day_preparations(delivery_date):
@@ -492,24 +471,31 @@ class Order(models.Model):
             check_for_new_client(kitchen_list, row)
             if row.component_group == COMPONENT_GROUP_CHOICES_MAIN_DISH:
                 kitchen_list[row.cid] = kitchen_list[row.cid]._replace(
-                    meal_qty=(kitchen_list[row.cid].meal_qty +
-                              row.total_quantity),
-                    meal_size=row.size)
-            old_component = \
-                kitchen_list[row.cid].meal_components.get(row.component_group)
+                    meal_qty=(kitchen_list[row.cid].meal_qty + row.total_quantity),
+                    meal_size=row.size,
+                )
+            old_component = kitchen_list[row.cid].meal_components.get(
+                row.component_group
+            )
             if old_component:
                 # component group already exists in the order
-                kitchen_list[row.cid].meal_components[row.component_group] = \
-                    old_component._replace(
-                        qty=old_component.qty + (row.total_quantity or 0))
+                kitchen_list[row.cid].meal_components[
+                    row.component_group
+                ] = old_component._replace(
+                    qty=old_component.qty + (row.total_quantity or 0)
+                )
             else:
                 # new component group for this order
-                kitchen_list[row.cid].meal_components[row.component_group] = \
-                    MealComponent(id=row.component_id,
-                                  name=row.component_name,
-                                  qty=row.total_quantity or 0)
+                kitchen_list[row.cid].meal_components[
+                    row.component_group
+                ] = MealComponent(
+                    id=row.component_id,
+                    name=row.component_name,
+                    qty=row.total_quantity or 0,
+                )
             kitchen_list[row.cid] = kitchen_list[row.cid]._replace(
-                routename=row.routename)
+                routename=row.routename
+            )
 
         # Sort requirements list in each value.
         for value in kitchen_list.values():
@@ -541,16 +527,16 @@ class Order(models.Model):
             A dictionary where the key is an Integer 'client id' and
             the value is a DeliveryClient object.
         """
-        orditms = Order_item.objects.\
-            select_related('order__client__member__address').\
-            exclude(
+        orditms = (
+            Order_item.objects.select_related("order__client__member__address")
+            .exclude(
                 order__status=ORDER_STATUS_CANCELLED,
-            ).\
-            filter(
-                order__delivery_date=delivery_date,
-                order__client__route__id=route_id
-            ).\
-            order_by('order__client_id')
+            )
+            .filter(
+                order__delivery_date=delivery_date, order__client__route__id=route_id
+            )
+            .order_by("order__client_id")
+        )
 
         route_list = {}
         for oi in orditms:
@@ -565,36 +551,49 @@ class Order(models.Model):
                     oi.order.client.member.address.number,
                     oi.order.client.member.address.street,
                     oi.order.client.member.address.apartment,
-                    (oi.order.client.member.home_phone or
-                     oi.order.client.member.cell_phone),
+                    (
+                        oi.order.client.member.home_phone
+                        or oi.order.client.member.cell_phone
+                    ),
                     oi.order.client.delivery_note,
                     delivery_items=[],
                     order_id=oi.order.id,
-                    include_a_bill=oi.order.includes_a_bill)
+                    include_a_bill=oi.order.includes_a_bill,
+                )
             # found new delivery item for client
-            if (oi.order_item_type == ORDER_ITEM_TYPE_CHOICES_COMPONENT and
-                    oi.component_group):
+            if (
+                oi.order_item_type == ORDER_ITEM_TYPE_CHOICES_COMPONENT
+                and oi.component_group
+            ):
                 # found a meal_component with proper component_group
-                for j in range(
-                        len(route_list[oi.order.client.id].delivery_items)):
-                    if (route_list[oi.order.client.id].delivery_items[j].
-                            component_group == oi.component_group):
+                for j in range(len(route_list[oi.order.client.id].delivery_items)):
+                    if (
+                        route_list[oi.order.client.id].delivery_items[j].component_group
+                        == oi.component_group
+                    ):
                         # existing component_group in this order
-                        old_quantity = route_list[oi.order.client.id]. \
-                            delivery_items[j].total_quantity
-                        old_remark = route_list[oi.order.client.id]. \
-                            delivery_items[j].remark
-                        if old_remark != '':
-                            old_remark = old_remark + '; '
-                        route_list[oi.order.client.id].delivery_items[j] = \
-                            route_list[oi.order.client.id].delivery_items[j]. \
-                            _replace(
+                        old_quantity = (
+                            route_list[oi.order.client.id]
+                            .delivery_items[j]
+                            .total_quantity
+                        )
+                        old_remark = (
+                            route_list[oi.order.client.id].delivery_items[j].remark
+                        )
+                        if old_remark != "":
+                            old_remark = old_remark + "; "
+                        route_list[oi.order.client.id].delivery_items[j] = (
+                            route_list[oi.order.client.id]
+                            .delivery_items[j]
+                            ._replace(
                                 # cumulate quantities
                                 total_quantity=(
-                                    old_quantity + (oi.total_quantity or 0)),
+                                    old_quantity + (oi.total_quantity or 0)
+                                ),
                                 # concatenate order item remarks
-                                remark=(
-                                    old_remark + (oi.remark or '')))
+                                remark=(old_remark + (oi.remark or "")),
+                            )
+                        )
                         break
                 else:
                     # new component_group in this order
@@ -602,16 +601,22 @@ class Order(models.Model):
                         DeliveryItem(
                             oi.component_group,
                             # find the translated name of the component group
-                            next(cg for cg in COMPONENT_GROUP_CHOICES
-                                 if cg[0] == oi.component_group)[1],
+                            next(
+                                cg
+                                for cg in COMPONENT_GROUP_CHOICES
+                                if cg[0] == oi.component_group
+                            )[1],
                             oi.total_quantity or 0,
                             oi.order_item_type,
-                            oi.remark or '',
+                            oi.remark or "",
                             size=(
-                                oi.size if
-                                oi.component_group == (
-                                    COMPONENT_GROUP_CHOICES_MAIN_DISH
-                                ) else '')))
+                                oi.size
+                                if oi.component_group
+                                == (COMPONENT_GROUP_CHOICES_MAIN_DISH)
+                                else ""
+                            ),
+                        )
+                    )
 
         # Sort delivery items for each client
         for client in route_list.values():
@@ -638,7 +643,7 @@ class Order(models.Model):
                     order_item_type="delivery",
                     remark=None,
                     total_quantity=0,
-                    component_group=None
+                    component_group=None,
                 )
         elif value is False:
             if self.includes_a_bill is True:
@@ -646,8 +651,7 @@ class Order(models.Model):
                     if item.is_a_client_bill:
                         item.delete()
         else:
-            raise ValueError("Order.includes_a_bill only accepts "
-                             "boolean values.")
+            raise ValueError("Order.includes_a_bill only accepts " "boolean values.")
 
 
 # Order.get_kitchen_items helper functions.
@@ -664,7 +668,7 @@ def named_tuple_fetchall(cursor):
         Each column of the cursor becomes an attribute of the named tuple.
     """
     desc = cursor.description
-    nt_row = collections.namedtuple('Row', [col[0] for col in desc])
+    nt_row = collections.namedtuple("Row", [col[0] for col in desc])
     return [nt_row(*row) for row in cursor.fetchall()]
 
 
@@ -690,17 +694,16 @@ def sql_prep(query, valuesdict):
         Exception: A parameter in the query does not have a matching value.
     """
     # Get all the substrings that match the regex
-    subs = [(m.start(), m.end(), m.group(0))
-            for m in re.finditer(r"%\(\w+\)s", query)]
+    subs = [(m.start(), m.end(), m.group(0)) for m in re.finditer(r"%\(\w+\)s", query)]
     # print("subs", subs)  # DEBUG
-    mod = []    # list of segments of new query
-    pos = 0     # start of non-matching text in old query
+    mod = []  # list of segments of new query
+    pos = 0  # start of non-matching text in old query
     names = []  # parameter names found in old query
     for sta, end, grp in subs:
         mod.append(query[pos:sta])  # add text before match
-        mod.append("%s")            # new placeholder
-        pos = end                   # next non-matching text
-        names.append(grp[2:-2])     # extract name in %(name)s
+        mod.append("%s")  # new placeholder
+        pos = end  # next non-matching text
+        names.append(grp[2:-2])  # extract name in %(name)s
     mod.append(query[pos:])  # add tail of old query
     values = []
     for n in names:
@@ -708,12 +711,11 @@ def sql_prep(query, valuesdict):
         if val:
             values.append(val)
         else:
-            raise Exception(
-                "Query parameter '{}' not found in values".format(n))
-    return ''.join(mod), values
+            raise Exception("Query parameter '{}' not found in values".format(n))
+    return "".join(mod), values
 
 
-def sql_exec(query, values, heading=''):
+def sql_exec(query, values, heading=""):
     """Execute SQL 'query' passing to it the given 'values'.
 
     Args:
@@ -739,7 +741,7 @@ def sql_exec(query, values, heading=''):
 
 
 def day_avoid_ingredient(delivery_date):
-    """ Get day's avoid ingredients clashes.
+    """Get day's avoid ingredients clashes.
 
     For each client that has ordered a meal for 'delivery_date', find all
     the ingredients that he avoids and identify which of those
@@ -793,16 +795,16 @@ def day_avoid_ingredient(delivery_date):
     ORDER BY member_client.id
     """
     values = {
-        'delivery_date': delivery_date,
-        'comp_grp_sides': COMPONENT_GROUP_CHOICES_SIDES,
-        'comp_grp_main_dish': COMPONENT_GROUP_CHOICES_MAIN_DISH,
-        'order_cancelled': ORDER_STATUS_CANCELLED,
+        "delivery_date": delivery_date,
+        "comp_grp_sides": COMPONENT_GROUP_CHOICES_SIDES,
+        "comp_grp_main_dish": COMPONENT_GROUP_CHOICES_MAIN_DISH,
+        "order_cancelled": ORDER_STATUS_CANCELLED,
     }
     return sql_exec(query, values, "****** Avoid ingredients ******")
 
 
 def day_restrictions(delivery_date):
-    """ Get day's restrictions.
+    """Get day's restrictions.
 
     For each client that has ordered a meal for 'delivery_date', find all
     the ingredients that correspond to the restricted items that he specified
@@ -861,16 +863,16 @@ def day_restrictions(delivery_date):
     ORDER BY member_client.id
     """
     values = {
-        'delivery_date': delivery_date,
-        'comp_grp_sides': COMPONENT_GROUP_CHOICES_SIDES,
-        'comp_grp_main_dish': COMPONENT_GROUP_CHOICES_MAIN_DISH,
-        'order_cancelled': ORDER_STATUS_CANCELLED,
+        "delivery_date": delivery_date,
+        "comp_grp_sides": COMPONENT_GROUP_CHOICES_SIDES,
+        "comp_grp_main_dish": COMPONENT_GROUP_CHOICES_MAIN_DISH,
+        "order_cancelled": ORDER_STATUS_CANCELLED,
     }
     return sql_exec(query, values, "****** Restrictions ******")
 
 
 def day_preparations(delivery_date):
-    """ Get day's preparations.
+    """Get day's preparations.
 
     For each client that has ordered a meal for 'delivery_date', find all
     the food preparations that he specified.
@@ -904,16 +906,16 @@ def day_preparations(delivery_date):
     ORDER BY member_member.lastname, member_member.firstname
     """
     values = {
-        'delivery_date': delivery_date,
-        'option_group': OPTION_GROUP_CHOICES_PREPARATION,
-        'comp_grp_main_dish': COMPONENT_GROUP_CHOICES_MAIN_DISH,
-        'order_cancelled': ORDER_STATUS_CANCELLED,
+        "delivery_date": delivery_date,
+        "option_group": OPTION_GROUP_CHOICES_PREPARATION,
+        "comp_grp_main_dish": COMPONENT_GROUP_CHOICES_MAIN_DISH,
+        "order_cancelled": ORDER_STATUS_CANCELLED,
     }
     return sql_exec(query, values, "****** Preparations ******")
 
 
 def day_delivery_items(delivery_date):
-    """ Get day's Delivery Items.
+    """Get day's Delivery Items.
 
     For each client that has ordered something for 'delivery_date', find his
     route and all the details and quantities for the items that have to
@@ -951,36 +953,38 @@ def day_delivery_items(delivery_date):
     ORDER BY member_member.lastname, member_member.firstname
     """
     values = {
-        'delivery_date': delivery_date,
-        'order_cancelled': ORDER_STATUS_CANCELLED,
+        "delivery_date": delivery_date,
+        "order_cancelled": ORDER_STATUS_CANCELLED,
     }
     return sql_exec(query, values, "****** Delivery List ******")
 
 
-KitchenItem = collections.namedtuple(         # Meal specifics for an order.
-    'KitchenItem',
-    ['lastname',                     # Client's lastname
-     'firstname',                    # Client's firstname
-     'routename',                    # Name of Client's route (ex. 'Mile-end')
-     'meal_qty',                     # Quantity of main dish servings
-     'meal_size',                    # Size of main dish
-     'incompatible_ingredients',     # Ingredients in main dish that clash
-     'sides_clashes',                # Specified restrictions clashes in sides
-     'avoid_ingredients',            # All ingredients to avoid for the client
-     'restricted_items',             # All restricted items for the client
-     'preparation',                  # All food preparations for the client
-     'meal_components'])             # List of MealComponents objects
+KitchenItem = collections.namedtuple(  # Meal specifics for an order.
+    "KitchenItem",
+    [
+        "lastname",  # Client's lastname
+        "firstname",  # Client's firstname
+        "routename",  # Name of Client's route (ex. 'Mile-end')
+        "meal_qty",  # Quantity of main dish servings
+        "meal_size",  # Size of main dish
+        "incompatible_ingredients",  # Ingredients in main dish that clash
+        "sides_clashes",  # Specified restrictions clashes in sides
+        "avoid_ingredients",  # All ingredients to avoid for the client
+        "restricted_items",  # All restricted items for the client
+        "preparation",  # All food preparations for the client
+        "meal_components",
+    ],
+)  # List of MealComponents objects
 
 
-MealComponent = collections.namedtuple(       # Component specifics for a meal.
-    'MealComponent',
-    ['id',                           # Component id
-     'name',                         # Component name (ex. 'Rice pudding')
-     'qty'])                         # Quantity of this component in the order
+MealComponent = collections.namedtuple(  # Component specifics for a meal.
+    "MealComponent",
+    ["id", "name", "qty"],  # Component id  # Component name (ex. 'Rice pudding')
+)  # Quantity of this component in the order
 
 
 def check_for_new_client(kitchen_list, row):
-    """ Add KitchenItem entry when client is found the first time.
+    """Add KitchenItem entry when client is found the first time.
 
     Modifies kitchen_list by adding an entry.
 
@@ -997,13 +1001,15 @@ def check_for_new_client(kitchen_list, row):
             firstname=row.firstname,
             routename=None,
             meal_qty=0,
-            meal_size='',
+            meal_size="",
             incompatible_ingredients=[],
             sides_clashes=[],
             avoid_ingredients=[],
             restricted_items=[],
             preparation=[],
-            meal_components={})
+            meal_components={},
+        )
+
 
 # End Order.kitchen items helpers
 
@@ -1012,27 +1018,33 @@ def check_for_new_client(kitchen_list, row):
 
 
 DeliveryClient = collections.namedtuple(  # Delivery details for client order.
-    'DeliveryClient',
-    ['firstname',
-     'lastname',
-     'number',
-     'street',
-     'apartment',
-     'phone',
-     'delivery_note',
-     'delivery_items',  # list of DeliveryItem objects
-     'order_id',
-     'include_a_bill'])
+    "DeliveryClient",
+    [
+        "firstname",
+        "lastname",
+        "number",
+        "street",
+        "apartment",
+        "phone",
+        "delivery_note",
+        "delivery_items",  # list of DeliveryItem objects
+        "order_id",
+        "include_a_bill",
+    ],
+)
 
 
-DeliveryItem = collections.namedtuple(    # Item contained in a delivery.
-    'DeliveryItem',
-    ['component_group',    # String if item is a meal component, else None
-     'component_group_trans',  # String or None
-     'total_quantity',     # Quantity of item to deliver
-     'order_item_type',    # Type of item to deliver (ex. dish, bill, grocery)
-     'remark',
-     'size'])              # Size of item if applicable
+DeliveryItem = collections.namedtuple(  # Item contained in a delivery.
+    "DeliveryItem",
+    [
+        "component_group",  # String if item is a meal component, else None
+        "component_group_trans",  # String or None
+        "total_quantity",  # Quantity of item to deliver
+        "order_item_type",  # Type of item to deliver (ex. dish, bill, grocery)
+        "remark",
+        "size",
+    ],
+)  # Size of item if applicable
 
 
 def component_group_sorting(component):
@@ -1050,70 +1062,58 @@ def component_group_sorting(component):
         A string, that can be used as a key to a sort function.
     """
     if component.component_group == COMPONENT_GROUP_CHOICES_MAIN_DISH:
-        return '1'
-    elif component.component_group != '':
-        return '2' + component.component_group
+        return "1"
+    elif component.component_group != "":
+        return "2" + component.component_group
     else:
-        return '3'
+        return "3"
+
 
 # End Order.get_delivery_list helpers
 
 
 class OrderFilter(FilterSet):
 
-    name = CharFilter(
-        method='filter_search',
-        label=_('Search by name')
-    )
+    name = CharFilter(method="filter_search", label=_("Search by name"))
 
-    status = ChoiceFilter(
-        choices=(('', ''),) + ORDER_STATUS
-    )
+    status = ChoiceFilter(choices=(("", ""),) + ORDER_STATUS)
 
     class Meta:
         model = Order
-        fields = ['status', 'delivery_date']
+        fields = ["status", "delivery_date"]
 
     def filter_search(self, queryset, field_name, value):
         if not value:
             return queryset
 
-        names = value.split(' ')
+        names = value.split(" ")
 
         name_contains = Q()
 
         for name in names:
-            firstname_contains = Q(
-                client__member__firstname__icontains=name
-            )
+            firstname_contains = Q(client__member__firstname__icontains=name)
 
             name_contains |= firstname_contains
 
-            lastname_contains = Q(
-                client__member__lastname__icontains=name
-            )
+            lastname_contains = Q(client__member__lastname__icontains=name)
             name_contains |= lastname_contains
 
-        return queryset.filter(
-            name_contains
-        )
+        return queryset.filter(name_contains)
 
 
 class DeliveredOrdersByMonth(FilterSet):
 
-    delivery_date = CharFilter(
-        method='filter_period'
-    )
+    delivery_date = CharFilter(method="filter_period")
 
     class Meta:
         model = Order
-        fields = '__all__'
+        fields = "__all__"
 
     def filter_period(self, queryset, field_name, value):
         if not value:
             return None
 
-        year, month = value.split('-')
+        year, month = value.split("-")
         return queryset.filter(
             status="D",
             delivery_date__year=year,
@@ -1122,29 +1122,24 @@ class DeliveredOrdersByMonth(FilterSet):
 
 
 class Order_item(models.Model):
-
     class Meta:
-        verbose_name_plural = _('order items')
+        verbose_name_plural = _("order items")
 
     order = models.ForeignKey(
-        'order.Order',
-        verbose_name=_('order'),
-        related_name='orders',
-        on_delete=models.CASCADE
+        "order.Order",
+        verbose_name=_("order"),
+        related_name="orders",
+        on_delete=models.CASCADE,
     )
 
-    price = models.DecimalField(
-        max_digits=6,
-        decimal_places=2,
-        verbose_name=_('price')
-    )
+    price = models.DecimalField(max_digits=6, decimal_places=2, verbose_name=_("price"))
 
     billable_flag = models.BooleanField(
-        verbose_name=_('billable flag'),
+        verbose_name=_("billable flag"),
     )
 
     size = models.CharField(
-        verbose_name=_('size'),
+        verbose_name=_("size"),
         max_length=1,
         null=True,
         blank=True,
@@ -1152,24 +1147,24 @@ class Order_item(models.Model):
     )
 
     order_item_type = models.CharField(
-        verbose_name=_('order item type'),
+        verbose_name=_("order item type"),
         max_length=20,
         choices=ORDER_ITEM_TYPE_CHOICES,
     )
 
     remark = models.CharField(
         max_length=256,
-        verbose_name=_('remark'),
+        verbose_name=_("remark"),
         null=True,
         blank=True,
     )
 
     total_quantity = models.IntegerField(
-        verbose_name=_('total quantity'),
+        verbose_name=_("total quantity"),
     )
 
     free_quantity = models.IntegerField(
-        verbose_name=_('free quantity'),
+        verbose_name=_("free quantity"),
         null=True,
         blank=True,
     )
@@ -1177,32 +1172,35 @@ class Order_item(models.Model):
     component_group = models.CharField(
         max_length=100,
         choices=COMPONENT_GROUP_CHOICES,
-        verbose_name=_('component group'),
+        verbose_name=_("component group"),
         null=True,
         blank=True,
     )
 
     def __str__(self):
-        return "<For delivery on:> {} <order_item_type:>" \
-            " {} <component_group:> {}".\
-            format(str(self.order.delivery_date),
-                   self.order_item_type,
-                   self.component_group)
+        return (
+            "<For delivery on:> {} <order_item_type:>"
+            " {} <component_group:> {}".format(
+                str(self.order.delivery_date),
+                self.order_item_type,
+                self.component_group,
+            )
+        )
 
     def get_billable_flag_display(self):
         if self.billable_flag:
-            return _('Yes')
+            return _("Yes")
         else:
-            return _('No')
+            return _("No")
 
     def get_order_item_type_display(self):
-        if self.order_item_type == 'meal_component':
+        if self.order_item_type == "meal_component":
             return _("Meal component")
-        elif self.order_item_type == 'delivery':
+        elif self.order_item_type == "delivery":
             return _("Delivery")
-        elif self.order_item_type == 'pickup':
+        elif self.order_item_type == "pickup":
             return _("Pickup")
-        elif self.order_item_type == 'visit':
+        elif self.order_item_type == "visit":
             return _("Visit")
         else:
             return dict(ORDER_ITEM_TYPE_CHOICES)[self.order_item_type]
@@ -1212,47 +1210,31 @@ class Order_item(models.Model):
         """
         An order item may indicate a bill to the client for this order.
         """
-        return self.order_item_type == 'delivery' and \
-            self.component_group is None
+        return self.order_item_type == "delivery" and self.component_group is None
 
 
 class OrderStatusChange(models.Model):
-
     class Meta:
-        ordering = ['change_time']
+        ordering = ["change_time"]
 
     order = models.ForeignKey(
-        Order,
-        on_delete=models.CASCADE,
-        related_name="status_changes"
+        Order, on_delete=models.CASCADE, related_name="status_changes"
     )
 
-    status_from = models.CharField(
-        max_length=1,
-        choices=ORDER_STATUS
-    )
+    status_from = models.CharField(max_length=1, choices=ORDER_STATUS)
 
-    status_to = models.CharField(
-        max_length=1,
-        choices=ORDER_STATUS
-    )
+    status_to = models.CharField(max_length=1, choices=ORDER_STATUS)
 
-    reason = models.CharField(
-        max_length=200,
-        blank=True,
-        default=''
-    )
+    reason = models.CharField(max_length=200, blank=True, default="")
 
-    change_time = models.DateTimeField(
-        auto_now_add=True
-    )
+    change_time = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return "Order #{} status update: from {} to {}, on {}".format(
             self.order.pk,
             self.get_status_from_display(),
             self.get_status_to_display(),
-            self.change_time
+            self.change_time,
         )
 
     def clean(self):
@@ -1261,12 +1243,11 @@ class OrderStatusChange(models.Model):
         """
         if self.order.status != self.status_from:
             raise ValidationError(
-                _("Invalid order status update."),
-                code='status_from_incorrect'
+                _("Invalid order status update."), code="status_from_incorrect"
             )
 
     def save(self, *a, **k):
-        """ Process a scheduled change when saving."""
+        """Process a scheduled change when saving."""
         self.full_clean()  # we defined clean method so we need to override
         super(OrderStatusChange, self).save(*a, **k)
         self.order.status = self.status_to

@@ -2,22 +2,19 @@ import itertools
 
 
 class Node:
-
     def __init__(self, id, latitude, longitude):
         self.id = id
         self.latitude = latitude
         self.longitude = longitude
 
     def __str__(self):
-        return "Node({0}, {1}, {2})".format(self.id, self.latitude,
-                                            self.longitude)
+        return "Node({0}, {1}, {2})".format(self.id, self.latitude, self.longitude)
 
     def __repr__(self):
         return str(self)
 
 
 class Solution:
-
     def __init__(self, tour, value):
         self.tour = tour
         self.value = value
@@ -35,7 +32,7 @@ def pairwise(iterable):
 
 def reverse_subtour(tour, start, end):
     """Returns a new list with the subtour reversed"""
-    return tour[:start] + list(reversed(tour[start:end + 1])) + tour[end + 1:]
+    return tour[:start] + list(reversed(tour[start : end + 1])) + tour[end + 1 :]
 
 
 def solve(tour):
@@ -64,8 +61,7 @@ def solve(tour):
         best_candidate = Solution(best_solution.tour, best_solution.value)
 
         for candidate_tour in two_opt_neighbors(best_solution.tour):
-            candidate = Solution(candidate_tour,
-                                 tour_squared_distance(candidate_tour))
+            candidate = Solution(candidate_tour, tour_squared_distance(candidate_tour))
 
             # We use the squared distance since the square root
             # function is monotone increasing, so comparing squared
@@ -83,8 +79,7 @@ def solve(tour):
 def squared_distance(a, b):
     """Squared euclidean distance"""
 
-    return (a.latitude - b.latitude) ** 2 + \
-        (a.longitude - b.longitude) ** 2
+    return (a.latitude - b.latitude) ** 2 + (a.longitude - b.longitude) ** 2
 
 
 def tour_squared_distance(tour):

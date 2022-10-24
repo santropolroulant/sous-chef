@@ -7,7 +7,6 @@ from django.contrib.auth.models import User
 
 
 class UserFactory(factory.DjangoModelFactory):
-
     class Meta:
         model = User
 
@@ -15,11 +14,10 @@ class UserFactory(factory.DjangoModelFactory):
 
 
 class NoteFactory(factory.DjangoModelFactory):
-
     class Meta:
         model = Note
 
-    note = factory.Faker('sentence')
+    note = factory.Faker("sentence")
     author = factory.SubFactory(UserFactory)
     client = factory.SubFactory(ClientFactory)
     priority = factory.LazyAttribute(
