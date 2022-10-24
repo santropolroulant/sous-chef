@@ -8,7 +8,6 @@ from souschef.member.models import (
     Address,
     Relationship,
 )
-from souschef.member.models import Option
 from souschef.order.models import Order
 
 
@@ -166,6 +165,7 @@ class ImportMemberRelationshipsTestCase(TestCase):
             referencing.extra_fields['referral_reason'],
             'Low mobility',
         )
+
 
 class ImportMemberOrdersTestCase(TestCase):
 

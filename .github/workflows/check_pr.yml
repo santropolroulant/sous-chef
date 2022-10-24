@@ -1,0 +1,15 @@
+name: Pull-Request validation
+
+on: [push, pull_request]
+
+jobs:
+  validate:
+    name: Pull-Request validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Build docker-compose
+        run: docker-compose build
+      - name: Check Black
+        run: docker-compose run --rm web black --check .

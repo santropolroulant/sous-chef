@@ -20,6 +20,11 @@ WORKDIR /code
 COPY setup.py README.md /code/
 RUN pip3 install -e .
 
+# We add some development tool to make sure that contributors only need
+# docker installed
+COPY requirements-dev.txt /code/
+RUN pip3 install -r requirements-dev.txt
+
 ENV DJANGO_SETTINGS_MODULE="souschef.sous_chef.settings"
 ENV SOUSCHEF_ENVIRONMENT_NAME="DEV"
 CMD pip3 install -e . && \
