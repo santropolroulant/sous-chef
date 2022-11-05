@@ -96,7 +96,8 @@ class Migration(migrations.Migration):
                             ("", "Order item type"),
                             (
                                 "B component",
-                                "BILLABLE meal component (main dish, vegetable, side dish, seasonal)",
+                                "BILLABLE meal component (main dish, "
+                                "vegetable, side dish, seasonal)",
                             ),
                             (
                                 "B delivery",

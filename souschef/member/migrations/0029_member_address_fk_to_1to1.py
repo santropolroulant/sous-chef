@@ -8,7 +8,8 @@ import django.db.models.deletion
 
 def separate_shared_address_instances(apps, schema_editor):
     """
-    Before changing ForeignKey to OneToOneField, make sure that members use different address instances.
+    Before changing ForeignKey to OneToOneField, make sure that members
+    use different address instances.
     """
     Member = apps.get_model("member", "Member")
     address_ids = set()

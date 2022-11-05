@@ -57,7 +57,8 @@ def migrate_relationships(apps, schema_editor):
         rel.save()
 
     print(
-        "All converted. Deleting all member.Referencing and member.EmergencyContact objects..."
+        "All converted. Deleting all member.Referencing and "
+        "member.EmergencyContact objects..."
     )
     Referencing.objects.all().delete()
     EmergencyContact.objects.all().delete()
@@ -99,7 +100,8 @@ def reverse_migrate_relationships(apps, schema_editor):
 
         if _ref_Relationship.EMERGENCY in rel.type:
             print(
-                "Reversing member.Relationship #{} to member.EmergencyContact...".format(
+                "Reversing member.Relationship #{} to "
+                "member.EmergencyContact...".format(
                     rel.pk
                 )
             )

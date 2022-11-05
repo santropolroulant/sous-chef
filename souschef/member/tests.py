@@ -2192,11 +2192,7 @@ class ClientUpdatePaymentInformationTestCase(ClientUpdateTestCase):
                 "city": None,
                 "apartment": None,
                 "postal_code": None,
-                "member": "[0] Not Valid".format(
-                    client.billing_member.id,
-                    client.billing_member.firstname,
-                    client.billing_member.lastname,
-                ),
+                "member": "[0]] Not Valid",
                 "same_as_client": False,
                 "billing_payment_type": "cheque",
                 "facturation": "default",

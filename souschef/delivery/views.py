@@ -18,7 +18,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.views import generic
 from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.urls import reverse_lazy, reverse
-from django.contrib.admin.models import LogEntry, ADDITION
+from django.contrib.admin.models import LogEntry
 from django.db.models.functions import Lower
 from django_filters.views import FilterView
 
