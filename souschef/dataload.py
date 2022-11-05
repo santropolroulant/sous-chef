@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 # flake8: noqa
 
-from souschef.meal.models import Component, Restricted_item, Ingredient
-from souschef.meal.models import Component_ingredient, Incompatibility
+from souschef.meal.models import (
+    Component,
+    Component_ingredient,
+    Incompatibility,
+    Ingredient,
+    Restricted_item,
+)
 
 
 def print_rows(q, heading=""):

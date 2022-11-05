@@ -7,9 +7,9 @@ from souschef.note.views import (
     NoteDeleteView,
     NoteEditView,
     NoteList,
+    mark_as_read,
+    mark_as_unread,
 )
-
-from souschef.note.views import mark_as_read, mark_as_unread
 
 app_name = "note"
 

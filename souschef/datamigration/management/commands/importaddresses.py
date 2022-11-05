@@ -1,7 +1,14 @@
 import csv
 
 from django.core.management.base import BaseCommand
-from souschef.member.models import Member, Address, Contact, EMAIL, HOME
+
+from souschef.member.models import (
+    EMAIL,
+    HOME,
+    Address,
+    Contact,
+    Member,
+)
 
 
 class Command(BaseCommand):

@@ -1,19 +1,32 @@
-from django.shortcuts import get_object_or_404
-from django.views import generic, View
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.mixins import PermissionRequiredMixin
-from django.db.models import Case, When
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import (
+    LoginRequiredMixin,
+    PermissionRequiredMixin,
+)
+from django.db.models import (
+    Case,
+    When,
+)
+from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
-from django.http import HttpResponseRedirect
+from django.views import (
+    View,
+    generic,
+)
 
-from souschef.note.models import Note, NoteFilter
-from souschef.note.forms import NoteEditForm, NoteForm
 from souschef.member.models import Client
-
+from souschef.note.forms import (
+    NoteEditForm,
+    NoteForm,
+)
+from souschef.note.models import (
+    Note,
+    NoteFilter,
+)
 
 # Create your views here.
 

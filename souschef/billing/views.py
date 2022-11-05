@@ -1,20 +1,32 @@
-import copy
 import collections
+import copy
 
-from django.db.models import Q, Count, Prefetch
-from django.views import generic
+from django.contrib import messages
+from django.contrib.auth.mixins import (
+    LoginRequiredMixin,
+    PermissionRequiredMixin,
+)
+from django.db.models import (
+    Count,
+    Prefetch,
+    Q,
+)
+from django.http import HttpResponseRedirect
+from django.urls import reverse_lazy
 from django.utils.translation import string_concat
 from django.utils.translation import ugettext_lazy as _
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.mixins import PermissionRequiredMixin
-from django.contrib import messages
+from django.views import generic
 
-from souschef.billing.models import Billing, BillingFilter
-from souschef.order.models import DeliveredOrdersByMonth
-from django.urls import reverse_lazy
-from souschef.order.models import Order, Order_item
-from django.http import HttpResponseRedirect
+from souschef.billing.models import (
+    Billing,
+    BillingFilter,
+)
 from souschef.member.models import Client
+from souschef.order.models import (
+    DeliveredOrdersByMonth,
+    Order,
+    Order_item,
+)
 
 
 class BillingList(LoginRequiredMixin, PermissionRequiredMixin, generic.ListView):

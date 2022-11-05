@@ -1,5 +1,10 @@
 from django.contrib import admin
-from souschef.note.models import Note, NotePriority, NoteCategory
+
+from souschef.note.models import (
+    Note,
+    NoteCategory,
+    NotePriority,
+)
 
 
 class NoteAdmin(admin.ModelAdmin):

@@ -1,9 +1,14 @@
 import csv
 from datetime import date
 
-from django.core.management.base import BaseCommand
 from django.core.management import call_command
-from souschef.member.models import Client, Member, Route
+from django.core.management.base import BaseCommand
+
+from souschef.member.models import (
+    Client,
+    Member,
+    Route,
+)
 
 
 class Command(BaseCommand):

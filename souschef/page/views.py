@@ -1,22 +1,25 @@
 # coding: utf-8
 
 import collections
+from datetime import datetime
 
+from django.contrib.auth.mixins import (
+    LoginRequiredMixin,
+    PermissionRequiredMixin,
+)
 from django.contrib.auth.views import login
-from django.http import HttpResponseRedirect
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.mixins import PermissionRequiredMixin
-from django.urls import reverse_lazy
 from django.db.models import Prefetch
+from django.http import HttpResponseRedirect
+from django.urls import reverse_lazy
 from django.views.generic import TemplateView
+
 from souschef.member.models import (
-    Client,
-    Route,
-    Client_option,
     DAYS_OF_WEEK,
+    Client,
+    Client_option,
+    Route,
 )
 from souschef.order.models import Order
-from datetime import datetime
 
 
 class HomeView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):

@@ -1,8 +1,8 @@
 from functools import reduce
 
+import django_filters
 from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
-import django_filters
 
 from souschef.order.models import Order
 

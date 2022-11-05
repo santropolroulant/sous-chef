@@ -1,68 +1,79 @@
 import collections
 import datetime
-from datetime import date
 import json
 import os
-from shutil import copyfile
 import textwrap
+from datetime import date
+from shutil import copyfile
 
+import labels  # package pylabels
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.admin.models import LogEntry
+from django.contrib.auth.mixins import (
+    LoginRequiredMixin,
+    PermissionRequiredMixin,
+)
 from django.core.exceptions import PermissionDenied
-from django.shortcuts import render, get_object_or_404
+from django.db.models.functions import Lower
+from django.http import (
+    Http404,
+    HttpResponse,
+    HttpResponseRedirect,
+)
+from django.shortcuts import (
+    get_object_or_404,
+    render,
+)
+from django.urls import (
+    reverse,
+    reverse_lazy,
+)
 from django.utils import timezone
 from django.utils.translation import ugettext
 from django.utils.translation import ugettext_lazy as _
 from django.views import generic
-from django.http import HttpResponseRedirect, HttpResponse, Http404
-from django.urls import reverse_lazy, reverse
-from django.contrib.admin.models import LogEntry
-from django.db.models.functions import Lower
 from django_filters.views import FilterView
-
-import labels  # package pylabels
-
 from reportlab.graphics import shapes as rl_shapes
-from reportlab.lib import colors as rl_colors, enums as rl_enums
-from reportlab.lib.styles import (
-    getSampleStyleSheet as rl_getSampleStyleSheet,
-    ParagraphStyle as RLParagraphStyle,
-)
+from reportlab.lib import colors as rl_colors
+from reportlab.lib import enums as rl_enums
+from reportlab.lib.styles import ParagraphStyle as RLParagraphStyle
+from reportlab.lib.styles import getSampleStyleSheet as rl_getSampleStyleSheet
 from reportlab.lib.units import inch as rl_inch
 from reportlab.pdfbase import pdfmetrics as rl_pdfmetrics
-from reportlab.platypus import (
-    PageBreak as RLPageBreak,
-    Paragraph as RLParagraph,
-    SimpleDocTemplate as RLSimpleDocTemplate,
-    Spacer as RLSpacer,
-    Table as RLTable,
-    TableStyle as RLTableStyle,
-)
+from reportlab.platypus import PageBreak as RLPageBreak
+from reportlab.platypus import Paragraph as RLParagraph
+from reportlab.platypus import SimpleDocTemplate as RLSimpleDocTemplate
+from reportlab.platypus import Spacer as RLSpacer
+from reportlab.platypus import Table as RLTable
+from reportlab.platypus import TableStyle as RLTableStyle
 
 from souschef.meal.models import (
     COMPONENT_GROUP_CHOICES,
     COMPONENT_GROUP_CHOICES_MAIN_DISH,
     COMPONENT_GROUP_CHOICES_SIDES,
     Component,
+    Component_ingredient,
     Menu,
     Menu_component,
-    Component_ingredient,
 )
-from souschef.member.models import Client, Route, DeliveryHistory
+from souschef.member.models import (
+    Client,
+    DeliveryHistory,
+    Route,
+)
 from souschef.order.models import (
-    component_group_sorting,
     ORDER_STATUS_CANCELLED,
     ORDER_STATUS_ORDERED,
-    Order,
     SIZE_CHOICES_LARGE,
     SIZE_CHOICES_REGULAR,
+    Order,
+    component_group_sorting,
 )
+
+from . import tsp
 from .filters import KitchenCountOrderFilter
 from .forms import DishIngredientsForm
-from . import tsp
-
 
 LOGO_IMAGE = os.path.join(
     settings.BASE_DIR,

@@ -1,5 +1,6 @@
-import factory
 import random
+
+import factory
 
 from souschef.billing.models import Billing
 

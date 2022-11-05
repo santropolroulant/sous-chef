@@ -1,11 +1,21 @@
 import json
 
-from django.test import TestCase
 from django.contrib.auth.models import User
-from django.urls import reverse_lazy, reverse
+from django.test import TestCase
+from django.urls import (
+    reverse,
+    reverse_lazy,
+)
 
-from souschef.member.factories import RouteFactory, ClientFactory
-from souschef.member.models import Client, Option, Client_option
+from souschef.member.factories import (
+    ClientFactory,
+    RouteFactory,
+)
+from souschef.member.models import (
+    Client,
+    Client_option,
+    Option,
+)
 
 
 class HomeViewTestCase(TestCase):

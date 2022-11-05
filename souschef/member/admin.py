@@ -1,15 +1,15 @@
 from django.contrib import admin
 
 from souschef.member.models import (
-    Member,
-    Client,
-    Contact,
     Address,
-    Route,
+    Client,
+    ClientScheduledStatus,
+    Contact,
+    DeliveryHistory,
+    Member,
     Option,
     Relationship,
-    DeliveryHistory,
-    ClientScheduledStatus,
+    Route,
 )
 
 

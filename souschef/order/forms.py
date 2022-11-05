@@ -2,15 +2,14 @@ from django import forms
 from django.utils.translation import ugettext_lazy as _
 from extra_views import InlineFormSet
 
-from souschef.member.models import Client
-
 from souschef.meal.models import (
     COMPONENT_GROUP_CHOICES,
     COMPONENT_GROUP_CHOICES_SIDES,
 )
+from souschef.member.models import Client
 from souschef.order.models import (
-    Order_item,
     SIZE_CHOICES,
+    Order_item,
     OrderStatusChange,
 )
 

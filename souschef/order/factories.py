@@ -1,16 +1,18 @@
 # coding=utf-8
-import factory
 import random
 from datetime import date
+
+import factory
 from faker import Factory as FakerFactory
+
 from souschef.member.factories import ClientFactory
 from souschef.order.models import (
+    ORDER_ITEM_TYPE_CHOICES,
+    ORDER_STATUS,
+    SIZE_CHOICES,
     Order,
     Order_item,
-    ORDER_STATUS,
-    ORDER_ITEM_TYPE_CHOICES,
 )
-from souschef.order.models import SIZE_CHOICES
 
 fake = FakerFactory.create()
 

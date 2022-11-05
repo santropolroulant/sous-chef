@@ -3,15 +3,31 @@
 import csv
 
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.auth.decorators import login_required
-from django.urls import reverse_lazy, reverse
+from django.contrib.auth.mixins import (
+    LoginRequiredMixin,
+    PermissionRequiredMixin,
+)
 from django.db import transaction
-from django.db.models import Q, Prefetch, When, Case, Sum, IntegerField
+from django.db.models import (
+    Case,
+    IntegerField,
+    Prefetch,
+    Q,
+    Sum,
+    When,
+)
 from django.db.transaction import atomic
-from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
+from django.http import (
+    HttpResponse,
+    HttpResponseRedirect,
+    JsonResponse,
+)
 from django.shortcuts import get_object_or_404
+from django.urls import (
+    reverse,
+    reverse_lazy,
+)
 from django.utils.decorators import classonlymethod
 from django.utils.encoding import force_text
 from django.utils.safestring import mark_safe
@@ -25,39 +41,42 @@ from souschef.meal.models import (
     COMPONENT_GROUP_CHOICES_SIDES,
 )
 from souschef.member.forms import (
-    ClientScheduledStatusForm,
-    ClientBasicInformation,
     ClientAddressInformation,
-    ClientRestrictionsInformation,
+    ClientBasicInformation,
     ClientPaymentInformation,
+    ClientRestrictionsInformation,
+    ClientScheduledStatusForm,
 )
 from souschef.member.formsets import (
     CreateRelationshipFormset,
     UpdateRelationshipFormset,
 )
 from souschef.member.models import (
-    Client,
-    ClientScheduledStatus,
-    Route,
-    DeliveryHistory,
-    Member,
-    Address,
-    Contact,
-    Restriction,
-    Relationship,
-    Client_option,
-    ClientFilter,
-    ClientScheduledStatusFilter,
+    CELL,
     DAYS_OF_WEEK,
-    Client_avoid_ingredient,
-    Client_avoid_component,
+    EMAIL,
     HOME,
     WORK,
-    CELL,
-    EMAIL,
+    Address,
+    Client,
+    Client_avoid_component,
+    Client_avoid_ingredient,
+    Client_option,
+    ClientFilter,
+    ClientScheduledStatus,
+    ClientScheduledStatusFilter,
+    Contact,
+    DeliveryHistory,
+    Member,
+    Relationship,
+    Restriction,
+    Route,
 )
 from souschef.order.mixins import FormValidAjaxableResponseMixin
-from souschef.order.models import SIZE_CHOICES, Order
+from souschef.order.models import (
+    SIZE_CHOICES,
+    Order,
+)
 
 
 class NamedUrlSessionWizardView_i18nURL(NamedUrlSessionWizardView):

@@ -1,13 +1,14 @@
 from django.conf.urls import url
+from django.utils.translation import ugettext_lazy as _
+
 from souschef.billing.views import (
-    BillingList,
+    BillingAdd,
     BillingCreate,
     BillingDelete,
-    BillingSummaryView,
+    BillingList,
     BillingOrdersView,
-    BillingAdd,
+    BillingSummaryView,
 )
-from django.utils.translation import ugettext_lazy as _
 
 app_name = "billing"
 

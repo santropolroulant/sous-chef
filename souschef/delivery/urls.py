@@ -2,15 +2,15 @@ from django.conf.urls import url
 from django.utils.translation import ugettext_lazy as _
 
 from souschef.delivery.views import (
-    Orderlist,
-    MealInformation,
-    RoutesInformation,
-    KitchenCount,
-    MealLabels,
-    DeliveryRouteSheet,
-    RefreshOrderView,
     CreateDeliveryOfToday,
+    DeliveryRouteSheet,
     EditDeliveryOfToday,
+    KitchenCount,
+    MealInformation,
+    MealLabels,
+    Orderlist,
+    RefreshOrderView,
+    RoutesInformation,
 )
 
 app_name = "delivery"

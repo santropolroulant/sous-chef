@@ -1,34 +1,47 @@
 # -*- coding: utf-8 -*-
 
+import datetime
 import random
 import urllib.parse
-import datetime
 from datetime import date
 
-from django.test import TestCase
 from django.contrib.auth.models import User
-from django.urls import reverse, reverse_lazy
-from django.utils import timezone
-from django.utils.translation import ugettext as _
 from django.core.exceptions import ValidationError
 from django.core.management import call_command
-from django.db.models import Q, Sum
+from django.db.models import (
+    Q,
+    Sum,
+)
+from django.test import TestCase
+from django.urls import (
+    reverse,
+    reverse_lazy,
+)
+from django.utils import timezone
+from django.utils.translation import ugettext as _
 
-from souschef.member.models import Client, Address, Member, Route
-from souschef.member.factories import RouteFactory, ClientFactory
 from souschef.meal.factories import ComponentFactory
+from souschef.member.factories import (
+    ClientFactory,
+    RouteFactory,
+)
+from souschef.member.models import (
+    Address,
+    Client,
+    Member,
+    Route,
+)
+from souschef.order.factories import OrderFactory
 from souschef.order.models import (
+    COMPONENT_GROUP_CHOICES_MAIN_DISH,
+    ORDER_ITEM_TYPE_CHOICES_COMPONENT,
+    ORDER_STATUS_CANCELLED,
+    ORDER_STATUS_DELIVERED,
+    ORDER_STATUS_ORDERED,
     Order,
     Order_item,
     OrderStatusChange,
-    COMPONENT_GROUP_CHOICES_MAIN_DISH,
-    ORDER_ITEM_TYPE_CHOICES_COMPONENT,
-    ORDER_STATUS_ORDERED,
-    ORDER_STATUS_DELIVERED,
-    ORDER_STATUS_CANCELLED,
 )
-
-from souschef.order.factories import OrderFactory
 from souschef.sous_chef.tests import TestMixin as SousChefTestMixin
 
 

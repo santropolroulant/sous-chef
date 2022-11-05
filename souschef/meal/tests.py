@@ -3,9 +3,15 @@ import datetime
 from django.contrib.auth.models import User
 from django.test import TestCase
 
-from souschef.meal.models import Component, Component_ingredient
-from souschef.meal.models import Ingredient, Incompatibility
-from souschef.meal.models import Menu, Menu_component, Restricted_item
+from souschef.meal.models import (
+    Component,
+    Component_ingredient,
+    Incompatibility,
+    Ingredient,
+    Menu,
+    Menu_component,
+    Restricted_item,
+)
 
 
 class ComponentTestCase(TestCase):

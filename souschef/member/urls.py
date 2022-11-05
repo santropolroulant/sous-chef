@@ -1,45 +1,46 @@
 from django.conf.urls import url
-from django.utils.translation import ugettext_lazy as _
 from django.utils.translation import string_concat
-
-from souschef.member.views import (
-    ClientWizard,
-    ClientList,
-    SearchMembers,
-    ClientOrderList,
-    ClientInfoView,
-    ClientPaymentView,
-    ClientAllergiesView,
-    DeleteRestriction,
-    DeleteClientOption,
-    DeleteIngredientToAvoid,
-    DeleteComponentToAvoid,
-    geolocateAddress,
-    ClientStatusScheduler,
-    ClientStatusSchedulerReschedule,
-    ClientStatusView,
-    ClientStatusSchedulerDeleteView,
-    ClientUpdateBasicInformation,
-    ClientUpdateAddressInformation,
-    ClientUpdatePaymentInformation,
-    ClientUpdateDietaryRestriction,
-    ClientUpdateRelationshipsInformation,
-    RouteListView,
-    RouteDetailView,
-    RouteEditView,
-    DeliveryHistoryDetailView,
-    get_minimised_euclidean_distances_route_sequence,
-)
+from django.utils.translation import ugettext_lazy as _
 
 from souschef.member.forms import (
-    ClientBasicInformation,
     ClientAddressInformation,
+    ClientBasicInformation,
     ClientPaymentInformation,
     ClientRestrictionsInformation,
 )
 from souschef.member.formsets import CreateRelationshipFormset
-
-from souschef.note.views import ClientNoteList, ClientNoteListAdd
+from souschef.member.views import (
+    ClientAllergiesView,
+    ClientInfoView,
+    ClientList,
+    ClientOrderList,
+    ClientPaymentView,
+    ClientStatusScheduler,
+    ClientStatusSchedulerDeleteView,
+    ClientStatusSchedulerReschedule,
+    ClientStatusView,
+    ClientUpdateAddressInformation,
+    ClientUpdateBasicInformation,
+    ClientUpdateDietaryRestriction,
+    ClientUpdatePaymentInformation,
+    ClientUpdateRelationshipsInformation,
+    ClientWizard,
+    DeleteClientOption,
+    DeleteComponentToAvoid,
+    DeleteIngredientToAvoid,
+    DeleteRestriction,
+    DeliveryHistoryDetailView,
+    RouteDetailView,
+    RouteEditView,
+    RouteListView,
+    SearchMembers,
+    geolocateAddress,
+    get_minimised_euclidean_distances_route_sequence,
+)
+from souschef.note.views import (
+    ClientNoteList,
+    ClientNoteListAdd,
+)
 
 app_name = "member"
 

@@ -2,30 +2,30 @@ from django import forms
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
-
-from souschef.member.formsfield import CAPhoneNumberExtField
 from localflavor.ca.forms import CAPostalCodeField
+
 from souschef.meal.models import (
-    Ingredient,
-    Component,
     COMPONENT_GROUP_CHOICES,
-    Restricted_item,
     COMPONENT_GROUP_CHOICES_SIDES,
+    Component,
+    Ingredient,
+    Restricted_item,
 )
-from souschef.order.models import SIZE_CHOICES
+from souschef.member.formsfield import CAPhoneNumberExtField
 from souschef.member.models import (
-    Member,
-    Client,
-    RATE_TYPE,
-    Option,
+    DAYS_OF_WEEK,
+    DELIVERY_TYPE,
     GENDER_CHOICES,
     PAYMENT_TYPE,
-    DELIVERY_TYPE,
-    DAYS_OF_WEEK,
-    Route,
+    RATE_TYPE,
+    Client,
     ClientScheduledStatus,
+    Member,
+    Option,
     Relationship,
+    Route,
 )
+from souschef.order.models import SIZE_CHOICES
 
 
 class ClientBasicInformation(forms.Form):

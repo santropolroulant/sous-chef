@@ -1,11 +1,25 @@
 import collections
-from django.db import models
-from django.db.models import Q, Prefetch
-from souschef.order.models import Order, Order_item
-from datetime import datetime, date
+from datetime import (
+    date,
+    datetime,
+)
+
 from annoying.fields import JSONField
+from django.db import models
+from django.db.models import (
+    Prefetch,
+    Q,
+)
 from django.utils.translation import ugettext_lazy as _
-from django_filters import FilterSet, CharFilter
+from django_filters import (
+    CharFilter,
+    FilterSet,
+)
+
+from souschef.order.models import (
+    Order,
+    Order_item,
+)
 
 
 class BillingManager(models.Manager):

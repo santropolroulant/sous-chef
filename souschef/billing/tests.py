@@ -1,12 +1,17 @@
-from django.test import TestCase
-from souschef.order.factories import OrderFactory
-from souschef.billing.models import Billing, calculate_amount_total
 import datetime
-from souschef.member.factories import ClientFactory
-from souschef.order.models import Order
+
 from django.contrib.auth.models import User
+from django.test import TestCase
 from django.urls import reverse
+
 from souschef.billing.factories import BillingFactory
+from souschef.billing.models import (
+    Billing,
+    calculate_amount_total,
+)
+from souschef.member.factories import ClientFactory
+from souschef.order.factories import OrderFactory
+from souschef.order.models import Order
 from souschef.sous_chef.tests import TestMixin as SousChefTestMixin
 
 

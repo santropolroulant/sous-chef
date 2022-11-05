@@ -1,11 +1,12 @@
 from datetime import date
+
 from django.core.management import call_command
 from django.test import TestCase
 
 from souschef.member.models import (
-    Member,
-    Client,
     Address,
+    Client,
+    Member,
     Relationship,
 )
 from souschef.order.models import Order

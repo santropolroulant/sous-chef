@@ -1,7 +1,11 @@
 import csv
 
 from django.core.management.base import BaseCommand
-from souschef.member.models import Client, Member
+
+from souschef.member.models import (
+    Client,
+    Member,
+)
 from souschef.order.models import Order
 
 

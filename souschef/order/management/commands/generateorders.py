@@ -1,8 +1,16 @@
+from datetime import (
+    datetime,
+    timedelta,
+)
+
+from django.contrib.admin.models import (
+    ADDITION,
+    LogEntry,
+)
 from django.core.management.base import BaseCommand
-from souschef.order.models import Order
+
 from souschef.member.models import Client
-from datetime import datetime, timedelta
-from django.contrib.admin.models import LogEntry, ADDITION
+from souschef.order.models import Order
 
 
 class Command(BaseCommand):

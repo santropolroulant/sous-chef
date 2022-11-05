@@ -1,23 +1,24 @@
 # coding=utf-8
-import factory
 import random
 
+import factory
+
+from souschef.meal.models import COMPONENT_GROUP_CHOICES
 from souschef.member.models import (
-    Member,
-    Client,
-    Contact,
-    Route,
-    Address,
-    Relationship,
+    DAYS_OF_WEEK,
+    DELIVERY_TYPE,
     GENDER_CHOICES,
     PAYMENT_TYPE,
-    DELIVERY_TYPE,
-    DAYS_OF_WEEK,
     RATE_TYPE,
+    Address,
+    Client,
     ClientScheduledStatus,
+    Contact,
     DeliveryHistory,
+    Member,
+    Relationship,
+    Route,
 )
-from souschef.meal.models import COMPONENT_GROUP_CHOICES
 
 
 class AddressFactory(factory.DjangoModelFactory):

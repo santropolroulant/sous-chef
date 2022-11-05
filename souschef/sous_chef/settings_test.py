@@ -1,6 +1,5 @@
 from .settings import *  # noqa
 
-
 SECRET_KEY = "SecretKeyForUseOnTravis"
 
 DEBUG = False

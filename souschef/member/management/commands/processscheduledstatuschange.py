@@ -1,6 +1,10 @@
-from datetime import date, datetime
+from datetime import (
+    date,
+    datetime,
+)
 
 from django.core.management.base import BaseCommand
+
 from souschef.member.models import ClientScheduledStatus
 
 

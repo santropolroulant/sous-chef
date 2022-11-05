@@ -1,26 +1,36 @@
 import collections
-from datetime import date, datetime
 import re
-
-from django.db import models, connection, transaction
-from django.db.models import Q
-from django.utils.translation import ugettext_lazy as _
-from django_filters import FilterSet, ChoiceFilter, CharFilter
-from django.urls import reverse
-from django.core.exceptions import ValidationError
-
-from souschef.member.models import (
-    DAYS_OF_WEEK,
-    RATE_TYPE_LOW_INCOME,
-    RATE_TYPE_SOLIDARY,
-    OPTION_GROUP_CHOICES_PREPARATION,
+from datetime import (
+    date,
+    datetime,
 )
+
+from django.core.exceptions import ValidationError
+from django.db import (
+    connection,
+    models,
+    transaction,
+)
+from django.db.models import Q
+from django.urls import reverse
+from django.utils.translation import ugettext_lazy as _
+from django_filters import (
+    CharFilter,
+    ChoiceFilter,
+    FilterSet,
+)
+
 from souschef.meal.models import (
     COMPONENT_GROUP_CHOICES,
     COMPONENT_GROUP_CHOICES_MAIN_DISH,
     COMPONENT_GROUP_CHOICES_SIDES,
 )
-
+from souschef.member.models import (
+    DAYS_OF_WEEK,
+    OPTION_GROUP_CHOICES_PREPARATION,
+    RATE_TYPE_LOW_INCOME,
+    RATE_TYPE_SOLIDARY,
+)
 
 ORDER_STATUS = (
     ("O", _("Ordered")),

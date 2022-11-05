@@ -1,19 +1,27 @@
 import datetime
 import json
+
+from annoying.fields import JSONField
 from django.db import models
 from django.db.models import Q
 from django.db.models.functions import Extract
 from django.forms import ValidationError
+from django.utils import timezone
 from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
-from django.utils import timezone
-from django_filters import FilterSet, CharFilter, ChoiceFilter, MultipleChoiceFilter
-from annoying.fields import JSONField
+from django_filters import (
+    CharFilter,
+    ChoiceFilter,
+    FilterSet,
+    MultipleChoiceFilter,
+)
 
+from souschef.meal.models import (
+    COMPONENT_GROUP_CHOICES,
+    COMPONENT_GROUP_CHOICES_SIDES,
+)
 from souschef.member.formsfield import CAPhoneNumberExtField
-from souschef.meal.models import COMPONENT_GROUP_CHOICES, COMPONENT_GROUP_CHOICES_SIDES
 from souschef.note.models import Note
-
 
 HOME = "Home phone"
 CELL = "Cell phone"

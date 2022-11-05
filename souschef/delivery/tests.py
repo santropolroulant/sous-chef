@@ -1,45 +1,53 @@
 import datetime
 import json
 
-from django.db.models import Q
-from django.test import RequestFactory
-from django.test import TestCase
 from django.contrib.auth.models import User
-from django.urls import reverse_lazy, reverse
-from django.utils import timezone as tz
-from django.utils.translation import ugettext_lazy, ugettext
-
-from souschef.meal.models import (
-    Menu,
-    Component,
-    Component_ingredient,
-    Ingredient,
-    COMPONENT_GROUP_CHOICES_SIDES,
+from django.db.models import Q
+from django.test import (
+    RequestFactory,
+    TestCase,
 )
+from django.urls import (
+    reverse,
+    reverse_lazy,
+)
+from django.utils import timezone as tz
+from django.utils.translation import (
+    ugettext,
+    ugettext_lazy,
+)
+
 from souschef.meal.factories import (
-    IngredientFactory,
     ComponentFactory,
     ComponentIngredientFactory,
     IncompatibilityFactory,
+    IngredientFactory,
     RestrictedItemFactory,
 )
-from souschef.order.models import Order
-from souschef.member.models import (
-    Client,
-    Member,
-    Route,
-    Restriction,
-    DAYS_OF_WEEK,
-    Client_avoid_ingredient,
-    DeliveryHistory,
+from souschef.meal.models import (
+    COMPONENT_GROUP_CHOICES_SIDES,
+    Component,
+    Component_ingredient,
+    Ingredient,
+    Menu,
 )
 from souschef.member.factories import (
     AddressFactory,
-    MemberFactory,
     ClientFactory,
-    RouteFactory,
     DeliveryHistoryFactory,
+    MemberFactory,
+    RouteFactory,
 )
+from souschef.member.models import (
+    DAYS_OF_WEEK,
+    Client,
+    Client_avoid_ingredient,
+    DeliveryHistory,
+    Member,
+    Restriction,
+    Route,
+)
+from souschef.order.models import Order
 from souschef.sous_chef.tests import TestMixin as SousChefTestMixin
 
 from .filters import KitchenCountOrderFilter

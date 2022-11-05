@@ -1,11 +1,16 @@
 import itertools
-from django.test import TestCase
-from souschef.note.models import Note
-from souschef.note.factories import NoteFactory
+
 from django.contrib.auth.models import User
-from souschef.member.factories import ClientFactory, RouteFactory
+from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
+
+from souschef.member.factories import (
+    ClientFactory,
+    RouteFactory,
+)
+from souschef.note.factories import NoteFactory
+from souschef.note.models import Note
 from souschef.sous_chef.tests import TestMixin as SousChefTestMixin
 
 

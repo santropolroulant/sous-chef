@@ -1,5 +1,10 @@
 from django.contrib import admin
-from souschef.order.models import Order, Order_item, OrderStatusChange
+
+from souschef.order.models import (
+    Order,
+    Order_item,
+    OrderStatusChange,
+)
 
 
 def make_delivered(modeladmin, request, queryset):

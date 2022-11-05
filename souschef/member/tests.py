@@ -1,60 +1,70 @@
 import json
 import random
-
-from datetime import date, timedelta
+from datetime import (
+    date,
+    timedelta,
+)
 from decimal import Decimal
+
 from django.contrib.auth.models import User
 from django.core.management import call_command
-from django.urls import reverse, reverse_lazy
-from django.utils import timezone
-from django.utils.six import StringIO
 from django.test import TestCase
-
-from souschef.member.models import (
-    Member,
-    Client,
-    Address,
-    Contact,
-    Option,
-    Client_option,
-    Restriction,
-    Route,
-    Client_avoid_ingredient,
-    Client_avoid_component,
-    ClientScheduledStatus,
-    Relationship,
-    CELL,
-    HOME,
-    EMAIL,
+from django.urls import (
+    reverse,
+    reverse_lazy,
 )
-from souschef.meal.models import (
-    Restricted_item,
-    Ingredient,
-    Component,
-    COMPONENT_GROUP_CHOICES,
+from django.utils import (
+    timezone,
+    translation,
 )
-from souschef.member.factories import (
-    RouteFactory,
-    ClientFactory,
-    ClientScheduledStatusFactory,
-    MemberFactory,
-    DeliveryHistoryFactory,
-    RelationshipFactory,
-)
-from souschef.meal.factories import IngredientFactory, ComponentFactory
-from django.utils import translation
+from django.utils.six import StringIO
 from django.utils.translation import ugettext
 
-from souschef.order.factories import OrderFactory
-from souschef.order.models import ORDER_STATUS_ORDERED
+from souschef.meal.factories import (
+    ComponentFactory,
+    IngredientFactory,
+)
+from souschef.meal.models import (
+    COMPONENT_GROUP_CHOICES,
+    Component,
+    Ingredient,
+    Restricted_item,
+)
+from souschef.member.factories import (
+    ClientFactory,
+    ClientScheduledStatusFactory,
+    DeliveryHistoryFactory,
+    MemberFactory,
+    RelationshipFactory,
+    RouteFactory,
+)
 from souschef.member.forms import (
-    ClientBasicInformation,
     ClientAddressInformation,
+    ClientBasicInformation,
     ClientPaymentInformation,
-    ClientRestrictionsInformation,
     ClientRelationshipInformation,
+    ClientRestrictionsInformation,
     ClientScheduledStatusForm,
 )
+from souschef.member.models import (
+    CELL,
+    EMAIL,
+    HOME,
+    Address,
+    Client,
+    Client_avoid_component,
+    Client_avoid_ingredient,
+    Client_option,
+    ClientScheduledStatus,
+    Contact,
+    Member,
+    Option,
+    Relationship,
+    Restriction,
+    Route,
+)
+from souschef.order.factories import OrderFactory
+from souschef.order.models import ORDER_STATUS_ORDERED
 from souschef.sous_chef.tests import TestMigrations
 from souschef.sous_chef.tests import TestMixin as SousChefTestMixin
 

@@ -1,38 +1,30 @@
 import csv
 import json
-
-from django.http import HttpResponse
-from django.http.response import HttpResponseRedirect
-from django.views import generic, View
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
-from django.utils.translation import ugettext_lazy as _
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.mixins import PermissionRequiredMixin
-from django.contrib import messages
-from django.urls import reverse_lazy, reverse
-from django.utils import timezone
-from django.shortcuts import get_object_or_404
-from extra_views import CreateWithInlinesView, UpdateWithInlinesView
-
 from datetime import datetime
 
-from souschef.order.models import (
-    ORDER_STATUS_CANCELLED,
-    Order,
-    OrderFilter,
-    ORDER_STATUS,
-    OrderStatusChange,
+from django.contrib import messages
+from django.contrib.auth.mixins import (
+    LoginRequiredMixin,
+    PermissionRequiredMixin,
 )
-from souschef.order.mixins import (
-    AjaxableResponseMixin,
-    FormValidAjaxableResponseMixin,
+from django.http import HttpResponse
+from django.http.response import HttpResponseRedirect
+from django.shortcuts import get_object_or_404
+from django.urls import (
+    reverse,
+    reverse_lazy,
 )
-from souschef.order.forms import (
-    CreateOrderItem,
-    UpdateOrderItem,
-    CreateOrdersBatchForm,
-    OrderStatusChangeForm,
+from django.utils import timezone
+from django.utils.decorators import method_decorator
+from django.utils.translation import ugettext_lazy as _
+from django.views import (
+    View,
+    generic,
+)
+from django.views.decorators.csrf import csrf_exempt
+from extra_views import (
+    CreateWithInlinesView,
+    UpdateWithInlinesView,
 )
 
 from souschef.meal.models import (
@@ -40,7 +32,27 @@ from souschef.meal.models import (
     COMPONENT_GROUP_CHOICES_SIDES,
 )
 from souschef.meal.settings import COMPONENT_SYSTEM_DEFAULT
-from souschef.member.models import Client, DAYS_OF_WEEK
+from souschef.member.models import (
+    DAYS_OF_WEEK,
+    Client,
+)
+from souschef.order.forms import (
+    CreateOrderItem,
+    CreateOrdersBatchForm,
+    OrderStatusChangeForm,
+    UpdateOrderItem,
+)
+from souschef.order.mixins import (
+    AjaxableResponseMixin,
+    FormValidAjaxableResponseMixin,
+)
+from souschef.order.models import (
+    ORDER_STATUS,
+    ORDER_STATUS_CANCELLED,
+    Order,
+    OrderFilter,
+    OrderStatusChange,
+)
 
 
 class OrderList(LoginRequiredMixin, PermissionRequiredMixin, generic.ListView):

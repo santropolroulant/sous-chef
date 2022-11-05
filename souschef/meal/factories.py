@@ -1,19 +1,21 @@
 # coding=utf-8
 
-import factory
 import random
+
+import factory
 from faker import Factory as FakerFactory
+
 from souschef.meal.models import (
-    Ingredient,
+    COMPONENT_GROUP_CHOICES,
+    INGREDIENT_GROUP_CHOICES,
+    RESTRICTED_ITEM_GROUP_CHOICES,
     Component,
     Component_ingredient,
     Incompatibility,
-    Restricted_item,
-    INGREDIENT_GROUP_CHOICES,
-    COMPONENT_GROUP_CHOICES,
-    RESTRICTED_ITEM_GROUP_CHOICES,
+    Ingredient,
     Menu,
     Menu_component,
+    Restricted_item,
 )
 
 fake = FakerFactory.create()

@@ -1,6 +1,7 @@
-from django.core.management.base import BaseCommand
-from souschef.member.factories import ClientFactory
 from django.core.management import call_command
+from django.core.management.base import BaseCommand
+
+from souschef.member.factories import ClientFactory
 
 
 class Command(BaseCommand):

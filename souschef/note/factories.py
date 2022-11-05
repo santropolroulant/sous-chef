@@ -1,9 +1,15 @@
 # coding=utf-8
-import factory
 import random
-from souschef.member.factories import ClientFactory
-from souschef.note.models import Note, NotePriority, NoteCategory
+
+import factory
 from django.contrib.auth.models import User
+
+from souschef.member.factories import ClientFactory
+from souschef.note.models import (
+    Note,
+    NoteCategory,
+    NotePriority,
+)
 
 
 class UserFactory(factory.DjangoModelFactory):

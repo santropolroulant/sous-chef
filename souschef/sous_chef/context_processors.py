@@ -1,11 +1,22 @@
 # -*- coding: utf-8 -*-
+import datetime
 import os
+
 import pkg_resources
 from django.conf import settings
-from souschef.member.models import Client, Route
-from souschef.order.models import Order, ORDER_STATUS_ORDERED
-from souschef.note.models import Note, NoteFilter
-import datetime
+
+from souschef.member.models import (
+    Client,
+    Route,
+)
+from souschef.note.models import (
+    Note,
+    NoteFilter,
+)
+from souschef.order.models import (
+    ORDER_STATUS_ORDERED,
+    Order,
+)
 
 
 def get_sous_chef_version():
