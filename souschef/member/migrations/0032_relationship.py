@@ -101,9 +101,7 @@ def reverse_migrate_relationships(apps, schema_editor):
         if _ref_Relationship.EMERGENCY in rel.type:
             print(
                 "Reversing member.Relationship #{} to "
-                "member.EmergencyContact...".format(
-                    rel.pk
-                )
+                "member.EmergencyContact...".format(rel.pk)
             )
             try:
                 emgc = EmergencyContact.objects.get(
