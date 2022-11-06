@@ -1,0 +1,7 @@
+# Migrate code style to Black
+# https://black.readthedocs.io/en/stable/guides/introducing_black_to_your_project.html
+559c4d41dbae31629c0af9b1d722a2d618ef3a01
+
+# Integration of Isort into the devtool
+# This changed a lot of import lines on a lot of files
+962065c12e84b22d00ae34fc6c0d0217dd544be5

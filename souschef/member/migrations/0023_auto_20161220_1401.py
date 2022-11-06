@@ -9,18 +9,35 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('member', '0022_auto_20161215_1936'),
+        ("member", "0022_auto_20161215_1936"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='client',
-            name='billing_payment_type',
-            field=models.CharField(blank=True, choices=[(' ', '----'), ('3rd', '3rd Party'), ('credit', 'Credit card'), ('eft', 'EFT')], max_length=10, null=True, verbose_name='Payment Type'),
+            model_name="client",
+            name="billing_payment_type",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    (" ", "----"),
+                    ("3rd", "3rd Party"),
+                    ("credit", "Credit card"),
+                    ("eft", "EFT"),
+                ],
+                max_length=10,
+                null=True,
+                verbose_name="Payment Type",
+            ),
         ),
         migrations.AlterField(
-            model_name='client',
-            name='route',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='member.Route', verbose_name='route'),
+            model_name="client",
+            name="route",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="member.Route",
+                verbose_name="route",
+            ),
         ),
     ]

@@ -20,6 +20,15 @@ WORKDIR /code
 COPY setup.py README.md /code/
 RUN pip3 install -e .
 
+# We add some development tool to make sure that contributors only need
+# docker installed
+COPY requirements-dev.txt /code/
+RUN pip3 install -r requirements-dev.txt
+
+# Add wait-for-it script for CI
+# This script allow us to wait that DB is up&running before launching tests
+COPY wait-for-it.sh /code/
+
 ENV DJANGO_SETTINGS_MODULE="souschef.sous_chef.settings"
 ENV SOUSCHEF_ENVIRONMENT_NAME="DEV"
 CMD pip3 install -e . && \

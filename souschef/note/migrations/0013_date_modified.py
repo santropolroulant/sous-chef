@@ -9,23 +9,28 @@ import django.utils.timezone
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('note', '0012_note_is_deleted'),
+        ("note", "0012_note_is_deleted"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='note',
-            options={'ordering': ('-date_modified', 'note'), 'verbose_name_plural': 'Notes'},
+            name="note",
+            options={
+                "ordering": ("-date_modified", "note"),
+                "verbose_name_plural": "Notes",
+            },
         ),
         migrations.RenameField(
-            model_name='note',
-            old_name='date',
-            new_name='date_created',
+            model_name="note",
+            old_name="date",
+            new_name="date_created",
         ),
         migrations.AddField(
-            model_name='note',
-            name='date_modified',
-            field=models.DateTimeField(default=django.utils.timezone.now, verbose_name='Date Modified'),
+            model_name="note",
+            name="date_modified",
+            field=models.DateTimeField(
+                default=django.utils.timezone.now, verbose_name="Date Modified"
+            ),
         ),
         migrations.RunSQL(
             ["UPDATE note_note SET date_modified = date_created"],

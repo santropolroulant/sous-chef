@@ -8,13 +8,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('member', '0024_auto_20161227_1819'),
+        ("member", "0024_auto_20161227_1819"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='route',
-            name='vehicle',
-            field=models.CharField(choices=[('cycling', 'Cycling'), ('walking', 'Walking'), ('driving', 'Driving')], default='cycling', max_length=20, verbose_name='default vehicle'),
+            model_name="route",
+            name="vehicle",
+            field=models.CharField(
+                choices=[
+                    ("cycling", "Cycling"),
+                    ("walking", "Walking"),
+                    ("driving", "Driving"),
+                ],
+                default="cycling",
+                max_length=20,
+                verbose_name="default vehicle",
+            ),
         ),
     ]

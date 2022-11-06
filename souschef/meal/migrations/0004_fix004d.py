@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('meal', '0003_fix224a'),
+        ("meal", "0003_fix224a"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='component_ingredient',
-            name='date',
-            field=models.DateField(blank=True, null=True, verbose_name='date'),
+            model_name="component_ingredient",
+            name="date",
+            field=models.DateField(blank=True, null=True, verbose_name="date"),
         ),
     ]

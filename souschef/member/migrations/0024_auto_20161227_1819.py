@@ -10,7 +10,7 @@ work_information = collections.defaultdict(list)
 
 
 def copy_work_information(apps, schema_editor):
-    Referencing = apps.get_model('member', 'Referencing')
+    Referencing = apps.get_model("member", "Referencing")
     for ref in Referencing.objects.all():
         if ref.referent and ref.work_information:
             member_id = ref.referent_id
@@ -20,8 +20,10 @@ def copy_work_information(apps, schema_editor):
     for member_id, works in work_information.items():
         if len(works) > 1:
             # warning
-            print("Warning: Member #{0} has multiple work information registered"
-                  "in Referencing table. They are:".format(member_id))
+            print(
+                "Warning: Member #{0} has multiple work information registered"
+                "in Referencing table. They are:".format(member_id)
+            )
             for work in works:
                 print(" - {0}".format(work))
             print("")
@@ -30,11 +32,11 @@ def copy_work_information(apps, schema_editor):
 
 
 def paste_work_information(apps, schema_editor):
-    Member = apps.get_model('member', 'Member')
+    Member = apps.get_model("member", "Member")
     for member_id, works in work_information.items():
         member = Member.objects.get(id=member_id)
         member.work_information = works[0]
-        member.save(update_fields=['work_information'])
+        member.save(update_fields=["work_information"])
 
 
 # Reverse codes for RunPython commands
@@ -42,37 +44,43 @@ undo_work_information = {}
 
 
 def undo_paste_work_information(apps, schema_editor):
-    Member = apps.get_model('member', 'Member')
+    Member = apps.get_model("member", "Member")
     for member in Member.objects.all():
         if member.work_information:
             undo_work_information[member.id] = member.work_information
 
 
 def undo_copy_work_information(apps, schema_editor):
-    Referencing = apps.get_model('member', 'Referencing')
+    Referencing = apps.get_model("member", "Referencing")
     for member_id, work in undo_work_information.items():
         refs = Referencing.objects.filter(referent=member_id)
         for ref in refs:
             ref.work_information = work
-            ref.save(update_fields=['work_information'])
+            ref.save(update_fields=["work_information"])
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('member', '0023_auto_20161220_1401'),
+        ("member", "0023_auto_20161220_1401"),
     ]
 
     operations = [
-        migrations.RunPython(copy_work_information, reverse_code=undo_copy_work_information),
+        migrations.RunPython(
+            copy_work_information, reverse_code=undo_copy_work_information
+        ),
         migrations.RemoveField(
-            model_name='referencing',
-            name='work_information',
+            model_name="referencing",
+            name="work_information",
         ),
         migrations.AddField(
-            model_name='member',
-            name='work_information',
-            field=models.TextField(blank=True, null=True, verbose_name='Work information'),
+            model_name="member",
+            name="work_information",
+            field=models.TextField(
+                blank=True, null=True, verbose_name="Work information"
+            ),
         ),
-        migrations.RunPython(paste_work_information, reverse_code=undo_paste_work_information),
+        migrations.RunPython(
+            paste_work_information, reverse_code=undo_paste_work_information
+        ),
     ]

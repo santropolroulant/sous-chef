@@ -1,11 +1,11 @@
-import factory
 import random
+
+import factory
 
 from souschef.billing.models import Billing
 
 
 class BillingFactory(factory.DjangoModelFactory):
-
     class Meta:
         model = Billing
 

@@ -1,13 +1,18 @@
 # coding=utf-8
-import factory
 import random
-from souschef.member.factories import ClientFactory
-from souschef.note.models import Note, NotePriority, NoteCategory
+
+import factory
 from django.contrib.auth.models import User
+
+from souschef.member.factories import ClientFactory
+from souschef.note.models import (
+    Note,
+    NoteCategory,
+    NotePriority,
+)
 
 
 class UserFactory(factory.DjangoModelFactory):
-
     class Meta:
         model = User
 
@@ -15,11 +20,10 @@ class UserFactory(factory.DjangoModelFactory):
 
 
 class NoteFactory(factory.DjangoModelFactory):
-
     class Meta:
         model = Note
 
-    note = factory.Faker('sentence')
+    note = factory.Faker("sentence")
     author = factory.SubFactory(UserFactory)
     client = factory.SubFactory(ClientFactory)
     priority = factory.LazyAttribute(

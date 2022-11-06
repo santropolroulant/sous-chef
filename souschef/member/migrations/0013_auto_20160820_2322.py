@@ -9,18 +9,22 @@ import django.utils.timezone
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('member', '0012_clientscheduledstatus'),
+        ("member", "0012_clientscheduledstatus"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='clientscheduledstatus',
-            name='change_date',
+            model_name="clientscheduledstatus",
+            name="change_date",
             field=models.DateField(default=django.utils.timezone.now),
         ),
         migrations.AlterField(
-            model_name='clientscheduledstatus',
-            name='change_state',
-            field=models.CharField(choices=[('START', 'Start'), ('END', 'End')], default='START', max_length=5),
+            model_name="clientscheduledstatus",
+            name="change_state",
+            field=models.CharField(
+                choices=[("START", "Start"), ("END", "End")],
+                default="START",
+                max_length=5,
+            ),
         ),
     ]

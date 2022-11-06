@@ -1,19 +1,18 @@
-from django.core.management.base import BaseCommand
-from souschef.member.factories import ClientFactory
 from django.core.management import call_command
+from django.core.management.base import BaseCommand
+
+from souschef.member.factories import ClientFactory
 
 
 class Command(BaseCommand):
-    help = 'Creates a happy bunch of clients without orders'
+    help = "Creates a happy bunch of clients without orders"
 
     def handle(self, *args, **options):
         # Load fixtures for the routes
-        fixture_filename = 'routes.json'
-        call_command('loaddata', fixture_filename)
+        fixture_filename = "routes.json"
+        call_command("loaddata", fixture_filename)
 
         client = ClientFactory.create_batch(10)
         self.stdout.write(
-            self.style.SUCCESS(
-                'Successfully created client "%s"' % client
-            )
+            self.style.SUCCESS('Successfully created client "%s"' % client)
         )

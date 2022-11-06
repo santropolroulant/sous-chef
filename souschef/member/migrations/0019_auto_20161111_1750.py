@@ -8,28 +8,42 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('member', '0018_auto_20161110_2352'),
+        ("member", "0018_auto_20161110_2352"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='member',
-            name='mid',
+            model_name="member",
+            name="mid",
             field=models.IntegerField(null=True),
         ),
         migrations.AddField(
-            model_name='member',
-            name='rid',
+            model_name="member",
+            name="rid",
             field=models.IntegerField(null=True),
         ),
         migrations.AlterField(
-            model_name='client',
-            name='billing_payment_type',
-            field=models.CharField(choices=[('cheque', 'Cheque'), ('cash', 'Cash'), ('credit', 'Credit card'), ('eft', 'EFT')], max_length=10, null=True, verbose_name='Payment Type'),
+            model_name="client",
+            name="billing_payment_type",
+            field=models.CharField(
+                choices=[
+                    ("cheque", "Cheque"),
+                    ("cash", "Cash"),
+                    ("credit", "Credit card"),
+                    ("eft", "EFT"),
+                ],
+                max_length=10,
+                null=True,
+                verbose_name="Payment Type",
+            ),
         ),
         migrations.AlterField(
-            model_name='client',
-            name='language',
-            field=models.CharField(choices=[('en', 'English'), ('fr', 'French'), ('al', 'Allophone')], default='fr', max_length=2),
+            model_name="client",
+            name="language",
+            field=models.CharField(
+                choices=[("en", "English"), ("fr", "French"), ("al", "Allophone")],
+                default="fr",
+                max_length=2,
+            ),
         ),
     ]

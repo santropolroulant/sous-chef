@@ -7,7 +7,7 @@ from django.db import migrations, models
 
 def set_initial_priorities(apps, schema_editor):
     # set NotePriority initial
-    NotePriority = apps.get_model('note', 'NotePriority')
+    NotePriority = apps.get_model("note", "NotePriority")
     NotePriority.objects.create(name="Normal")
     NotePriority.objects.create(name="Urgent")
 
@@ -15,19 +15,25 @@ def set_initial_priorities(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('note', '0003_auto_20160819_2037'),
+        ("note", "0003_auto_20160819_2037"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='NotePriority',
+            name="NotePriority",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=150, verbose_name='Name')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=150, verbose_name="Name")),
             ],
-            options={
-                'ordering': ('name',), 'verbose_name_plural': 'Note priorities'
-            },
+            options={"ordering": ("name",), "verbose_name_plural": "Note priorities"},
         ),
         migrations.RunPython(set_initial_priorities),
     ]

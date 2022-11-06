@@ -10,23 +10,40 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('note', '0009_auto_20170116_1543'),
+        ("note", "0009_auto_20170116_1543"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='note',
-            name='author',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL, verbose_name='Author'),
+            model_name="note",
+            name="author",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to=settings.AUTH_USER_MODEL,
+                verbose_name="Author",
+            ),
         ),
         migrations.AlterField(
-            model_name='note',
-            name='category',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.SET_DEFAULT, related_name='notes', to='note.NoteCategory', verbose_name='Category'),
+            model_name="note",
+            name="category",
+            field=models.ForeignKey(
+                default=1,
+                on_delete=django.db.models.deletion.SET_DEFAULT,
+                related_name="notes",
+                to="note.NoteCategory",
+                verbose_name="Category",
+            ),
         ),
         migrations.AlterField(
-            model_name='note',
-            name='priority',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.SET_DEFAULT, related_name='notes', to='note.NotePriority', verbose_name='Priority'),
+            model_name="note",
+            name="priority",
+            field=models.ForeignKey(
+                default=1,
+                on_delete=django.db.models.deletion.SET_DEFAULT,
+                related_name="notes",
+                to="note.NotePriority",
+                verbose_name="Priority",
+            ),
         ),
     ]

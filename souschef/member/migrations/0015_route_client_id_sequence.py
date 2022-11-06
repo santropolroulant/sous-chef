@@ -9,13 +9,13 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('member', '0014_auto_20160826_0007'),
+        ("member", "0014_auto_20160826_0007"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='route',
-            name='client_id_sequence',
+            model_name="route",
+            name="client_id_sequence",
             field=annoying.fields.JSONField(blank=True, null=True),
         ),
     ]

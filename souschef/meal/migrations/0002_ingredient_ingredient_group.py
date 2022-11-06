@@ -8,14 +8,31 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('meal', '0001_fix161f'),
+        ("meal", "0001_fix161f"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='ingredient',
-            name='ingredient_group',
-            field=models.CharField(choices=[('meat', 'Meat'), ('dairy', 'Dairy'), ('fish', 'Fish'), ('seafood', 'Seafood'), ('veggies and fruits', 'Veggies and fruits'), ('legumineuse', 'Legumineuse'), ('grains', 'Grains'), ('fresh herbs', 'Fresh herbs'), ('spices', 'Spices'), ('dry and canned goods', 'Dry and canned goods'), ('oils and sauces', 'Oils and sauces')], default='', max_length=100, verbose_name='ingredient group'),
+            model_name="ingredient",
+            name="ingredient_group",
+            field=models.CharField(
+                choices=[
+                    ("meat", "Meat"),
+                    ("dairy", "Dairy"),
+                    ("fish", "Fish"),
+                    ("seafood", "Seafood"),
+                    ("veggies and fruits", "Veggies and fruits"),
+                    ("legumineuse", "Legumineuse"),
+                    ("grains", "Grains"),
+                    ("fresh herbs", "Fresh herbs"),
+                    ("spices", "Spices"),
+                    ("dry and canned goods", "Dry and canned goods"),
+                    ("oils and sauces", "Oils and sauces"),
+                ],
+                default="",
+                max_length=100,
+                verbose_name="ingredient group",
+            ),
             preserve_default=False,
         ),
     ]

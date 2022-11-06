@@ -8,12 +8,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('billing', '0003_auto_20161122_0515'),
+        ("billing", "0003_auto_20161122_0515"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='billing',
-            options={'ordering': ['-billing_year', '-billing_month']},
+            name="billing",
+            options={"ordering": ["-billing_year", "-billing_month"]},
         ),
     ]

@@ -8,18 +8,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('meal', '0005_fix241b'),
+        ("meal", "0005_fix241b"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='menu',
-            name='components',
-            field=models.ManyToManyField(through='meal.Menu_component', to='meal.Component'),
+            model_name="menu",
+            name="components",
+            field=models.ManyToManyField(
+                through="meal.Menu_component", to="meal.Component"
+            ),
         ),
         migrations.AddField(
-            model_name='restricted_item',
-            name='ingredients',
-            field=models.ManyToManyField(through='meal.Incompatibility', to='meal.Ingredient'),
+            model_name="restricted_item",
+            name="ingredients",
+            field=models.ManyToManyField(
+                through="meal.Incompatibility", to="meal.Ingredient"
+            ),
         ),
     ]

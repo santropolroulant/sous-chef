@@ -1,0 +1,23 @@
+name: Pull-Request validation
+
+on: [push, pull_request]
+
+jobs:
+  validate:
+    name: Pull-Request validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build docker-compose
+        run: docker-compose build
+      - name: Compile assets
+        run: bash ./tools/compile_assets.sh
+      - name: Check Black
+        run: docker-compose run --rm web black --check .
+      - name: Check isort
+        run: docker-compose run --rm web isort . --check --diff
+      - name: Check flake8
+        run: docker-compose run --rm web flake8
+      - name: Check tests
+        run: docker-compose run -e CI=1 --rm web /code/wait-for-it.sh db:3306 --strict -- python3 /code/souschef/manage.py test

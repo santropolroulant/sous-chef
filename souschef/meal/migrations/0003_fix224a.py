@@ -8,17 +8,29 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('meal', '0002_ingredient_ingredient_group'),
+        ("meal", "0002_ingredient_ingredient_group"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='ingredient',
-            options={'verbose_name_plural': 'ingredients'},
+            name="ingredient",
+            options={"verbose_name_plural": "ingredients"},
         ),
         migrations.AlterField(
-            model_name='component',
-            name='component_group',
-            field=models.CharField(choices=[('main dish', 'Main dish'), ('dessert', 'Dessert'), ('diabetic dessert', 'Diabetic dessert'), ('fruit salad', 'Fruit salad'), ('green salad', 'Green salad'), ('pudding', 'Pudding'), ('compote', 'Compote')], max_length=100, verbose_name='component group'),
+            model_name="component",
+            name="component_group",
+            field=models.CharField(
+                choices=[
+                    ("main dish", "Main dish"),
+                    ("dessert", "Dessert"),
+                    ("diabetic dessert", "Diabetic dessert"),
+                    ("fruit salad", "Fruit salad"),
+                    ("green salad", "Green salad"),
+                    ("pudding", "Pudding"),
+                    ("compote", "Compote"),
+                ],
+                max_length=100,
+                verbose_name="component group",
+            ),
         ),
     ]

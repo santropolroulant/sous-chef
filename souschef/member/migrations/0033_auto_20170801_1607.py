@@ -9,23 +9,23 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('member', '0032_relationship'),
+        ("member", "0032_relationship"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='relationship',
-            name='extra_fields',
+            model_name="relationship",
+            name="extra_fields",
             field=annoying.fields.JSONField(blank=True, default={}),
         ),
         migrations.AlterField(
-            model_name='relationship',
-            name='remark',
+            model_name="relationship",
+            name="remark",
             field=models.TextField(blank=True),
         ),
         migrations.AlterField(
-            model_name='relationship',
-            name='type',
+            model_name="relationship",
+            name="type",
             field=annoying.fields.JSONField(blank=True, default=[]),
         ),
     ]

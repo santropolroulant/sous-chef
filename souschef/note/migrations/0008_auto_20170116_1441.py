@@ -8,8 +8,8 @@ import django.db.models.deletion
 
 def set_default_data(apps, schema_editor):
     # set for each product the correct language
-    NoteCategory = apps.get_model('note', 'NoteCategory')
-    Note = apps.get_model('note', 'Note')
+    NoteCategory = apps.get_model("note", "NoteCategory")
+    Note = apps.get_model("note", "Note")
 
     default_category = NoteCategory.objects.get(name="Comments (no actions needed)")
 
@@ -21,14 +21,20 @@ def set_default_data(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('note', '0007_notecategory'),
+        ("note", "0007_notecategory"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='note',
-            name='category',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='notes', to='note.NoteCategory', verbose_name='Category'),
+            model_name="note",
+            name="category",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="notes",
+                to="note.NoteCategory",
+                verbose_name="Category",
+            ),
         ),
         migrations.RunPython(set_default_data),
     ]

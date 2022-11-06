@@ -8,13 +8,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('member', '0015_route_client_id_sequence'),
+        ("member", "0015_route_client_id_sequence"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='client',
-            name='gender',
-            field=models.CharField(blank=True, choices=[('F', 'Female'), ('M', 'Male')], default='U', max_length=1, null='True'),
+            model_name="client",
+            name="gender",
+            field=models.CharField(
+                blank=True,
+                choices=[("F", "Female"), ("M", "Male")],
+                default="U",
+                max_length=1,
+                null="True",
+            ),
         ),
     ]

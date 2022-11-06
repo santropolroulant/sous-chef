@@ -4,12 +4,14 @@ from datetime import date
 from django.core.management.base import BaseCommand
 
 from souschef.member.models import (
-    Client, Member, Referencing, EmergencyContact
+    Client,
+    Member,
+    Relationship,
 )
 
 
 class Command(BaseCommand):
-    help = 'Data: import clients relationships from given csv file.'
+    help = "Data: import clients relationships from given csv file."
 
     ROW_MID = 0
     ROW_RID = 1
@@ -29,63 +31,64 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--file',
+            "--file",
             default=False,
-            help='Import mock data instead of actual data',
+            help="Import mock data instead of actual data",
         )
 
     def handle(self, *args, **options):
-        if options['file']:
-            file = 'mock_relationships.csv'
+        if options["file"]:
+            file = "mock_relationships.csv"
         else:
-            file = 'clients_relationships.csv'
+            file = "clients_relationships.csv"
 
         with open(file) as f:
-            reader = csv.reader(f, delimiter=';')
+            reader = csv.reader(f, delimiter=";")
             for row in reader:
                 try:
                     member = Member.objects.get(mid=row[self.ROW_MID])
                     client = Client.objects.get(member=member)
 
-                    if row[self.ROW_FIRSTNAME] != '':
+                    if row[self.ROW_FIRSTNAME] != "":
 
-                        relationship, created = \
-                            Member.objects.update_or_create(
-                                rid=row[self.ROW_RID], defaults={
-                                    "firstname": row[
-                                        self.ROW_FIRSTNAME], "lastname": row[
-                                        self.ROW_LASTNAME],
-                                    "work_information": row[
-                                        self.ROW_WORK_INFORMATION]})
+                        relationship, created = Member.objects.update_or_create(
+                            rid=row[self.ROW_RID],
+                            defaults={
+                                "firstname": row[self.ROW_FIRSTNAME],
+                                "lastname": row[self.ROW_LASTNAME],
+                                "work_information": row[self.ROW_WORK_INFORMATION],
+                            },
+                        )
 
-                        if row[self.ROW_EMERGENCY] == '1':
-                            EmergencyContact.objects.create(
-                                client=client,
-                                member=relationship,
-                                relationship=row[self.ROW_RELATIONSHIP]
+                        type_of_relation = []
+                        extra_fields = {}
+                        if row[self.ROW_REFERENT] == "1":
+                            type_of_relation.append(Relationship.REFERENT)
+                            extra_fields["referral_reason"] = row[self.ROW_REASON]
+                            extra_fields["referral_date"] = str(date.today())
+                        if row[self.ROW_EMERGENCY] == "1":
+                            type_of_relation.append(Relationship.EMERGENCY)
+
+                        Relationship.objects.create(
+                            client=client,
+                            member=relationship,
+                            type=type_of_relation,
+                            nature=row[self.ROW_RELATIONSHIP],
+                            extra_fields=extra_fields,
+                        )
+
+                        self.stdout.write(
+                            self.style.SUCCESS("Added a new Relationship.")
+                        )
+
+                        if row[self.ROW_BILLTO] == "1":
+                            self.stdout.write(
+                                self.style.SUCCESS("Added a blling Relationship.")
                             )
-                            self.stdout.write(
-                                self.style.SUCCESS(
-                                    'Added an emergency Relationship.'
-                                ))
-                        if row[self.ROW_BILLTO] == '1':
-                            self.stdout.write(
-                                self.style.SUCCESS(
-                                    'Added a blling Relationship.'
-                                ))
                             client.billing_member = relationship
-                        if row[self.ROW_REFERENT] == '1':
-                            Referencing.objects.create(
-                                referent=relationship,
-                                client=client,
-                                referral_reason=row[self.ROW_REASON],
-                                date=date.today(), )
-
-                        client.save()
+                            client.save()
 
                 except Member.DoesNotExist:
-                    self.stdout.write(
-                        self.style.WARNING('Non existing member'))
+                    self.stdout.write(self.style.WARNING("Non existing member"))
                 except Client.DoesNotExist:
-                    self.stdout.write(
-                        self.style.WARNING('Non existing client'))
+                    self.stdout.write(self.style.WARNING("Non existing client"))

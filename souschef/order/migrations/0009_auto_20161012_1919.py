@@ -8,18 +8,31 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('order', '0008_auto_20160912_1509'),
+        ("order", "0008_auto_20160912_1509"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='order',
-            name='status',
-            field=models.CharField(choices=[('O', 'Ordered'), ('D', 'Delivered'), ('N', 'No Charge'), ('C', 'Cancelled'), ('B', 'Billed'), ('P', 'Paid')], max_length=1, verbose_name='order status'),
+            model_name="order",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("O", "Ordered"),
+                    ("D", "Delivered"),
+                    ("N", "No Charge"),
+                    ("C", "Cancelled"),
+                    ("B", "Billed"),
+                    ("P", "Paid"),
+                ],
+                max_length=1,
+                verbose_name="order status",
+            ),
         ),
         migrations.AlterField(
-            model_name='order_item',
-            name='free_quantity',
-            field=models.IntegerField(blank=True, null=True, verbose_name='free quantity'),
+            model_name="order_item",
+            name="free_quantity",
+            field=models.IntegerField(
+                blank=True, null=True, verbose_name="free quantity"
+            ),
         ),
     ]

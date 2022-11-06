@@ -7,7 +7,7 @@ from ..models import ClientScheduledStatus
 @receiver(
     post_delete,
     sender=ClientScheduledStatus,
-    dispatch_uid="post_delete.ensure_pair_remove"
+    dispatch_uid="post_delete.ensure_pair_remove",
 )
 def ensure_pair_remove(sender, instance, **kwargs):
     if instance.get_pair:

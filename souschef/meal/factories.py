@@ -1,19 +1,27 @@
 # coding=utf-8
 
-import factory
 import random
+
+import factory
 from faker import Factory as FakerFactory
+
 from souschef.meal.models import (
-    Ingredient, Component, Component_ingredient, Incompatibility,
-    Restricted_item, INGREDIENT_GROUP_CHOICES, COMPONENT_GROUP_CHOICES,
-    RESTRICTED_ITEM_GROUP_CHOICES, Menu, Menu_component
+    COMPONENT_GROUP_CHOICES,
+    INGREDIENT_GROUP_CHOICES,
+    RESTRICTED_ITEM_GROUP_CHOICES,
+    Component,
+    Component_ingredient,
+    Incompatibility,
+    Ingredient,
+    Menu,
+    Menu_component,
+    Restricted_item,
 )
 
 fake = FakerFactory.create()
 
 
 class IngredientFactory(factory.DjangoModelFactory):
-
     class Meta:
         model = Ingredient
 
@@ -27,7 +35,6 @@ class IngredientFactory(factory.DjangoModelFactory):
 
 
 class ComponentFactory(factory.DjangoModelFactory):
-
     class Meta:
         model = Component
 
@@ -41,7 +48,6 @@ class ComponentFactory(factory.DjangoModelFactory):
 
 
 class ComponentIngredientFactory(factory.DjangoModelFactory):
-
     class Meta:
         model = Component_ingredient
 
@@ -51,7 +57,6 @@ class ComponentIngredientFactory(factory.DjangoModelFactory):
 
 
 class RestrictedItemFactory(factory.DjangoModelFactory):
-
     class Meta:
         model = Restricted_item
 
@@ -65,7 +70,6 @@ class RestrictedItemFactory(factory.DjangoModelFactory):
 
 
 class IncompatibilityFactory(factory.DjangoModelFactory):
-
     class Meta:
         model = Incompatibility
 
@@ -75,25 +79,19 @@ class IncompatibilityFactory(factory.DjangoModelFactory):
 
 
 class MenuFactory(factory.DjangoModelFactory):
-
     class Meta:
         model = Menu
 
-    date = factory.LazyAttribute(lambda x: fake.date_time_between(
-        start_date="-1y",
-        end_date="+1y",
-        tzinfo=None
-    )
+    date = factory.LazyAttribute(
+        lambda x: fake.date_time_between(start_date="-1y", end_date="+1y", tzinfo=None)
     )
 
     menu_component = factory.RelatedFactory(
-        'meal.factories.MenuComponentFactory',
-        'menu'
+        "meal.factories.MenuComponentFactory", "menu"
     )
 
 
 class MenuComponentFactory(factory.DjangoModelFactory):
-
     class Meta:
         model = Menu_component
 

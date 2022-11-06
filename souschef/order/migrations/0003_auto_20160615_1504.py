@@ -9,13 +9,18 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('order', '0002_auto_20160614_1736'),
+        ("order", "0002_auto_20160614_1736"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='order',
-            name='client',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='client_order', to='member.Client', verbose_name='client'),
+            model_name="order",
+            name="client",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="client_order",
+                to="member.Client",
+                verbose_name="client",
+            ),
         ),
     ]

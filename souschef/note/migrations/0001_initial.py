@@ -14,24 +14,59 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('member', '0010_auto_20160803_2052'),
+        ("member", "0010_auto_20160803_2052"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Note',
+            name="Note",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('note', models.TextField(verbose_name='Note')),
-                ('date', models.DateField(default=django.utils.timezone.now, verbose_name='Date')),
-                ('is_read', models.BooleanField(default=False, verbose_name='Is read')),
-                ('priority', models.CharField(choices=[('normal', 'Normal'), ('urgent', 'Urgent')], default='normal', max_length=15)),
-                ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL, verbose_name='Author')),
-                ('client', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='client_notes', to='member.Client', verbose_name='Client')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("note", models.TextField(verbose_name="Note")),
+                (
+                    "date",
+                    models.DateField(
+                        default=django.utils.timezone.now, verbose_name="Date"
+                    ),
+                ),
+                ("is_read", models.BooleanField(default=False, verbose_name="Is read")),
+                (
+                    "priority",
+                    models.CharField(
+                        choices=[("normal", "Normal"), ("urgent", "Urgent")],
+                        default="normal",
+                        max_length=15,
+                    ),
+                ),
+                (
+                    "author",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="Author",
+                    ),
+                ),
+                (
+                    "client",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="client_notes",
+                        to="member.Client",
+                        verbose_name="Client",
+                    ),
+                ),
             ],
             options={
-                'verbose_name_plural': 'Notes',
-                'ordering': ('-date', 'note'),
+                "verbose_name_plural": "Notes",
+                "ordering": ("-date", "note"),
             },
         ),
     ]

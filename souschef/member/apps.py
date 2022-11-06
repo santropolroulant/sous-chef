@@ -2,7 +2,7 @@ from django.apps import AppConfig
 
 
 class MemberConfig(AppConfig):
-    name = 'member'
+    name = "member"
 
     def ready(self):
         pass
