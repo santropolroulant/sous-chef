@@ -12,6 +12,7 @@ services:
       - souschef_data:/var/lib/mysql
     networks:
       - backend
+    platform: linux/amd64
 
   web:
     restart: always
@@ -24,6 +25,7 @@ services:
       - db
     networks:
       - backend
+    platform: linux/amd64
 
 volumes:
   souschef_data:
