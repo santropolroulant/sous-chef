@@ -491,41 +491,90 @@ class ClientList(LoginRequiredMixin, PermissionRequiredMixin, generic.ListView):
         self.format = request.GET.get("format", False)
 
         if self.format == "csv":
-            return ExportCSV(self, self.get_queryset())
+            return export_csv(self, self.get_queryset())
 
         return super(ClientList, self).get(request, **kwargs)
 
 
-def ExportCSV(self, queryset):
+DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+
+
+def _get_csv_header():
+    header = [
+        "ID",
+        "Client Firstname",
+        "Client Lastname",
+        "Client Status",
+        "Client Alert",
+        "Client Language",
+        "Client Gender",
+        "Client Birthdate",
+        "Client Delivery",
+        "Client Home Phone",
+        "Client Cell Phone",
+        "Client Work Phone",
+        "Client Email",
+        "Client Street",
+        "Client Apartment",
+        "Client City",
+        "Client Postal Code",
+        "Client Route",
+        "Client Billing Type",
+        "Billing Member",
+        "Relationships",
+        "Meal Default",
+    ]
+
+    for day in DAYS:
+        header.extend((f"{day} Qty", f"{day} Size"))
+
+    return header
+
+
+def _get_csv_row(obj, route):
+    mealdefweek = obj.meal_default_week
+    row = [
+        obj.id,
+        obj.member.firstname,
+        obj.member.lastname,
+        obj.get_status_display(),
+        obj.alert,
+        obj.language,
+        obj.gender,
+        obj.birthdate,
+        obj.delivery_type,
+        obj.member.home_phone,
+        obj.member.cell_phone,
+        obj.member.work_phone,
+        obj.member.email,
+        obj.member.address.street,
+        obj.member.address.apartment,
+        obj.member.address.city,
+        obj.member.address.postal_code,
+        route,
+        obj.billing_payment_type,
+        obj.billing_member,
+        ", ".join(str(c) for c in obj.relationship_set.all()),
+        mealdefweek,
+    ]
+
+    for day in DAYS:
+        day = day.lower()
+        row.extend(
+            (
+                mealdefweek[f"main_dish_{day}_quantity"],
+                mealdefweek[f"size_{day}"],
+            )
+        )
+
+    return row
+
+
+def export_csv(self, queryset):
     response = HttpResponse(content_type="text/csv")
     response["Content-Disposition"] = "attachment; filename=client_export.csv"
     writer = csv.writer(response, csv.excel)
-    writer.writerow(
-        [
-            "ID",
-            "Client Firstname",
-            "Client Lastname",
-            "Client Status",
-            "Client Alert",
-            "Client Language",
-            "Client Gender",
-            "Client Birthdate",
-            "Client Delivery",
-            "Client Home Phone",
-            "Client Cell Phone",
-            "Client Work Phone",
-            "Client Email",
-            "Client Street",
-            "Client Apartment",
-            "Client City",
-            "Client Postal Code",
-            "Client Route",
-            "Client Billing Type",
-            "Billing Member",
-            "Relationships",
-            "Meal Default",
-        ]
-    )
+    writer.writerow(_get_csv_header())
 
     for obj in queryset:
         if obj.route is None:
@@ -534,32 +583,7 @@ def ExportCSV(self, queryset):
         else:
             route = obj.route.name
 
-        writer.writerow(
-            [
-                obj.id,
-                obj.member.firstname,
-                obj.member.lastname,
-                obj.get_status_display(),
-                obj.alert,
-                obj.language,
-                obj.gender,
-                obj.birthdate,
-                obj.delivery_type,
-                obj.member.home_phone,
-                obj.member.cell_phone,
-                obj.member.work_phone,
-                obj.member.email,
-                obj.member.address.street,
-                obj.member.address.apartment,
-                obj.member.address.city,
-                obj.member.address.postal_code,
-                route,
-                obj.billing_payment_type,
-                obj.billing_member,
-                ", ".join(str(c) for c in obj.relationship_set.all()),
-                obj.meal_default_week,
-            ]
-        )
+        writer.writerow(_get_csv_row(obj, route))
 
     return response
 
