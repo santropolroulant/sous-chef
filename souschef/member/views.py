@@ -525,8 +525,7 @@ def _get_csv_header():
         "Meal Default",
     ]
 
-    for day in DAYS:
-        header.extend((f"{day} Qty", f"{day} Size"))
+    header.extend(DAYS)
 
     return header
 
@@ -558,14 +557,9 @@ def _get_csv_row(obj, route):
         mealdefweek,
     ]
 
+    simple_meals_schedule = set(obj.simple_meals_schedule or [])
     for day in DAYS:
-        day = day.lower()
-        row.extend(
-            (
-                mealdefweek[f"main_dish_{day}_quantity"],
-                mealdefweek[f"size_{day}"],
-            )
-        )
+        row.append("x" if day.lower() in simple_meals_schedule else "")
 
     return row
 
