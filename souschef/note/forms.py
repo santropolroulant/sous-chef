@@ -6,7 +6,7 @@ from souschef.note.models import Note
 
 class NoteForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
-        super(NoteForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.fields["client"].queryset = (
             Client.objects.all()
             .select_related("member")

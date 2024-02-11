@@ -324,7 +324,7 @@ class OrderManager(models.Manager):
 
         for order_item_type, _trans in ORDER_ITEM_TYPE_CHOICES:
             if order_item_type != ORDER_ITEM_TYPE_CHOICES_COMPONENT:
-                additional = items.get("{0}_default".format(order_item_type))
+                additional = items.get(f"{order_item_type}_default")
                 if additional:
                     Order_item.objects.create(
                         order=order,
@@ -394,14 +394,14 @@ class Order(models.Model):
         """
         return ", ".join(
             [
-                "{0}x {1}".format(x.total_quantity, x.get_component_group_display())
+                f"{x.total_quantity}x {x.get_component_group_display()}"
                 for x in self.orders.all()
                 if x.order_item_type == "meal_component" or x.component_group
             ]
         )
 
     def __str__(self):
-        return "client={}, delivery_date={}".format(self.client, self.delivery_date)
+        return f"client={self.client}, delivery_date={self.delivery_date}"
 
     @staticmethod
     def get_kitchen_items(delivery_date):
@@ -718,7 +718,7 @@ def sql_prep(query, valuesdict):
         if val:
             values.append(val)
         else:
-            raise Exception("Query parameter '{}' not found in values".format(n))
+            raise Exception(f"Query parameter '{n}' not found in values")
     return "".join(mod), values
 
 
@@ -1184,12 +1184,8 @@ class Order_item(models.Model):
 
     def __str__(self):
         return (
-            "<For delivery on:> {} <order_item_type:>"
-            " {} <component_group:> {}".format(
-                str(self.order.delivery_date),
-                self.order_item_type,
-                self.component_group,
-            )
+            f"<For delivery on:> {str(self.order.delivery_date)} <order_item_type:>"
+            f" {self.order_item_type} <component_group:> {self.component_group}"
         )
 
     def get_billable_flag_display(self):
@@ -1254,6 +1250,6 @@ class OrderStatusChange(models.Model):
     def save(self, *a, **k):
         """Process a scheduled change when saving."""
         self.full_clean()  # we defined clean method so we need to override
-        super(OrderStatusChange, self).save(*a, **k)
+        super().save(*a, **k)
         self.order.status = self.status_to
         self.order.save()

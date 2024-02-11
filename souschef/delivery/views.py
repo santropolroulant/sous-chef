@@ -139,7 +139,7 @@ class Orderlist(LoginRequiredMixin, PermissionRequiredMixin, FilterView):
         )
 
     def get_context_data(self, **kwargs):
-        context = super(Orderlist, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context["orders_refresh_date"] = None
         if LogEntry.objects.exists():
             log = LogEntry.objects.latest("action_time")
@@ -459,7 +459,7 @@ class EditDeliveryOfToday(
         )
 
     def get_context_data(self, **kwargs):
-        context = super(EditDeliveryOfToday, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context["delivery_history"] = self.object
         # This needs to be placed on the top when refactoring Route module.
         # It causes circular dependancy in current code structure.
@@ -477,7 +477,7 @@ class EditDeliveryOfToday(
         return reverse_lazy("delivery:routes")
 
     def form_valid(self, form):
-        response = super(EditDeliveryOfToday, self).form_valid(form)
+        response = super().form_valid(form)
         messages.add_message(
             self.request,
             messages.SUCCESS,
@@ -617,7 +617,7 @@ def defineStyles(my_styles):
     )
 
 
-class MultiRouteReport(object):
+class MultiRouteReport:
     """Namespace for Route sheet report data structures and logic.
 
     This class is never instantiated.
@@ -777,9 +777,7 @@ class MultiRouteReport(object):
             canvas.drawRightString(
                 x=PAGE_WIDTH - 0.75 * rl_inch,
                 y=PAGE_HEIGHT + 0.30 * rl_inch,
-                text="Page {:d}".format(
-                    doc.page - MultiRouteReport.route_start_page + 1
-                ),
+                text=f"Page {doc.page - MultiRouteReport.route_start_page + 1:d}",
             )
             canvas.drawInlineImage(
                 LOGO_IMAGE,
@@ -1359,7 +1357,7 @@ def kcr_make_pages(date, component_lines, meal_lines):
         canvas.drawRightString(
             x=PAGE_WIDTH - 0.75 * rl_inch,
             y=PAGE_HEIGHT,
-            text="Page {:d}".format(doc.page),
+            text=f"Page {doc.page:d}",
         )
 
     def myFirstPage(canvas, doc):
@@ -1815,7 +1813,7 @@ def kcr_make_labels(date, kitchen_list, main_dish_name, main_dish_ingredients):
         elif not kititm.sides_clashes:
             meal_label = meal_label._replace(
                 ingredients=textwrap.wrap(
-                    ugettext("Ingredients") + " : {}".format(main_dish_ingredients),
+                    ugettext("Ingredients") + f" : {main_dish_ingredients}",
                     width=74,
                     break_long_words=False,
                     break_on_hyphens=False,

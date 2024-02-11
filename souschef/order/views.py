@@ -69,7 +69,7 @@ class OrderList(LoginRequiredMixin, PermissionRequiredMixin, generic.ListView):
     def get_context_data(self, **kwargs):
         uf = OrderFilter(self.request.GET, queryset=self.get_queryset())
 
-        context = super(OrderList, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
 
         context["filter"] = uf
 
@@ -96,7 +96,7 @@ class OrderList(LoginRequiredMixin, PermissionRequiredMixin, generic.ListView):
         if self.format == "csv":
             return ExportCSV(self, self.get_queryset())
 
-        return super(OrderList, self).get(request, **kwargs)
+        return super().get(request, **kwargs)
 
 
 class OrderDetail(LoginRequiredMixin, PermissionRequiredMixin, generic.DetailView):
@@ -107,7 +107,7 @@ class OrderDetail(LoginRequiredMixin, PermissionRequiredMixin, generic.DetailVie
     queryset = Order.objects.all().prefetch_related("orders")
 
     def get_context_data(self, **kwargs):
-        context = super(OrderDetail, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context["status"] = ORDER_STATUS
         return context
 
@@ -145,7 +145,7 @@ class CreateOrdersBatch(LoginRequiredMixin, PermissionRequiredMixin, generic.For
         return CreateOrdersBatchForm(**k)
 
     def get_context_data(self, **kwargs):
-        context = super(CreateOrdersBatch, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         # Define here any needed variable for template
         context["meals"] = list(
             filter(
@@ -313,7 +313,7 @@ class CreateOrdersBatch(LoginRequiredMixin, PermissionRequiredMixin, generic.For
                 ),
             )
 
-        response = super(CreateOrdersBatch, self).form_valid(form)
+        response = super().form_valid(form)
         return response
 
 
@@ -330,7 +330,7 @@ class UpdateOrder(
     template_name = "update.html"
 
     def get_form(self, *args, **kwargs):
-        form = super(UpdateOrder, self).get_form(*args, **kwargs)
+        form = super().get_form(*args, **kwargs)
         form.fields["client"].queryset = (
             Client.objects.all()
             .select_related("member")
@@ -354,7 +354,7 @@ class UpdateOrderStatus(
     template_name = "order_update_status.html"
 
     def get_context_data(self, **kwargs):
-        context = super(UpdateOrderStatus, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context["order"] = get_object_or_404(Order, pk=self.kwargs.get("pk"))
         context["order_status"] = ORDER_STATUS
         context["order_no_charge"] = "N"
@@ -374,7 +374,7 @@ class UpdateOrderStatus(
         }
 
     def form_valid(self, form):
-        response = super(UpdateOrderStatus, self).form_valid(form)
+        response = super().form_valid(form)
         messages.add_message(
             self.request,
             messages.SUCCESS,

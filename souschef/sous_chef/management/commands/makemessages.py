@@ -13,7 +13,7 @@ class Command(makemessages.Command):
     """
 
     def add_arguments(self, parser):
-        super(Command, self).add_arguments(parser)
+        super().add_arguments(parser)
         parser.add_argument(
             "--add-location",
             action="store",
@@ -29,10 +29,10 @@ class Command(makemessages.Command):
 
     def handle(self, *args, **options):
         add_location = options.pop("add_location")
-        arg_str = "--add-location={}".format(add_location)
+        arg_str = f"--add-location={add_location}"
         self.msgmerge_options = makemessages.Command.msgmerge_options[:] + [arg_str]
         self.msguniq_options = makemessages.Command.msguniq_options[:] + [arg_str]
         self.msgattrib_options = makemessages.Command.msgattrib_options[:] + [arg_str]
         self.xgettext_options = makemessages.Command.xgettext_options[:] + [arg_str]
 
-        super(Command, self).handle(*args, **options)
+        super().handle(*args, **options)

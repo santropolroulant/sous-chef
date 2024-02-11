@@ -136,9 +136,7 @@ class Component_ingredient(models.Model):
                 self.component.name, self.ingredient.name, self.date
             )
         else:
-            return "<{}> contains <{}>".format(
-                self.component.name, self.ingredient.name
-            )
+            return f"<{self.component.name}> contains <{self.ingredient.name}>"
 
 
 class Restricted_item(models.Model):
@@ -183,7 +181,7 @@ class Incompatibility(models.Model):
     )
 
     def __str__(self):
-        return "{} <clash> {}".format(self.restricted_item.name, self.ingredient.name)
+        return f"{self.restricted_item.name} <clash> {self.ingredient.name}"
 
 
 class Menu(models.Model):
@@ -196,7 +194,7 @@ class Menu(models.Model):
     components = models.ManyToManyField("meal.Component", through="Menu_component")
 
     def __str__(self):
-        return "Menu for {}".format(str(self.date))
+        return f"Menu for {str(self.date)}"
 
     @staticmethod
     def create_menu_and_components(menu_date, dish_names):
@@ -269,6 +267,4 @@ class Menu_component(models.Model):
     )
 
     def __str__(self):
-        return "On {} <menu includes> {}".format(
-            str(self.menu.date), self.component.name
-        )
+        return f"On {str(self.menu.date)} <menu includes> {self.component.name}"

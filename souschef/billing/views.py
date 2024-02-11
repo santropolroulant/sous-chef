@@ -37,7 +37,7 @@ class BillingList(LoginRequiredMixin, PermissionRequiredMixin, generic.ListView)
     template_name = "billing/list.html"
 
     def get_context_data(self, **kwargs):
-        context = super(BillingList, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         uf = BillingFilter(self.request.GET, queryset=self.get_queryset())
         context["filter"] = uf
 
@@ -91,7 +91,7 @@ class BillingAdd(LoginRequiredMixin, PermissionRequiredMixin, generic.ListView):
     template_name = "billing/add.html"
 
     def get_context_data(self, **kwargs):
-        context = super(BillingAdd, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         uf = DeliveredOrdersByMonth(self.request.GET, queryset=self.get_queryset())
         context["filter"] = uf
         text = ""
@@ -171,10 +171,10 @@ class BillingSummaryView(
         if self.request.method == "GET" and self.request.GET.get("print"):
             return ["billing/print_summary.html"]
         else:
-            return super(BillingSummaryView, self).get_template_names()
+            return super().get_template_names()
 
     def get_context_data(self, **kwargs):
-        context = super(BillingSummaryView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         billing = self.object
 
         # generate a summary
@@ -268,9 +268,9 @@ class BillingSummaryView(
             formatted_htmls = ['<ul class="ui list">']
             for i, f, l in size_none_orders_info:  # noqa: E741 (no idea what these are)
                 formatted_htmls.append(
-                    '<li><a href="{0}" target="_blank">'
-                    "#{1} ({2} {3})"
-                    "</a></li>".format(Order(id=i).get_absolute_url(), i, f, l)
+                    f'<li><a href="{Order(id=i).get_absolute_url()}" target="_blank">'
+                    f"#{i} ({f} {l})"
+                    "</a></li>"
                 )
             formatted_htmls.append("</ul>")
             formatted_html = "".join(formatted_htmls)
@@ -322,7 +322,7 @@ class BillingOrdersView(
     )
 
     def get_context_data(self, **kwargs):
-        context = super(BillingOrdersView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
 
         if self.request.GET.get("client"):
             # has ?client=client_id

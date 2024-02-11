@@ -9,5 +9,5 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         orders = OrderFactory.create_batch(500, status="D")
         self.stdout.write(
-            self.style.SUCCESS("Successfully created client {} orders".format(orders))
+            self.style.SUCCESS(f"Successfully created client {orders} orders")
         )

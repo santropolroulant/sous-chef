@@ -129,7 +129,7 @@ class Member(models.Model):
     )
 
     def __str__(self):
-        return "{} {}".format(self.firstname, self.lastname)
+        return f"{self.firstname} {self.lastname}"
 
     @property
     def home_phone(self):
@@ -269,14 +269,14 @@ class Address(models.Model):
         first_line = []
         first_line.append(str(self.street))
         if self.apartment:
-            first_line.append("Apt.{}".format(self.apartment))
+            first_line.append(f"Apt.{self.apartment}")
         if self.floor:
-            first_line.append("{} Floor".format(self.floor))
+            first_line.append(f"{self.floor} Floor")
 
         first_line = " ".join(first_line)
-        second_line = "{}, {}".format(self.city, self.postal_code)
+        second_line = f"{self.city}, {self.postal_code}"
 
-        return "{}, {}".format(first_line, second_line)
+        return f"{first_line}, {second_line}"
 
 
 class Contact(models.Model):
@@ -309,7 +309,7 @@ class Contact(models.Model):
         return self.value
 
     def __str__(self):
-        return "{} {}".format(self.member.firstname, self.member.lastname)
+        return f"{self.member.firstname} {self.member.lastname}"
 
 
 class Route(models.Model):
@@ -367,9 +367,7 @@ class DeliveryHistory(models.Model):
     )
 
     def __str__(self):
-        return "DeliveryHistory: Route {} delivered on {}".format(
-            self.route.name, self.date
-        )
+        return f"DeliveryHistory: Route {self.route.name} delivered on {self.date}"
 
 
 class ClientManager(models.Manager):
@@ -393,14 +391,14 @@ class ClientManager(models.Manager):
 class ActiveClientManager(ClientManager):
     def get_queryset(self):
         return (
-            super(ActiveClientManager, self).get_queryset().filter(status=Client.ACTIVE)
+            super().get_queryset().filter(status=Client.ACTIVE)
         )
 
 
 class OngoingClientManager(ClientManager):
     def get_queryset(self):
         return (
-            super(OngoingClientManager, self)
+            super()
             .get_queryset()
             .filter(status=Client.ACTIVE, delivery_type="O")
         )
@@ -409,7 +407,7 @@ class OngoingClientManager(ClientManager):
 class PendingClientManager(ClientManager):
     def get_queryset(self):
         return (
-            super(PendingClientManager, self)
+            super()
             .get_queryset()
             .filter(status=Client.PENDING)
         )
@@ -418,7 +416,7 @@ class PendingClientManager(ClientManager):
 class ContactClientManager(ClientManager):
     def get_queryset(self):
         return (
-            super(ContactClientManager, self)
+            super()
             .get_queryset()
             .filter(
                 Q(status=Client.ACTIVE)
@@ -432,7 +430,7 @@ class ContactClientManager(ClientManager):
 class BirthdayContactClientManager(ClientManager):
     def get_queryset(self):
         return (
-            super(BirthdayContactClientManager, self)
+            super()
             .get_queryset()
             .filter(
                 Q(status=Client.ACTIVE)
@@ -546,7 +544,7 @@ class Client(models.Model):
     restrictions = models.ManyToManyField("meal.Restricted_item", through="Restriction")
 
     def __str__(self):
-        return "{} {}".format(self.member.firstname, self.member.lastname)
+        return f"{self.member.firstname} {self.member.lastname}"
 
     objects = ClientManager()
 

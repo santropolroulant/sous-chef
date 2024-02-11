@@ -1,5 +1,3 @@
-# coding: utf-8
-
 import collections
 from datetime import datetime
 
@@ -27,7 +25,7 @@ class HomeView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
     template_name = "pages/home.html"
 
     def get_context_data(self, **kwargs):
-        context = super(HomeView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
 
         today = datetime.today()
         active_clients = Client.active.all().count()

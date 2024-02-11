@@ -744,10 +744,10 @@ class FormTestCase(TestCase):
         }
         for day in restriction_information_data["dietary_restriction-meals_schedule"]:
             restriction_information_data[
-                "dietary_restriction-size_{}".format(day)
+                f"dietary_restriction-size_{day}"
             ] = "R"
             for component, _ in COMPONENT_GROUP_CHOICES:
-                name = "dietary_restriction-{}_{}_quantity".format(component, day)
+                name = f"dietary_restriction-{component}_{day}_quantity"
                 restriction_information_data[name] = 1
 
         relationships_data = {
@@ -1192,7 +1192,7 @@ class FormTestCase(TestCase):
             "relationships-INITIAL_FORMS": "1",
             "relationships-MIN_NUM_FORMS": "0",
             "relationships-MAX_NUM_FORMS": "1000",
-            "relationships-0-member": "[{}] First Member".format(pk),
+            "relationships-0-member": f"[{pk}] First Member",
             "relationships-0-firstname": "",
             "relationships-0-lastname": "",
             "relationships-0-work_phone": "",
@@ -1233,7 +1233,7 @@ class FormTestCase(TestCase):
         pk = Member.objects.get(firstname="Second").id
         payment_information_data_with_error = {
             "client_wizard-current_step": "payment_information",
-            "payment_information-member": "[{}] Second Member".format(pk),
+            "payment_information-member": f"[{pk}] Second Member",
             "payment_information-firstname": "",
             "payment_information-lastname": "",
             "payment_information-billing_payment_type": "INVALID",
@@ -1320,7 +1320,7 @@ class FormTestCase(TestCase):
         pk = Member.objects.get(firstname="First").id
         payment_information_data = {
             "client_wizard-current_step": "payment_information",
-            "payment_information-member": "[{}] First Member".format(pk),
+            "payment_information-member": f"[{pk}] First Member",
             "payment_information-firstname": "",
             "payment_information-lastname": "",
             "payment_information-billing_payment_type": "3rd",
@@ -1406,10 +1406,10 @@ class FormTestCase(TestCase):
         }
         for day in [restriction_information_data["dietary_restriction-meals_schedule"]]:
             restriction_information_data[
-                "dietary_restriction-size_{}".format(day)
+                f"dietary_restriction-size_{day}"
             ] = "R"
             for component, _ in COMPONENT_GROUP_CHOICES:
-                name = "dietary_restriction-{}_{}_quantity".format(component, day)
+                name = f"dietary_restriction-{component}_{day}_quantity"
                 restriction_information_data[name] = 1
 
         # Send the data to the form.
@@ -2240,9 +2240,7 @@ class ClientUpdatePaymentInformationTestCase(ClientUpdateTestCase):
                 "city": None,
                 "apartment": "",
                 "postal_code": "H2R2N3",
-                "member": "[{}] {} {}".format(
-                    payment.id, payment.firstname, payment.lastname
-                ),
+                "member": f"[{payment.id}] {payment.firstname} {payment.lastname}",
                 "same_as_client": False,
                 "billing_payment_type": "",
                 "facturation": "default",
@@ -2285,9 +2283,9 @@ class ClientUpdateDietaryRestrictionTestCase(ClientUpdateTestCase):
             }
         )
         for day in data["meals_schedule"]:
-            data["size_{}".format(day)] = "R"
+            data[f"size_{day}"] = "R"
             for component, _ in COMPONENT_GROUP_CHOICES:
-                name = "{}_{}_quantity".format(component, day)
+                name = f"{component}_{day}_quantity"
                 data[name] = 1
 
         form = ClientRestrictionsInformation(data=data)
@@ -2312,9 +2310,9 @@ class ClientUpdateDietaryRestrictionTestCase(ClientUpdateTestCase):
             }
         )
         for day in data["meals_schedule"]:
-            data["size_{}".format(day)] = "R"
+            data[f"size_{day}"] = "R"
             for component, _ in COMPONENT_GROUP_CHOICES:
-                name = "{}_{}_quantity".format(component, day)
+                name = f"{component}_{day}_quantity"
                 data[name] = 1
 
         # Login as admin
@@ -2353,9 +2351,9 @@ class ClientUpdateDietaryRestrictionTestCase(ClientUpdateTestCase):
             }
         )
         for day in ["tuesday", "sunday"]:
-            data["size_{}".format(day)] = "R"
+            data[f"size_{day}"] = "R"
             for component, _ in COMPONENT_GROUP_CHOICES:
-                name = "{}_{}_quantity".format(component, day)
+                name = f"{component}_{day}_quantity"
                 data[name] = 1
 
         form = ClientRestrictionsInformation(data=data)
@@ -2388,9 +2386,9 @@ class ClientUpdateDietaryRestrictionTestCase(ClientUpdateTestCase):
             }
         )
         for day in ["tuesday", "sunday"]:
-            data["size_{}".format(day)] = "R"
+            data[f"size_{day}"] = "R"
             for component, _ in COMPONENT_GROUP_CHOICES:
-                name = "{}_{}_quantity".format(component, day)
+                name = f"{component}_{day}_quantity"
                 data[name] = 1
 
         form = ClientRestrictionsInformation(data=data)
@@ -2450,9 +2448,7 @@ class ClientUpdateRelationshipsTestCase(ClientUpdateTestCase):
             {
                 "firstname": None,
                 "lastname": None,
-                "member": "[{}] {} {}".format(
-                    member.id, member.firstname, member.lastname
-                ),
+                "member": f"[{member.id}] {member.firstname} {member.lastname}",
                 "nature": "friend",
             }
         )
@@ -3825,7 +3821,7 @@ class TestMigrationApply0032(TestMigrations):
             for num_e in range(4):
                 for num_re in range(4):
                     # Create main client
-                    name_main = "{}{}{}".format(num_r, num_e, num_re)
+                    name_main = f"{num_r}{num_e}{num_re}"
                     member_main = Member.objects.create(
                         firstname=name_main,  # Later we use this to query
                         lastname="main",
@@ -3843,7 +3839,7 @@ class TestMigrationApply0032(TestMigrations):
                             )
                         else:
                             member_ref = Member.objects.create(
-                                firstname=name_main, lastname="ref_#{}".format(i)
+                                firstname=name_main, lastname=f"ref_#{i}"
                             )
                         Referencing.objects.create(
                             referent=member_ref,
@@ -3856,7 +3852,7 @@ class TestMigrationApply0032(TestMigrations):
                     # Create emergency contacts
                     for i in range(num_e):
                         member_emgc = Member.objects.create(
-                            firstname=name_main, lastname="emgc_#{}".format(i)
+                            firstname=name_main, lastname=f"emgc_#{i}"
                         )
                         EmergencyContact.objects.create(
                             member=member_emgc,
@@ -3868,7 +3864,7 @@ class TestMigrationApply0032(TestMigrations):
                     # Create referent+emergency contacts
                     for i in range(num_re):
                         member_re = Member.objects.create(
-                            firstname=name_main, lastname="ref+emgc_#{}".format(i)
+                            firstname=name_main, lastname=f"ref+emgc_#{i}"
                         )
                         Referencing.objects.create(
                             referent=member_re,
@@ -3893,10 +3889,8 @@ class TestMigrationApply0032(TestMigrations):
         for num_r in range(4):  # [0, 1, 2, 3]
             for num_e in range(4):
                 for num_re in range(4):
-                    name_main = "{}{}{}".format(num_r, num_e, num_re)
-                    fail_msg = "while testing: client{} " "(see docstring)".format(
-                        name_main
-                    )
+                    name_main = f"{num_r}{num_e}{num_re}"
+                    fail_msg = f"while testing: client{name_main} " "(see docstring)"
                     client_main = Client.objects.get(
                         member__firstname=name_main, member__lastname="main"
                     )
@@ -3930,13 +3924,11 @@ class TestMigrationApply0032(TestMigrations):
 
                     # Check referents
                     for i in range(num_r):
-                        sub_fail_msg = "{} -- Referent #{}".format(fail_msg, i)
+                        sub_fail_msg = f"{fail_msg} -- Referent #{i}"
                         # Special case when num_r == 3
                         member_ref = Member.objects.get(
                             firstname=name_main,
-                            lastname="ref_#{}".format(
-                                1 if (num_r == 3 and i == 2) else i
-                            ),
+                            lastname=f"ref_#{1 if (num_r == 3 and i == 2) else i}",
                         )
                         r = Relationship.objects.get(
                             client=client_main, member=member_ref
@@ -3966,9 +3958,9 @@ class TestMigrationApply0032(TestMigrations):
 
                     # Check emergency contacts
                     for i in range(num_e):
-                        sub_fail_msg = "{} -- Emergency #{}".format(fail_msg, i)
+                        sub_fail_msg = f"{fail_msg} -- Emergency #{i}"
                         member_emgc = Member.objects.get(
-                            firstname=name_main, lastname="emgc_#{}".format(i)
+                            firstname=name_main, lastname=f"emgc_#{i}"
                         )
                         r = Relationship.objects.get(
                             client=client_main, member=member_emgc
@@ -3987,9 +3979,9 @@ class TestMigrationApply0032(TestMigrations):
 
                     # Check referents+emergency contacts
                     for i in range(num_re):
-                        sub_fail_msg = "{} -- Ref+Emgc #{}".format(fail_msg, i)
+                        sub_fail_msg = f"{fail_msg} -- Ref+Emgc #{i}"
                         member_re = Member.objects.get(
-                            firstname=name_main, lastname="ref+emgc_#{}".format(i)
+                            firstname=name_main, lastname=f"ref+emgc_#{i}"
                         )
                         r = Relationship.objects.get(
                             client=client_main, member=member_re
@@ -4053,7 +4045,7 @@ class TestMigrationUnapply0032(TestMigrations):
             for num_e in range(4):
                 for num_re in range(4):
                     # Create main client
-                    name_main = "{}{}{}".format(num_r, num_e, num_re)
+                    name_main = f"{num_r}{num_e}{num_re}"
                     member_main = Member.objects.create(
                         firstname=name_main,  # Later we use this to query
                         lastname="main",
@@ -4065,7 +4057,7 @@ class TestMigrationUnapply0032(TestMigrations):
                     # Create referents
                     for i in range(num_r):
                         member_ref = Member.objects.create(
-                            firstname=name_main, lastname="ref_#{}".format(i)
+                            firstname=name_main, lastname=f"ref_#{i}"
                         )
                         Relationship.objects.create(
                             member=member_ref,
@@ -4080,7 +4072,7 @@ class TestMigrationUnapply0032(TestMigrations):
                     # Create emergency contacts
                     for i in range(num_e):
                         member_emgc = Member.objects.create(
-                            firstname=name_main, lastname="emgc_#{}".format(i)
+                            firstname=name_main, lastname=f"emgc_#{i}"
                         )
                         Relationship.objects.create(
                             member=member_emgc,
@@ -4095,7 +4087,7 @@ class TestMigrationUnapply0032(TestMigrations):
                     # Create referent+emergency contacts
                     for i in range(num_re):
                         member_re = Member.objects.create(
-                            firstname=name_main, lastname="ref+emgc_#{}".format(i)
+                            firstname=name_main, lastname=f"ref+emgc_#{i}"
                         )
                         Relationship.objects.create(
                             member=member_re,
@@ -4119,10 +4111,8 @@ class TestMigrationUnapply0032(TestMigrations):
         for num_r in range(4):  # [0, 1, 2, 3]
             for num_e in range(4):
                 for num_re in range(4):
-                    name_main = "{}{}{}".format(num_r, num_e, num_re)
-                    fail_msg = "while testing: client{} " "(see docstring)".format(
-                        name_main
-                    )
+                    name_main = f"{num_r}{num_e}{num_re}"
+                    fail_msg = f"while testing: client{name_main} " "(see docstring)"
                     client_main = Client.objects.get(
                         member__firstname=name_main, member__lastname="main"
                     )
@@ -4141,9 +4131,9 @@ class TestMigrationUnapply0032(TestMigrations):
 
                     # Check referents
                     for i in range(num_r):
-                        sub_fail_msg = "{} -- Referent #{}".format(fail_msg, i)
+                        sub_fail_msg = f"{fail_msg} -- Referent #{i}"
                         member_ref = Member.objects.get(
-                            firstname=name_main, lastname="ref_#{}".format(i)
+                            firstname=name_main, lastname=f"ref_#{i}"
                         )
                         r = Referencing.objects.get(
                             client=client_main, referent=member_ref
@@ -4169,9 +4159,9 @@ class TestMigrationUnapply0032(TestMigrations):
 
                     # Check emergency contacts
                     for i in range(num_e):
-                        sub_fail_msg = "{} -- Emergency #{}".format(fail_msg, i)
+                        sub_fail_msg = f"{fail_msg} -- Emergency #{i}"
                         member_emgc = Member.objects.get(
-                            firstname=name_main, lastname="emgc_#{}".format(i)
+                            firstname=name_main, lastname=f"emgc_#{i}"
                         )
                         ec = EmergencyContact.objects.get(
                             client=client_main, member=member_emgc
@@ -4183,9 +4173,9 @@ class TestMigrationUnapply0032(TestMigrations):
 
                     # Check referents+emergency contacts
                     for i in range(num_re):
-                        sub_fail_msg = "{} -- Ref+Emgc #{}".format(fail_msg, i)
+                        sub_fail_msg = f"{fail_msg} -- Ref+Emgc #{i}"
                         member_re = Member.objects.get(
-                            firstname=name_main, lastname="ref+emgc_#{}".format(i)
+                            firstname=name_main, lastname=f"ref+emgc_#{i}"
                         )
 
                         r = Referencing.objects.get(

@@ -10,7 +10,7 @@ from django.utils.http import urlquote
 METHODS = ("GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS")
 
 
-class TestMixin(object):
+class TestMixin:
     def assertRedirectsWithAllMethods(self, url, methods=METHODS, **kwargs):
         """
         Test a URL with all HTTP methods, as not logged-in guests.
@@ -22,7 +22,7 @@ class TestMixin(object):
                 response,
                 urlquote(settings.LOGIN_URL) + "?next=" + urlquote(url),
                 status_code=302,
-                msg_prefix="{0} {1} ".format(method, url),
+                msg_prefix=f"{method} {url} ",
                 **kwargs,
             )
 
@@ -69,8 +69,8 @@ class TestMigrations(TransactionTestCase):
 
     def setUp(self):
         assert self.migrate_from and self.migrate_to, (
-            "TestCase '{}' must define migrate_from and "
-            "migrate_to properties".format(type(self).__name__)
+            f"TestCase '{type(self).__name__}' must define migrate_from and "
+            "migrate_to properties"
         )
         self.migrate_from = [(self.app, self.migrate_from)]
         self.migrate_to = [(self.app, self.migrate_to)]
@@ -90,8 +90,8 @@ class TestMigrations(TransactionTestCase):
 
     def setUpBeforeMigration(self, apps):
         raise NotImplementedError(
-            "TestCase '{}' must define the method "
-            "setUpBeforeMigration(self, apps)".format(type(self).__name__)
+            f"TestCase '{type(self).__name__}' must define the method "
+            "setUpBeforeMigration(self, apps)"
         )
 
     def tearDown(self):

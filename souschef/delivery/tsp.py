@@ -8,7 +8,7 @@ class Node:
         self.longitude = longitude
 
     def __str__(self):
-        return "Node({0}, {1}, {2})".format(self.id, self.latitude, self.longitude)
+        return f"Node({self.id}, {self.latitude}, {self.longitude})"
 
     def __repr__(self):
         return str(self)

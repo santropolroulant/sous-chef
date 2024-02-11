@@ -8,6 +8,7 @@ from django.contrib.admin.models import (
     LogEntry,
 )
 from django.core.management.base import BaseCommand
+from django.utils.translation import ugettext_lazy as _
 
 from souschef.member.models import Client
 from souschef.order.models import Order
@@ -53,7 +54,7 @@ class Command(BaseCommand):
                 action_flag=ADDITION,
             )
             print(
-                "{0} orders created on {1}: to be delivered on {2}.".format(
+                _("{} orders created on {}: to be delivered on {}.").format(
                     len(orders), start_date, delivery_date
                 )
             )

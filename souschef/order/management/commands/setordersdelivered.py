@@ -40,6 +40,6 @@ class Command(BaseCommand):
             action_flag=ADDITION,
         )
         print(
-            "Status set to Delivered for {0} orders whose "
-            "delivery date is {1}.".format(numorders, delivery_date)
+            f"Status set to Delivered for {numorders} orders whose "
+            f"delivery date is {delivery_date}."
         )

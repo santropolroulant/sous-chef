@@ -20,10 +20,10 @@ class CAPhoneNumberExtField(CAPhoneNumberField):
 
     def clean(self, value):
         try:
-            return super(CAPhoneNumberExtField, self).clean(value)
+            return super().clean(value)
         except forms.ValidationError as error:
             value = re.sub(r"(\(|\)|\s+)", "", smart_text(value))
             m = self.phone_digits_with_ext.search(value)
             if m:
-                return "%s-%s-%s #%s" % (m.group(1), m.group(2), m.group(3), m.group(4))
+                return f"{m.group(1)}-{m.group(2)}-{m.group(3)} #{m.group(4)}"
             raise error

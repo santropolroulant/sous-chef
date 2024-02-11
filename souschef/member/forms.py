@@ -168,17 +168,17 @@ class ClientAddressInformation(forms.Form):
 
 class ClientRestrictionsInformation(forms.Form):
     def __init__(self, *args, **kwargs):
-        super(ClientRestrictionsInformation, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         for day, _translation in DAYS_OF_WEEK:
-            self.fields["size_{}".format(day)] = forms.ChoiceField(
+            self.fields[f"size_{day}"] = forms.ChoiceField(
                 choices=SIZE_CHOICES, widget=forms.Select(), required=False
             )
 
             for meal, _meal_translation in COMPONENT_GROUP_CHOICES:
                 if meal is COMPONENT_GROUP_CHOICES_SIDES:
                     continue  # skip "Sides"
-                self.fields["{}_{}_quantity".format(meal, day)] = forms.IntegerField(
+                self.fields[f"{meal}_{day}_quantity"] = forms.IntegerField(
                     required=False, min_value=0, widget=forms.TextInput()
                 )
 
@@ -240,7 +240,7 @@ class ClientRestrictionsInformation(forms.Form):
         Regardless of meal schedules, when a main dish is set, we should
         enforce the setting of its size.
         """
-        super(ClientRestrictionsInformation, self).clean()
+        super().clean()
 
         if self.cleaned_data.get("delivery_type") == "O":
             # Ongoing
@@ -259,7 +259,7 @@ class ClientRestrictionsInformation(forms.Form):
             for meal, _meal_translation in COMPONENT_GROUP_CHOICES:
                 if meal is COMPONENT_GROUP_CHOICES_SIDES:
                     continue  # skip "Sides"
-                fieldname = "{}_{}_quantity".format(meal, day)
+                fieldname = f"{meal}_{day}_quantity"
                 quantity_fieldnames.append(fieldname)
 
             total_quantity = sum(
@@ -280,9 +280,9 @@ class ClientRestrictionsInformation(forms.Form):
         for day, _day_display in DAYS_OF_WEEK:
             # If the main dish is set, size should also be set.
             main_dish_quantity = self.cleaned_data.get(
-                "main_dish_{}_quantity".format(day)
+                f"main_dish_{day}_quantity"
             )
-            fieldname_size = "size_{}".format(day)
+            fieldname_size = f"size_{day}"
             if main_dish_quantity and not self.cleaned_data.get(fieldname_size):
                 self.add_error(
                     fieldname_size, _("Size is required when the main dish is set.")
@@ -336,7 +336,7 @@ class MemberForm(forms.Form):
     )
 
     def clean(self):
-        cleaned_data = super(MemberForm, self).clean()
+        cleaned_data = super().clean()
 
         """If the client pays for himself. """
         if cleaned_data.get("same_as_client") is True:
@@ -404,7 +404,7 @@ class ClientPaymentInformation(MemberForm):
     postal_code = CAPostalCodeField(label=_("Postal Code"), required=False)
 
     def clean(self):
-        cleaned_data = super(ClientPaymentInformation, self).clean()
+        cleaned_data = super().clean()
 
         if cleaned_data.get("same_as_client") is True:
             return cleaned_data
@@ -542,7 +542,7 @@ class ClientScheduledStatusForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        super(ClientScheduledStatusForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.fields["end_date"] = forms.DateField(
             required=False,
             widget=forms.TextInput(

@@ -518,7 +518,7 @@ class OrderlistViewTestCase(SousChefTestMixin, TestCase):
     fixtures = ["sample_data"]
 
     def setUp(self):
-        super(OrderlistViewTestCase, self).setUp()
+        super().setUp()
         self.force_login()
 
     def test_can_filter_orders_by_client_names(self):
@@ -567,7 +567,7 @@ class KitchenCountOrderFilterTestCase(SousChefTestMixin, TestCase):
     fixtures = ["sample_data"]
 
     def setUp(self):
-        super(KitchenCountOrderFilterTestCase, self).setUp()
+        super().setUp()
         self.factory = RequestFactory()
 
     def test_can_filter_orders_by_client_names(self):
@@ -598,7 +598,7 @@ class RoutesInformationViewTestCase(SousChefTestMixin, TestCase):
     fixtures = ["sample_data"]
 
     def setUp(self):
-        super(RoutesInformationViewTestCase, self).setUp()
+        super().setUp()
         self.force_login()
 
     def test_can_embed_additional_route_sheet_information_when_printing(self):
@@ -897,10 +897,10 @@ class ExcludeMalconfiguredClientsTestCase(SousChefTestMixin, TestCase):
 
             # client-specific ingredient (for testing clashes)
             this_chicken = IngredientFactory(
-                name="chicken_{0}".format(client.id), ingredient_group="meat"
+                name=f"chicken_{client.id}", ingredient_group="meat"
             )
             this_wine = IngredientFactory(
-                name="wine_{0}".format(client.id), ingredient_group="oils_and_sauces"
+                name=f"wine_{client.id}", ingredient_group="oils_and_sauces"
             )
 
             # add them to main_dish
@@ -910,7 +910,7 @@ class ExcludeMalconfiguredClientsTestCase(SousChefTestMixin, TestCase):
             # all special veggies, special winehaters
             this_incompatib = IncompatibilityFactory(
                 restricted_item=RestrictedItemFactory(
-                    name="veggie_{0}".format(client.id), restricted_item_group="meat"
+                    name=f"veggie_{client.id}", restricted_item_group="meat"
                 ),
                 ingredient=this_chicken,
             )
