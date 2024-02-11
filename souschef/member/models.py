@@ -374,7 +374,6 @@ class DeliveryHistory(models.Model):
 
 class ClientManager(models.Manager):
     def get_birthday_boys_and_girls(self):
-
         today = datetime.datetime.now()
 
         clients = self.filter(
@@ -393,7 +392,6 @@ class ClientManager(models.Manager):
 
 class ActiveClientManager(ClientManager):
     def get_queryset(self):
-
         return (
             super(ActiveClientManager, self).get_queryset().filter(status=Client.ACTIVE)
         )
@@ -401,7 +399,6 @@ class ActiveClientManager(ClientManager):
 
 class OngoingClientManager(ClientManager):
     def get_queryset(self):
-
         return (
             super(OngoingClientManager, self)
             .get_queryset()
@@ -411,7 +408,6 @@ class OngoingClientManager(ClientManager):
 
 class PendingClientManager(ClientManager):
     def get_queryset(self):
-
         return (
             super(PendingClientManager, self)
             .get_queryset()
@@ -421,7 +417,6 @@ class PendingClientManager(ClientManager):
 
 class ContactClientManager(ClientManager):
     def get_queryset(self):
-
         return (
             super(ContactClientManager, self)
             .get_queryset()
@@ -436,7 +431,6 @@ class ContactClientManager(ClientManager):
 
 class BirthdayContactClientManager(ClientManager):
     def get_queryset(self):
-
         return (
             super(BirthdayContactClientManager, self)
             .get_queryset()
@@ -449,7 +443,6 @@ class BirthdayContactClientManager(ClientManager):
 
 
 class Client(models.Model):
-
     # Characters are used to keep a backward-compatibility
     # with the previous system.
     PENDING = "D"
@@ -738,7 +731,6 @@ class Client(models.Model):
 
 
 class ClientScheduledStatus(models.Model):
-
     START = "START"
     END = "END"
 
@@ -860,7 +852,6 @@ class ClientScheduledStatusFilter(FilterSet):
 
 
 class ClientFilter(FilterSet):
-
     name = CharFilter(method="filter_search", label=_("Search by name"))
 
     status = MultipleChoiceFilter(choices=Client.CLIENT_STATUS)
@@ -879,7 +870,6 @@ class ClientFilter(FilterSet):
         names = value.split(" ")
 
         for name in names:
-
             firstname_contains = Q(member__firstname__icontains=name)
 
             lastname_contains = Q(member__lastname__icontains=name)

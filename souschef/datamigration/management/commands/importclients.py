@@ -48,7 +48,6 @@ class Command(BaseCommand):
         with open(file) as f:
             reader = csv.reader(f, delimiter=";")
             for row in reader:
-
                 row_created = (
                     row[self.ROW_CREATED]
                     if row[self.ROW_CREATED] != ""

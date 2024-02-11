@@ -54,7 +54,6 @@ from .filters import KitchenCountOrderFilter
 
 
 class KitchenCountReportTestCase(SousChefTestMixin, TestCase):
-
     # This data set includes 'Ground porc' clashing ingredient
     # This data set includes 'Tracy' client lastname
     #   and his side dish is 'compote'
@@ -205,7 +204,6 @@ class KitchenCountReportTestCase(SousChefTestMixin, TestCase):
 
 
 class ChooseDayMainDishIngredientsTestCase(SousChefTestMixin, TestCase):
-
     fixtures = ["sample_data"]
 
     @classmethod
@@ -422,7 +420,6 @@ class ChooseDayMainDishIngredientsTestCase(SousChefTestMixin, TestCase):
 
 
 class DeliveryRouteSheetTestCase(SousChefTestMixin, TestCase):
-
     # This data set includes 'Blondin' client lastname
     #   in 'Centre Sud' route
     # This data set includes 'Tracy' client lastname
@@ -495,7 +492,6 @@ class DeliveryRouteSheetTestCase(SousChefTestMixin, TestCase):
 
 
 class RedirectAnonymousUserTestCase(SousChefTestMixin, TestCase):
-
     fixtures = ["sample_data"]
 
     def test_anonymous_user_gets_redirect_to_login_page(self):
@@ -1226,7 +1222,6 @@ class RouteSheetReportTestCase(SousChefTestMixin, TestCase):
         # create history and organize clients for the non empty routes
         for route, num in route_orders_dict.items():
             if num[0] > 0:
-
                 # route has clients with orders : create delivery history
                 response = self.client.post(
                     reverse("delivery:create_delivery_of_today", args=[route.pk])

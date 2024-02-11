@@ -18,7 +18,6 @@ def set_initial_categories(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("note", "0006_change_priority_field"),
     ]

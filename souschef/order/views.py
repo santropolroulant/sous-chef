@@ -91,7 +91,6 @@ class OrderList(LoginRequiredMixin, PermissionRequiredMixin, generic.ListView):
         return context
 
     def get(self, request, **kwargs):
-
         self.format = request.GET.get("format", False)
 
         if self.format == "csv":

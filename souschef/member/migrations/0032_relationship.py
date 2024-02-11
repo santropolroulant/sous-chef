@@ -117,7 +117,6 @@ def reverse_migrate_relationships(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("member", "0031_client_option_allow_reverse_relation"),
     ]

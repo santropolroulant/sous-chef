@@ -487,7 +487,6 @@ class ClientList(LoginRequiredMixin, PermissionRequiredMixin, generic.ListView):
         return context
 
     def get(self, request, **kwargs):
-
         self.format = request.GET.get("format", False)
 
         if self.format == "csv":
@@ -674,7 +673,6 @@ class ClientOrderList(ClientView):
     template_name = "client/view/orders.html"
 
     def get_context_data(self, **kwargs):
-
         context = super(ClientOrderList, self).get_context_data(**kwargs)
         context["orders"] = self.object.orders.prefetch_related("orders")
         context["client_status"] = Client.CLIENT_STATUS

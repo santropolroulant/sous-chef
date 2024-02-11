@@ -13,7 +13,6 @@ def set_initial_priorities(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("note", "0003_auto_20160819_2037"),
     ]

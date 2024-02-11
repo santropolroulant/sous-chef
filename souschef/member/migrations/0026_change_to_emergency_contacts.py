@@ -37,7 +37,6 @@ def reverse_emergency_contacts(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("member", "0025_route_vehicle"),
     ]

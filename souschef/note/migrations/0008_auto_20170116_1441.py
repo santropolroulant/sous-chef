@@ -19,7 +19,6 @@ def set_default_data(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("note", "0007_notecategory"),
     ]

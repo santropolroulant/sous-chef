@@ -23,7 +23,7 @@ class TestMixin(object):
                 urlquote(settings.LOGIN_URL) + "?next=" + urlquote(url),
                 status_code=302,
                 msg_prefix="{0} {1} ".format(method, url),
-                **kwargs
+                **kwargs,
             )
 
     def force_login(self, role="admin"):

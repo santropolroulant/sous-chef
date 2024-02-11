@@ -168,7 +168,6 @@ class Restricted_item(models.Model):
 
 
 class Incompatibility(models.Model):
-
     restricted_item = models.ForeignKey(
         "meal.Restricted_item",
         verbose_name=_("restricted item"),

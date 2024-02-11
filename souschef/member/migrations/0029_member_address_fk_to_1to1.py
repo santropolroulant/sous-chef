@@ -37,7 +37,6 @@ def separate_shared_address_instances(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("member", "0028_change_linked_scheduled_status_relationship"),
     ]

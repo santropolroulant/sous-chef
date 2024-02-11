@@ -9,7 +9,6 @@ class OrdersInline(admin.TabularInline):
 
 
 class BillingAdmin(admin.ModelAdmin):
-
     inlines = [
         OrdersInline,
     ]

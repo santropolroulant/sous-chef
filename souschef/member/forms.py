@@ -29,7 +29,6 @@ from souschef.order.models import SIZE_CHOICES
 
 
 class ClientBasicInformation(forms.Form):
-
     firstname = forms.CharField(
         max_length=100,
         label=_("First Name"),
@@ -102,7 +101,6 @@ class ClientBasicInformation(forms.Form):
 
 
 class ClientAddressInformation(forms.Form):
-
     apartment = forms.CharField(
         label=_("Apt #"),
         widget=forms.TextInput(attrs={"placeholder": _("Apt #"), "class": "apartment"}),
@@ -292,7 +290,6 @@ class ClientRestrictionsInformation(forms.Form):
 
 
 class MemberForm(forms.Form):
-
     member = forms.CharField(
         label=_("Member"),
         widget=forms.TextInput(
@@ -367,7 +364,6 @@ class MemberForm(forms.Form):
 
 
 class ClientPaymentInformation(MemberForm):
-
     facturation = forms.ChoiceField(
         label=_("Billing Type"),
         choices=RATE_TYPE,
@@ -435,7 +431,6 @@ class ClientPaymentInformation(MemberForm):
 
 
 class ClientRelationshipInformation(MemberForm):
-
     nature = forms.CharField(
         label=_("Nature of Relationship"),
         widget=forms.TextInput(

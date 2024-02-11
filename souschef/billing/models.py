@@ -159,7 +159,6 @@ class BillingFilter(FilterSet):
         names = value.split(" ")
 
         for name in names:
-
             firstname_contains = Q(client__member__firstname__icontains=name)
 
             lastname_contains = Q(client__member__lastname__icontains=name)

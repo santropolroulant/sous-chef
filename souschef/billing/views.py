@@ -246,9 +246,7 @@ class BillingSummaryView(
                 "credit": 1,  # 1st position
                 "eft": 2,  # 2nd position
                 "3rd": 3,  # 3rd position
-            }.get(
-                tup[0], 99
-            ),  # last position(s)
+            }.get(tup[0], 99),  # last position(s)
         )
 
         context["summary"] = summary

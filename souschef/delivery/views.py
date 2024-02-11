@@ -1058,7 +1058,9 @@ class KitchenCount(LoginRequiredMixin, PermissionRequiredMixin, generic.View):
             if component_lines:
                 # we have orders today
                 num_pages = kcr_make_pages(  # kitchen count as PDF
-                    date, component_lines, meal_lines  # summary
+                    date,
+                    component_lines,
+                    meal_lines,  # summary
                 )  # detail
                 num_labels = kcr_make_labels(  # meal labels as PDF
                     date,

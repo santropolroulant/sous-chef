@@ -1083,7 +1083,6 @@ def component_group_sorting(component):
 
 
 class OrderFilter(FilterSet):
-
     name = CharFilter(method="filter_search", label=_("Search by name"))
 
     status = ChoiceFilter(choices=(("", ""),) + ORDER_STATUS)
@@ -1112,7 +1111,6 @@ class OrderFilter(FilterSet):
 
 
 class DeliveredOrdersByMonth(FilterSet):
-
     delivery_date = CharFilter(method="filter_period")
 
     class Meta:

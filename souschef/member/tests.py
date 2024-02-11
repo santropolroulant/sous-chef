@@ -219,7 +219,6 @@ class AddressTestCase(TestCase):
 
 
 class ClientTestCase(TestCase):
-
     fixtures = ["routes.json"]
 
     @classmethod
@@ -291,7 +290,6 @@ class OptionTestCase(TestCase):
 
 
 class ClientOptionTestCase(TestCase):
-
     fixtures = ["routes"]
 
     @classmethod
@@ -589,7 +587,6 @@ class ClientAvoidComponentTestCase(TestCase):
 
 
 class FormTestCase(TestCase):
-
     fixtures = ["client_options.json"]
 
     @classmethod
@@ -890,9 +887,7 @@ class FormTestCase(TestCase):
         self.assertTrue(self.food_preparation.name in str(food_preparation))
 
         # Test for ingredients to avoid
-        self.assertTrue(
-            self.ingredient in set(client.ingredients_to_avoid.all())
-        )  # noqa
+        self.assertTrue(self.ingredient in set(client.ingredients_to_avoid.all()))  # noqa
 
         # Test for components to avoid
         self.assertTrue(self.component in set(client.components_to_avoid.all()))  # noqa
@@ -1468,7 +1463,6 @@ class MemberSearchTestCase(SousChefTestMixin, TestCase):
 
 
 class ClientStatusUpdateAndScheduleCase(SousChefTestMixin, TestCase):
-
     fixtures = ["routes.json"]
 
     def setUp(self):
@@ -2053,7 +2047,6 @@ class ClientStatusUpdateAndScheduleCase(SousChefTestMixin, TestCase):
 
 
 class ClientUpdateTestCase(TestCase):
-
     fixtures = ["routes.json"]
 
     def login_as_admin(self):
@@ -2562,7 +2555,6 @@ class ClientUpdateRelationshipsTestCase(ClientUpdateTestCase):
 
 
 class RedirectAnonymousUserTestCase(SousChefTestMixin, TestCase):
-
     fixtures = ["routes.json"]
 
     def test_anonymous_user_gets_redirect_to_login_page(self):

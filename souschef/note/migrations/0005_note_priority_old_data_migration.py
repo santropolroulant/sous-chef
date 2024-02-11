@@ -24,7 +24,6 @@ def migrate_old_data(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("note", "0004_notepriority"),
     ]

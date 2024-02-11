@@ -60,7 +60,6 @@ def undo_copy_work_information(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("member", "0023_auto_20161220_1401"),
     ]
