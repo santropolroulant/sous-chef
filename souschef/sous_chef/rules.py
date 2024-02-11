@@ -1,4 +1,3 @@
-
 import rules
 from rules.predicates import (
     is_authenticated,

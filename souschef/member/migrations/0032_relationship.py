@@ -150,14 +150,14 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name="relationship",
-            unique_together=set([("client", "member")]),
+            unique_together={("client", "member")},
         ),
         # Migrate
         migrations.RunPython(migrate_relationships, reverse_migrate_relationships),
         # Delete Referencing and EmergencyContact
         migrations.AlterUniqueTogether(
             name="emergencycontact",
-            unique_together=set([]),
+            unique_together=set(),
         ),
         migrations.RemoveField(
             model_name="emergencycontact",

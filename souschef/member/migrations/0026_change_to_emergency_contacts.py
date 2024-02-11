@@ -86,7 +86,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name="emergencycontact",
-            unique_together=set([("client", "member")]),
+            unique_together={("client", "member")},
         ),
         migrations.AddField(
             model_name="client",

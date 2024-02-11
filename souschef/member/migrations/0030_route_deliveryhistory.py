@@ -73,6 +73,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name="deliveryhistory",
-            unique_together=set([("route", "date")]),
+            unique_together={("route", "date")},
         ),
     ]
