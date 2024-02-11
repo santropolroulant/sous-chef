@@ -122,10 +122,8 @@ class NamedUrlSessionWizardView_i18nURL(NamedUrlSessionWizardView):
         except StopIteration:
             # not found
             i18n_step = non_i18n_step
-        finally:
-            return super(NamedUrlSessionWizardView_i18nURL, self).get_step_url(
-                i18n_step
-            )
+
+        return super(NamedUrlSessionWizardView_i18nURL, self).get_step_url(i18n_step)
 
 
 class ClientWizard(
@@ -226,13 +224,13 @@ class ClientWizard(
     def save_json(self, dictonary):
         json = {}
 
-        for days, Days in DAYS_OF_WEEK:
+        for days, _Days in DAYS_OF_WEEK:
             json["size_{}".format(days)] = dictonary.get("size_{}".format(days))
 
             if json["size_{}".format(days)] == "":
                 json["size_{}".format(days)] = None
 
-            for meal, Meals in COMPONENT_GROUP_CHOICES:
+            for meal, _Meals in COMPONENT_GROUP_CHOICES:
                 if meal is COMPONENT_GROUP_CHOICES_SIDES:
                     continue  # skip "Sides"
                 json["{}_{}_quantity".format(meal, days)] = dictonary.get(
@@ -940,13 +938,13 @@ class ClientUpdateDietaryRestriction(ClientUpdateInformation):
 
         # Save preferences
         json = {}
-        for days, v in DAYS_OF_WEEK:
+        for days, _v in DAYS_OF_WEEK:
             json["size_{}".format(days)] = form["size_{}".format(days)]
 
             if json["size_{}".format(days)] == "":
                 json["size_{}".format(days)] = None
 
-            for meal, Meal in COMPONENT_GROUP_CHOICES:
+            for meal, _Meal in COMPONENT_GROUP_CHOICES:
                 if meal is COMPONENT_GROUP_CHOICES_SIDES:
                     continue  # skip "Sides"
                 json["{}_{}_quantity".format(meal, days)] = form[
@@ -1336,7 +1334,7 @@ def get_clients_on_route(route):
             # the default route sequence the next time, everything will be OK.
             pass
 
-    for client_pk, client in clients_dict.items():
+    for _client_pk, client in clients_dict.items():
         # Remaining clients
         client.has_been_configured = False
         clients_on_route.append(client)
@@ -1429,7 +1427,7 @@ def get_clients_on_delivery_history(delivery_history, func_add_warning_message=N
 
     # Finally, check the clients that had delivery on that day but were not
     # configured on the delivery sequence. Append them to the display sequence.
-    for client_pk, client in clients_dict.items():
+    for _client_pk, client in clients_dict.items():
         client.has_been_configured = False
         clients_on_delivery_history.append(client)
     return clients_on_delivery_history

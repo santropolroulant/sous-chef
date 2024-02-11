@@ -235,7 +235,7 @@ class BillingSummaryView(
             summary["total_deliveries"] += nb_deliveries
 
         # sort clients in each payment type group
-        for payment_type, statistics in summary["payment_types_dict"].items():
+        for _payment_type, statistics in summary["payment_types_dict"].items():
             statistics["clients"].sort(key=lambda c: (c["lastname"], c["firstname"]))
 
         # reorder the display for supported & non-supported payment types
@@ -266,7 +266,7 @@ class BillingSummaryView(
                 )
             )
             formatted_htmls = ['<ul class="ui list">']
-            for i, f, l in size_none_orders_info:
+            for i, f, l in size_none_orders_info:  # noqa: E741 (no idea what these are)
                 formatted_htmls.append(
                     '<li><a href="{0}" target="_blank">'
                     "#{1} ({2} {3})"

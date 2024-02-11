@@ -213,7 +213,7 @@ class OrderManager(models.Manager):
                 created_orders.append(order)
         return created_orders
 
-    def create_batch_orders(self, delivery_dates, client, items, override_dates=[]):
+    def create_batch_orders(self, delivery_dates, client, items, override_dates):
         """
         Create orders for one or multiple days, for a given client.
         Order items will be created based on client's meals schedule.
@@ -273,7 +273,7 @@ class OrderManager(models.Manager):
         order = Order.objects.create(client=client, delivery_date=delivery_date)
         free_side_dishes = items.get("main_dish_default_quantity") or 0
 
-        for component_group, trans in COMPONENT_GROUP_CHOICES:
+        for component_group, _trans in COMPONENT_GROUP_CHOICES:
             if component_group != COMPONENT_GROUP_CHOICES_SIDES:
                 item_qty = items.get(component_group + "_default_quantity") or 0
                 if item_qty == 0:
@@ -322,7 +322,7 @@ class OrderManager(models.Manager):
                             **common_kwargs,
                         )
 
-        for order_item_type, trans in ORDER_ITEM_TYPE_CHOICES:
+        for order_item_type, _trans in ORDER_ITEM_TYPE_CHOICES:
             if order_item_type != ORDER_ITEM_TYPE_CHOICES_COMPONENT:
                 additional = items.get("{0}_default".format(order_item_type))
                 if additional:

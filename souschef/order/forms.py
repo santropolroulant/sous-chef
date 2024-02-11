@@ -46,7 +46,7 @@ class CreateOrdersBatchForm(forms.Form):
                 self.fields["pickup_{}".format(d)] = forms.BooleanField(required=False)
                 self.fields["visit_{}".format(d)] = forms.BooleanField(required=False)
 
-                for meal, meal_translation in COMPONENT_GROUP_CHOICES:
+                for meal, _meal_translation in COMPONENT_GROUP_CHOICES:
                     if meal is COMPONENT_GROUP_CHOICES_SIDES:
                         continue  # don't put "sides" on the form
                     self.fields["{}_{}_quantity".format(meal, d)] = forms.IntegerField(
@@ -95,7 +95,7 @@ class CreateOrdersBatchForm(forms.Form):
             ("pickup_{}", lambda x: x is True),
             ("visit_{}", lambda x: x is True),
         ]
-        for meal, meal_translation in COMPONENT_GROUP_CHOICES:
+        for meal, _meal_translation in COMPONENT_GROUP_CHOICES:
             if meal is COMPONENT_GROUP_CHOICES_SIDES:
                 continue  # "sides" not in the form
             else:
@@ -113,7 +113,7 @@ class CreateOrdersBatchForm(forms.Form):
                 ]
             ):
                 # Error-highlight all fields on that date.
-                for field_template, check_fn in fields_not_null_check:
+                for field_template, _check_fn in fields_not_null_check:
                     self.add_error(
                         field_template.format(delivery_date),
                         forms.ValidationError(

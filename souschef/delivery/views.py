@@ -172,11 +172,11 @@ class MealInformation(LoginRequiredMixin, PermissionRequiredMixin, generic.View)
             sides_component = Component.objects.get(
                 component_group=COMPONENT_GROUP_CHOICES_SIDES
             )
-        except Component.DoesNotExist:
+        except Component.DoesNotExist as e:
             raise Exception(
                 "The database must contain exactly one component "
                 + "having 'Component group' = 'Sides' "
-            )
+            ) from e
 
         date = datetime.date.today()
         main_dishes = Component.objects.order_by(Lower("name")).filter(
@@ -257,11 +257,11 @@ class MealInformation(LoginRequiredMixin, PermissionRequiredMixin, generic.View)
             sides_component = Component.objects.get(
                 component_group=COMPONENT_GROUP_CHOICES_SIDES
             )
-        except Component.DoesNotExist:
+        except Component.DoesNotExist as e:
             raise Exception(
                 "The database must contain exactly one component "
                 + "having 'Component group' = 'Sides' "
-            )
+            ) from e
 
         if "_restore" in request.POST:
             # restore ingredients of main dish to those in recipe
@@ -293,7 +293,7 @@ class MealInformation(LoginRequiredMixin, PermissionRequiredMixin, generic.View)
                 # Create menu and its components for today
                 compnames = [component.name]  # main dish
                 # take first sorted name of each other component group
-                for group, ignore in COMPONENT_GROUP_CHOICES:
+                for group, _ignore in COMPONENT_GROUP_CHOICES:
                     if group != COMPONENT_GROUP_CHOICES_MAIN_DISH:
                         compname = Component.objects.order_by(Lower("name")).filter(
                             component_group=group
@@ -395,8 +395,10 @@ class RoutesInformation(LoginRequiredMixin, PermissionRequiredMixin, generic.Vie
             MultiRouteReport.routes_make_pages(routes_dict)
             try:
                 f = open(settings.ROUTE_SHEETS_FILE, "rb")
-            except Exception:
-                raise Http404("File " + settings.ROUTE_SHEETS_FILE + " does not exist")
+            except Exception as e:
+                raise Http404(
+                    "File " + settings.ROUTE_SHEETS_FILE + " does not exist"
+                ) from e
             response = HttpResponse(content_type="application/pdf")
             response[
                 "Content-Disposition"
@@ -673,8 +675,10 @@ class MultiRouteReport(object):
             """
             try:
                 self.footerFunc = kwargs.pop("footerFunc")
-            except KeyError:
-                raise KeyError(self.__class__.__name__ + " missing kwarg : footerFunc")
+            except KeyError as e:
+                raise KeyError(
+                    self.__class__.__name__ + " missing kwarg : footerFunc"
+                ) from e
             super().__init__(*args, **kwargs)
 
         def afterPage(self, *args, **kwargs):
@@ -985,8 +989,10 @@ class KitchenCount(LoginRequiredMixin, PermissionRequiredMixin, generic.View):
             # download kitchen count report as PDF
             try:
                 f = open(settings.KITCHEN_COUNT_FILE, "rb")
-            except Exception:
-                raise Http404("File " + settings.KITCHEN_COUNT_FILE + " does not exist")
+            except Exception as e:
+                raise Http404(
+                    "File " + settings.KITCHEN_COUNT_FILE + " does not exist"
+                ) from e
             response = HttpResponse(content_type="application/pdf")
             response[
                 "Content-Disposition"
@@ -1010,11 +1016,11 @@ class KitchenCount(LoginRequiredMixin, PermissionRequiredMixin, generic.View):
                 sides_component = Component.objects.get(
                     component_group=COMPONENT_GROUP_CHOICES_SIDES
                 )
-            except Component.DoesNotExist:
+            except Component.DoesNotExist as e:
                 raise Exception(
                     "The database must contain exactly one component "
                     + "having 'Component group' = 'Sides' "
-                )
+                ) from e
             # check if main dish ingredients were confirmed
             main_ingredients = Component_ingredient.objects.filter(date=date).exclude(
                 component=sides_component
@@ -1190,7 +1196,7 @@ def kcr_make_lines(kitchen_list, date):
     """
     # Build component summary
     component_lines = {}
-    for k, item in kitchen_list.items():
+    for _k, item in kitchen_list.items():
         for component_group, meal_component in item.meal_components.items():
             component_lines.setdefault(
                 component_group,
@@ -1876,7 +1882,7 @@ def kcr_make_labels(date, kitchen_list, main_dish_name, main_dish_ingredients):
                     break_on_hyphens=False,
                 )
             )
-        for j in range(1, kititm.meal_qty + 1):
+        for _j in range(1, kititm.meal_qty + 1):
             meal_labels.append(meal_label)
 
     # find max lengths of fields to sort on
@@ -1929,8 +1935,10 @@ class MealLabels(LoginRequiredMixin, PermissionRequiredMixin, generic.View):
     def get(self, request, **kwargs):
         try:
             f = open(settings.MEAL_LABELS_FILE, "rb")
-        except Exception:
-            raise Http404("File " + settings.MEAL_LABELS_FILE + " does not exist")
+        except Exception as e:
+            raise Http404(
+                "File " + settings.MEAL_LABELS_FILE + " does not exist"
+            ) from e
         response = HttpResponse(content_type="application/pdf")
         response["Content-Disposition"] = 'attachment; filename="labels{}.pdf"'.format(
             datetime.date.today().strftime("%Y%m%d")
@@ -1971,7 +1979,7 @@ def drs_make_lines(route_list):
     # generate all the lines for the delivery route sheet
 
     summary_lines = {}
-    for k, item in route_list.items():
+    for _k, item in route_list.items():
         for delivery_item in item.delivery_items:
             component_group = delivery_item.component_group
             if component_group:

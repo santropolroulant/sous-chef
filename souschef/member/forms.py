@@ -170,12 +170,12 @@ class ClientRestrictionsInformation(forms.Form):
     def __init__(self, *args, **kwargs):
         super(ClientRestrictionsInformation, self).__init__(*args, **kwargs)
 
-        for day, translation in DAYS_OF_WEEK:
+        for day, _translation in DAYS_OF_WEEK:
             self.fields["size_{}".format(day)] = forms.ChoiceField(
                 choices=SIZE_CHOICES, widget=forms.Select(), required=False
             )
 
-            for meal, meal_translation in COMPONENT_GROUP_CHOICES:
+            for meal, _meal_translation in COMPONENT_GROUP_CHOICES:
                 if meal is COMPONENT_GROUP_CHOICES_SIDES:
                     continue  # skip "Sides"
                 self.fields["{}_{}_quantity".format(meal, day)] = forms.IntegerField(
@@ -256,7 +256,7 @@ class ClientRestrictionsInformation(forms.Form):
         for day in meals_schedule:
             # At least one of the quantities should be set.
             quantity_fieldnames = []
-            for meal, meal_translation in COMPONENT_GROUP_CHOICES:
+            for meal, _meal_translation in COMPONENT_GROUP_CHOICES:
                 if meal is COMPONENT_GROUP_CHOICES_SIDES:
                     continue  # skip "Sides"
                 fieldname = "{}_{}_quantity".format(meal, day)
@@ -277,7 +277,7 @@ class ClientRestrictionsInformation(forms.Form):
                         % {"weekday": day_displays[day]},
                     )
 
-        for day, day_display in DAYS_OF_WEEK:
+        for day, _day_display in DAYS_OF_WEEK:
             # If the main dish is set, size should also be set.
             main_dish_quantity = self.cleaned_data.get(
                 "main_dish_{}_quantity".format(day)

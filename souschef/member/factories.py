@@ -59,9 +59,9 @@ class DeliveryHistoryFactory(factory.DjangoModelFactory):
 
 def generate_json():
     json = {}
-    for day, translation in DAYS_OF_WEEK:
+    for day, _translation in DAYS_OF_WEEK:
         json["size_{}".format(day)] = random.choice(["L", "R"])
-        for meal, Meal in COMPONENT_GROUP_CHOICES:
+        for meal, _Meal in COMPONENT_GROUP_CHOICES:
             json["{}_{}_quantity".format(meal, day)] = random.choice([0, 1])
     return json
 

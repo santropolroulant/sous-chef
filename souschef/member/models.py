@@ -666,10 +666,10 @@ class Client(models.Model):
         has said no to a component on a particular day.
         """
         defaults = []
-        for day, str in DAYS_OF_WEEK:
+        for day, _str in DAYS_OF_WEEK:
             current = {}
             numeric_fields = []
-            for component, label in COMPONENT_GROUP_CHOICES:
+            for component, _label in COMPONENT_GROUP_CHOICES:
                 if component is COMPONENT_GROUP_CHOICES_SIDES:
                     continue  # skip "Sides"
                 item = self.meal_default_week.get(component + "_" + day + "_quantity")

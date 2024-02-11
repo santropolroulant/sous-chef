@@ -269,7 +269,7 @@ class CreateOrdersBatch(LoginRequiredMixin, PermissionRequiredMixin, generic.For
 
         # Place orders using posted datas
         created_orders = Order.objects.create_batch_orders(
-            del_dates, client, items, override_dates=ovr_dates
+            del_dates, client, items, ovr_dates
         )
 
         # check created and uncreated dates

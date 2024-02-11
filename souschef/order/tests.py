@@ -1459,7 +1459,7 @@ class UpdateClientBillTestCase(SousChefTestMixin, OrderItemTestCase):
         self.assertFalse(self.order.includes_a_bill)
 
     def test_back_and_forth(self):
-        for i in range(10):
+        for _i in range(10):
             response = self.client.delete(
                 reverse("order:update_client_bill", args=(self.order.id,))
             )
