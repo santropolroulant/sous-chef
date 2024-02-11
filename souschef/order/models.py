@@ -636,10 +636,7 @@ class Order(models.Model):
 
     @property
     def includes_a_bill(self):
-        for item in self.orders.all():
-            if item.is_a_client_bill:
-                return True
-        return False
+        return any(item.is_a_client_bill for item in self.orders.all())
 
     @includes_a_bill.setter
     def includes_a_bill(self, value):

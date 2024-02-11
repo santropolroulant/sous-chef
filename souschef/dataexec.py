@@ -4,10 +4,9 @@ import sys
 
 
 def run():
+    settings = "souschef.sous_chef.settings"
     if len(sys.argv) > 1:
         settings = sys.argv[1]
-    else:
-        settings = "souschef.sous_chef.settings"
     os.environ["DJANGO_SETTINGS_MODULE"] = settings
     import django
 

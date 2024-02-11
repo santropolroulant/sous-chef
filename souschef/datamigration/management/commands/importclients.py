@@ -40,10 +40,7 @@ class Command(BaseCommand):
         fixture_filename = "routes.json"
         call_command("loaddata", fixture_filename)
 
-        if options["file"]:
-            file = "mock_clients.csv"
-        else:
-            file = "clients.csv"
+        file = "mock_clients.csv" if options["file"] else "clients.csv"
 
         with open(file) as f:
             reader = csv.reader(f, delimiter=";")

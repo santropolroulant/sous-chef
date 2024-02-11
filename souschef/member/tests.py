@@ -2279,7 +2279,7 @@ class ClientUpdateDietaryRestrictionTestCase(ClientUpdateTestCase):
 
         data.update(
             {
-                "status": True if client.status == Client.ACTIVE else False,
+                "status": client.status == Client.ACTIVE,
                 "delivery_type": client.delivery_type,
                 "meals_schedule": ["monday"],
             }
@@ -2347,7 +2347,7 @@ class ClientUpdateDietaryRestrictionTestCase(ClientUpdateTestCase):
 
         data.update(
             {
-                "status": True if client.status == Client.ACTIVE else False,
+                "status": client.status == Client.ACTIVE,
                 "delivery_type": "O",
                 "meals_schedule": ["monday"],
             }
@@ -2382,7 +2382,7 @@ class ClientUpdateDietaryRestrictionTestCase(ClientUpdateTestCase):
 
         data.update(
             {
-                "status": True if client.status == Client.ACTIVE else False,
+                "status": client.status == Client.ACTIVE,
                 "delivery_type": "E",
                 "meals_schedule": ["monday"],
             }
@@ -2407,7 +2407,7 @@ class ClientUpdateDietaryRestrictionTestCase(ClientUpdateTestCase):
 
         data.update(
             {
-                "status": True if client.status == Client.ACTIVE else False,
+                "status": client.status == Client.ACTIVE,
                 "delivery_type": "E",
                 "meals_schedule": [],
             }

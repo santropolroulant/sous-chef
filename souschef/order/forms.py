@@ -86,10 +86,9 @@ class CreateOrdersBatchForm(forms.Form):
         """
         cleaned_data = super(CreateOrdersBatchForm, self).clean()
         delivery_dates_str = cleaned_data.get("delivery_dates")
+        delivery_dates = []
         if delivery_dates_str:
             delivery_dates = delivery_dates_str.split("|")
-        else:
-            delivery_dates = []
         fields_not_null_check = [
             ("delivery_{}", lambda x: x is True),
             ("pickup_{}", lambda x: x is True),

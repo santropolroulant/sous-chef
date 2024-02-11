@@ -196,7 +196,7 @@ class MealInformation(LoginRequiredMixin, PermissionRequiredMixin, generic.View)
                 menu__date=date,
                 component__component_group=COMPONENT_GROUP_CHOICES_MAIN_DISH,
             )
-            if menu_comps:
+            if menu_comps:  # noqa: SIM108
                 # main dish is known in today's menu
                 main_dish = menu_comps[0].component
             else:
@@ -394,7 +394,7 @@ class RoutesInformation(LoginRequiredMixin, PermissionRequiredMixin, generic.Vie
             # generate PDF report
             MultiRouteReport.routes_make_pages(routes_dict)
             try:
-                f = open(settings.ROUTE_SHEETS_FILE, "rb")
+                f = open(settings.ROUTE_SHEETS_FILE, "rb")  # noqa: SIM115
             except Exception as e:
                 raise Http404(
                     "File " + settings.ROUTE_SHEETS_FILE + " does not exist"
@@ -988,7 +988,7 @@ class KitchenCount(LoginRequiredMixin, PermissionRequiredMixin, generic.View):
         if reverse("delivery:downloadKitchenCount") in request.path:
             # download kitchen count report as PDF
             try:
-                f = open(settings.KITCHEN_COUNT_FILE, "rb")
+                f = open(settings.KITCHEN_COUNT_FILE, "rb")  # noqa: SIM115
             except Exception as e:
                 raise Http404(
                     "File " + settings.KITCHEN_COUNT_FILE + " does not exist"
@@ -1934,7 +1934,7 @@ class MealLabels(LoginRequiredMixin, PermissionRequiredMixin, generic.View):
 
     def get(self, request, **kwargs):
         try:
-            f = open(settings.MEAL_LABELS_FILE, "rb")
+            f = open(settings.MEAL_LABELS_FILE, "rb")  # noqa: SIM115
         except Exception as e:
             raise Http404(
                 "File " + settings.MEAL_LABELS_FILE + " does not exist"

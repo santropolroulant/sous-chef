@@ -40,10 +40,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        if options["file"]:
-            file = "mock_meals.csv"
-        else:
-            file = "clients_meals.csv"
+        file = "mock_meals.csv" if options["file"] else "clients_meals.csv"
 
         food_prep_puree = Option.objects.get(name="Puree all")
         food_prep_cut = Option.objects.get(name="Cut up meat")

@@ -568,11 +568,7 @@ def export_csv(self, queryset):
     writer.writerow(_get_csv_header())
 
     for obj in queryset:
-        if obj.route is None:
-            route = ""
-
-        else:
-            route = obj.route.name
+        route = "" if obj.route is None else obj.route.name
 
         writer.writerow(_get_csv_row(obj, route))
 
@@ -890,7 +886,7 @@ class ClientUpdateDietaryRestriction(ClientUpdateInformation):
         client = get_object_or_404(Client, pk=self.kwargs.get("pk"))
         initial.update(
             {
-                "status": True if client.status == Client.ACTIVE else False,
+                "status": client.status == Client.ACTIVE,
                 "delivery_type": client.delivery_type,
                 "meals_schedule": client.simple_meals_schedule,
                 "restrictions": client.restrictions.all,

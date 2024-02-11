@@ -30,10 +30,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        if options["file"]:
-            file = "mock_addresses.csv"
-        else:
-            file = "clients_address.csv"
+        file = "mock_addresses.csv" if options["file"] else "clients_address.csv"
 
         with open(file) as f:
             reader = csv.reader(f, delimiter=";")

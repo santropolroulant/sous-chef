@@ -516,10 +516,11 @@ class ClientRelationshipInformation(MemberForm):
                 self.add_error("email", msg)
                 self.add_error("work_phone", msg)
                 self.add_error("cell_phone", msg)
-            if self.has_referent_relationship:
-                if not self.cleaned_data.get("work_information"):
-                    msg = _("This field is required for a referent " "relationship.")
-                    self.add_error("work_information", msg)
+            if self.has_referent_relationship and not self.cleaned_data.get(
+                "work_information"
+            ):
+                msg = _("This field is required for a referent relationship.")
+                self.add_error("work_information", msg)
 
         if self.has_referent_relationship:
             if not self.cleaned_data.get("referral_date"):

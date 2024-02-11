@@ -245,7 +245,7 @@ class CreateOrdersBatch(LoginRequiredMixin, PermissionRequiredMixin, generic.For
         if form.cleaned_data.get("is_submit") != 1:
             form._errors = {}
         else:
-            for field in form.errors.keys():
+            for field in form.errors:
                 try:
                     # next() - find first occurence
                     invalid_date = next(
