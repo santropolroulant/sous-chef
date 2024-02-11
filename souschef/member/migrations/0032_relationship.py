@@ -3,9 +3,9 @@
 from datetime import date
 
 import annoying.fields
+import django.db.models.deletion
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import migrations, models
-import django.db.models.deletion
 
 
 def migrate_relationships(apps, schema_editor):
