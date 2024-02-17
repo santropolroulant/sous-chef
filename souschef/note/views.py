@@ -46,7 +46,7 @@ class NoteList(LoginRequiredMixin, PermissionRequiredMixin, generic.ListView):
     def get_context_data(self, **kwargs):
         uf = NoteFilter(self.request.GET, queryset=self.get_queryset())
 
-        context = super(NoteList, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
 
         # Here you add some variable of context to display on template
         context["filter"] = uf
@@ -82,7 +82,7 @@ class ClientNoteList(LoginRequiredMixin, PermissionRequiredMixin, generic.ListVi
         return queryset
 
     def get_context_data(self, **kwargs):
-        context = super(ClientNoteList, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context["active_tab"] = "notes"
         context["client_status"] = Client.CLIENT_STATUS
         context["client"] = get_object_or_404(Client, id=self.kwargs["pk"])
@@ -101,7 +101,7 @@ class NoteAdd(LoginRequiredMixin, PermissionRequiredMixin, generic.CreateView):
 
     def form_valid(self, form):
         form.instance.author = self.request.user
-        response = super(NoteAdd, self).form_valid(form)
+        response = super().form_valid(form)
         messages.add_message(
             self.request, messages.SUCCESS, _("The note was created successfully.")
         )
@@ -117,7 +117,7 @@ class ClientNoteListAdd(NoteAdd):
     """
 
     def get_context_data(self, **kwargs):
-        context = super(ClientNoteListAdd, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context["client"] = get_object_or_404(Client, id=self.kwargs["pk"])
         return context
 

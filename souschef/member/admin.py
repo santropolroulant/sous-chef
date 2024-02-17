@@ -44,7 +44,7 @@ class MemberAdmin(admin.ModelAdmin):
     inlines = [ContactInline]
 
     def full_name(self, obj):
-        return "%s %s" % (obj.firstname, obj.lastname)
+        return f"{obj.firstname} {obj.lastname}"
 
     full_name.short_description = "Name"
 

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import datetime
 import random
 import urllib.parse
@@ -46,7 +44,6 @@ from souschef.sous_chef.tests import TestMixin as SousChefTestMixin
 
 
 class OrderTestCase(TestCase):
-
     fixtures = ["routes.json"]
 
     @classmethod
@@ -58,7 +55,6 @@ class OrderTestCase(TestCase):
 
 
 class OrderManagerTestCase(TestCase):
-
     fixtures = ["routes.json"]
 
     @classmethod
@@ -143,7 +139,6 @@ class OrderManagerTestCase(TestCase):
 class OrderItemTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
-
         cls.admin = User.objects.create_superuser(
             username="admin@example.com", email="admin@example.com", password="test"
         )
@@ -323,7 +318,6 @@ class OrderItemTestCase(TestCase):
 
 
 class OrderAutoCreateOnDefaultsTestCase(TestCase):
-
     fixtures = ["routes.json"]
 
     @classmethod
@@ -426,7 +420,6 @@ class OrderAutoCreateOnDefaultsTestCase(TestCase):
 
 
 class OrderManualCreateTestCase(SousChefTestMixin, TestCase):
-
     fixtures = ["routes.json"]
 
     @classmethod
@@ -533,7 +526,8 @@ class OrderManualCreateTestCase(SousChefTestMixin, TestCase):
             & Q(billable_flag=True)
         ).aggregate(quantity=Sum("total_quantity"))
         self.assertEqual(
-            billable_sides["quantity"], None  # 7 - 10 -> 0, filter empty, thus None
+            billable_sides["quantity"],
+            None,  # 7 - 10 -> 0, filter empty, thus None
         )
 
         free_sides = order.orders.filter(
@@ -550,7 +544,6 @@ class OrderManualCreateTestCase(SousChefTestMixin, TestCase):
 
 
 class OrderCreateBatchTestCase(SousChefTestMixin, TestCase):
-
     fixtures = ["routes.json"]
 
     @classmethod
@@ -610,7 +603,7 @@ class OrderCreateBatchTestCase(SousChefTestMixin, TestCase):
         """
         client = self.episodic_client[0]
         created_orders = Order.objects.create_batch_orders(
-            self.delivery_dates, self.episodic_client[0], self.orditems
+            self.delivery_dates, self.episodic_client[0], self.orditems, []
         )
         self.assertEqual(len(created_orders), 4)
 
@@ -1019,7 +1012,7 @@ class OrderCreateBatchTestCase(SousChefTestMixin, TestCase):
                 "fruit_salad_2016-12-14_quantity": 0,
                 "green_salad_2016-12-14_quantity": 1,
                 "pudding_2016-12-14_quantity": 0,
-                "compote_2016-12-14_quantity": 0
+                "compote_2016-12-14_quantity": 0,
                 # lacks: compote_2016-12-12_quantity
             },
         )
@@ -1108,7 +1101,6 @@ class OrderCreateBatchTestCase(SousChefTestMixin, TestCase):
 
 
 class OrderFormTestCase(TestCase):
-
     fixtures = ["routes.json"]
 
     @classmethod
@@ -1162,7 +1154,6 @@ class OrderFormTestCase(TestCase):
         self.assertRedirects(response, reverse("order:view", kwargs={"pk": order.id}))
 
     def _test_order_item_with_errors(self, route, client):
-
         data = {
             "orders-TOTAL_FORMS": 1,
             "orders-INITIAL_FORMS": 0,
@@ -1466,7 +1457,7 @@ class UpdateClientBillTestCase(SousChefTestMixin, OrderItemTestCase):
         self.assertFalse(self.order.includes_a_bill)
 
     def test_back_and_forth(self):
-        for i in range(10):
+        for _i in range(10):
             response = self.client.delete(
                 reverse("order:update_client_bill", args=(self.order.id,))
             )

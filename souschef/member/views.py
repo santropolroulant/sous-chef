@@ -1,5 +1,3 @@
-# coding: utf-8
-
 import csv
 
 from django.contrib import messages
@@ -83,7 +81,7 @@ class NamedUrlSessionWizardView_i18nURL(NamedUrlSessionWizardView):
     @classonlymethod
     def as_view(cls, *args, **kwargs):
         cls.i18n_url_names = kwargs.pop("i18n_url_names")
-        return super(NamedUrlSessionWizardView_i18nURL, cls).as_view(*args, **kwargs)
+        return super().as_view(*args, **kwargs)
 
     def dispatch(self, request, *args, **kwargs):
         """
@@ -103,7 +101,7 @@ class NamedUrlSessionWizardView_i18nURL(NamedUrlSessionWizardView):
                 non_i18n_step = i18n_step
             finally:
                 kwargs["step"] = non_i18n_step
-        return super(NamedUrlSessionWizardView_i18nURL, self).dispatch(
+        return super().dispatch(
             request, *args, **kwargs
         )
 
@@ -122,10 +120,8 @@ class NamedUrlSessionWizardView_i18nURL(NamedUrlSessionWizardView):
         except StopIteration:
             # not found
             i18n_step = non_i18n_step
-        finally:
-            return super(NamedUrlSessionWizardView_i18nURL, self).get_step_url(
-                i18n_step
-            )
+
+        return super().get_step_url(i18n_step)
 
 
 class ClientWizard(
@@ -135,7 +131,7 @@ class ClientWizard(
     template_name = "client/create/form.html"
 
     def get_context_data(self, **kwargs):
-        context = super(ClientWizard, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
 
         context["weekday"] = DAYS_OF_WEEK
         context["meals"] = list(
@@ -226,17 +222,17 @@ class ClientWizard(
     def save_json(self, dictonary):
         json = {}
 
-        for days, Days in DAYS_OF_WEEK:
-            json["size_{}".format(days)] = dictonary.get("size_{}".format(days))
+        for days, _Days in DAYS_OF_WEEK:
+            json[f"size_{days}"] = dictonary.get(f"size_{days}")
 
-            if json["size_{}".format(days)] == "":
-                json["size_{}".format(days)] = None
+            if json[f"size_{days}"] == "":
+                json[f"size_{days}"] = None
 
-            for meal, Meals in COMPONENT_GROUP_CHOICES:
+            for meal, _Meals in COMPONENT_GROUP_CHOICES:
                 if meal is COMPONENT_GROUP_CHOICES_SIDES:
                     continue  # skip "Sides"
-                json["{}_{}_quantity".format(meal, days)] = dictonary.get(
-                    "{}_{}_quantity".format(meal, days)
+                json[f"{meal}_{days}_quantity"] = dictonary.get(
+                    f"{meal}_{days}_quantity"
                 )
 
         return json
@@ -464,7 +460,7 @@ class ClientList(LoginRequiredMixin, PermissionRequiredMixin, generic.ListView):
     def get_context_data(self, **kwargs):
         uf = ClientFilter(self.request.GET, queryset=self.get_queryset())
 
-        context = super(ClientList, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
 
         # Here you add some variable of context to display on template
         context["filter"] = uf
@@ -487,13 +483,12 @@ class ClientList(LoginRequiredMixin, PermissionRequiredMixin, generic.ListView):
         return context
 
     def get(self, request, **kwargs):
-
         self.format = request.GET.get("format", False)
 
         if self.format == "csv":
             return export_csv(self, self.get_queryset())
 
-        return super(ClientList, self).get(request, **kwargs)
+        return super().get(request, **kwargs)
 
 
 DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
@@ -571,11 +566,7 @@ def export_csv(self, queryset):
     writer.writerow(_get_csv_header())
 
     for obj in queryset:
-        if obj.route is None:
-            route = ""
-
-        else:
-            route = obj.route.name
+        route = "" if obj.route is None else obj.route.name
 
         writer.writerow(_get_csv_row(obj, route))
 
@@ -604,7 +595,7 @@ class ClientInfoView(ClientView):
     template_name = "client/view/information.html"
 
     def get_context_data(self, **kwargs):
-        context = super(ClientInfoView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context["active_tab"] = "information"
         context["client_status"] = Client.CLIENT_STATUS
         return context
@@ -614,7 +605,7 @@ class ClientAddressView(ClientView):
     template_name = "client/view/address.html"
 
     def get_context_data(self, **kwargs):
-        context = super(ClientAddressView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         return context
 
 
@@ -622,7 +613,7 @@ class ClientPaymentView(ClientView):
     template_name = "client/view/payment.html"
 
     def get_context_data(self, **kwargs):
-        context = super(ClientPaymentView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context["active_tab"] = "billing"
         context["client_status"] = Client.CLIENT_STATUS
         return context
@@ -632,7 +623,7 @@ class ClientAllergiesView(ClientView):
     template_name = "client/view/allergies.html"
 
     def get_context_data(self, **kwargs):
-        context = super(ClientAllergiesView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context["active_tab"] = "prefs"
         context["client_status"] = Client.CLIENT_STATUS
         context["weekdays"] = DAYS_OF_WEEK
@@ -658,7 +649,7 @@ class ClientStatusView(ClientView):
         return self.request.GET.get("operation_status", None)
 
     def get_context_data(self, **kwargs):
-        context = super(ClientStatusView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context["active_tab"] = "status"
         context["client_status"] = Client.CLIENT_STATUS
         context["filter"] = ClientScheduledStatusFilter(
@@ -674,8 +665,7 @@ class ClientOrderList(ClientView):
     template_name = "client/view/orders.html"
 
     def get_context_data(self, **kwargs):
-
-        context = super(ClientOrderList, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context["orders"] = self.object.orders.prefetch_related("orders")
         context["client_status"] = Client.CLIENT_STATUS
         context["active_tab"] = "orders"
@@ -735,14 +725,14 @@ class ClientUpdateInformation(
         messages.add_message(
             self.request, messages.SUCCESS, _("The client has been updated")
         )
-        return super(ClientUpdateInformation, self).form_valid(form)
+        return super().form_valid(form)
 
 
 class ClientUpdateBasicInformation(ClientUpdateInformation):
     form_class = ClientBasicInformation
 
     def get_context_data(self, **kwargs):
-        context = super(ClientUpdateBasicInformation, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context.update({"pk": self.kwargs["pk"], "current_step": "basic_information"})
         context["step_template"] = "client/partials/forms/" "basic_information.html"
         return context
@@ -774,7 +764,7 @@ class ClientUpdateAddressInformation(ClientUpdateInformation):
     form_class = ClientAddressInformation
 
     def get_context_data(self, **kwargs):
-        context = super(ClientUpdateAddressInformation, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context.update({"current_step": "address_information", "pk": self.kwargs["pk"]})
         context["step_template"] = "client/partials/forms/" "address_information.html"
         return context
@@ -800,7 +790,7 @@ class ClientUpdatePaymentInformation(ClientUpdateInformation):
     form_class = ClientPaymentInformation
 
     def get_context_data(self, **kwargs):
-        context = super(ClientUpdatePaymentInformation, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context.update(
             {
                 "current_step": "payment_information",
@@ -811,7 +801,7 @@ class ClientUpdatePaymentInformation(ClientUpdateInformation):
         return context
 
     def get_initial(self):
-        initial = super(ClientUpdatePaymentInformation, self).get_initial()
+        initial = super().get_initial()
         client = get_object_or_404(Client, pk=self.kwargs.get("pk"))
         initial.update(
             {
@@ -876,7 +866,7 @@ class ClientUpdateDietaryRestriction(ClientUpdateInformation):
     form_class = ClientRestrictionsInformation
 
     def get_context_data(self, **kwargs):
-        context = super(ClientUpdateDietaryRestriction, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context.update({"current_step": "dietary_restriction"})
         context.update({"pk": self.kwargs["pk"]})
         context["weekday"] = DAYS_OF_WEEK
@@ -890,11 +880,11 @@ class ClientUpdateDietaryRestriction(ClientUpdateInformation):
         return context
 
     def get_initial(self):
-        initial = super(ClientUpdateDietaryRestriction, self).get_initial()
+        initial = super().get_initial()
         client = get_object_or_404(Client, pk=self.kwargs.get("pk"))
         initial.update(
             {
-                "status": True if client.status == Client.ACTIVE else False,
+                "status": client.status == Client.ACTIVE,
                 "delivery_type": client.delivery_type,
                 "meals_schedule": client.simple_meals_schedule,
                 "restrictions": client.restrictions.all,
@@ -942,18 +932,16 @@ class ClientUpdateDietaryRestriction(ClientUpdateInformation):
 
         # Save preferences
         json = {}
-        for days, v in DAYS_OF_WEEK:
-            json["size_{}".format(days)] = form["size_{}".format(days)]
+        for days, _v in DAYS_OF_WEEK:
+            json[f"size_{days}"] = form[f"size_{days}"]
 
-            if json["size_{}".format(days)] == "":
-                json["size_{}".format(days)] = None
+            if json[f"size_{days}"] == "":
+                json[f"size_{days}"] = None
 
-            for meal, Meal in COMPONENT_GROUP_CHOICES:
+            for meal, _Meal in COMPONENT_GROUP_CHOICES:
                 if meal is COMPONENT_GROUP_CHOICES_SIDES:
                     continue  # skip "Sides"
-                json["{}_{}_quantity".format(meal, days)] = form[
-                    "{}_{}_quantity".format(meal, days)
-                ]
+                json[f"{meal}_{days}_quantity"] = form[f"{meal}_{days}_quantity"]
         client.delivery_type = form["delivery_type"]
         client.meal_default_week = json
         client.save()
@@ -964,7 +952,7 @@ class ClientUpdateRelationshipsInformation(ClientUpdateInformation):
     prefix = "relationships"
 
     def get_context_data(self, **kwargs):
-        context = super(ClientUpdateRelationshipsInformation, self).get_context_data(
+        context = super().get_context_data(
             **kwargs
         )
         context.update({"current_step": "relationships"})
@@ -1146,7 +1134,7 @@ class ClientStatusScheduler(
     template_name = "client/update/status.html"
 
     def get_context_data(self, **kwargs):
-        context = super(ClientStatusScheduler, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context["client"] = client = get_object_or_404(Client, pk=self.kwargs.get("pk"))
         context["client_status"] = Client.CLIENT_STATUS
         context["orders"] = client.upcoming_orders.prefetch_related("orders")
@@ -1338,7 +1326,7 @@ def get_clients_on_route(route):
             # the default route sequence the next time, everything will be OK.
             pass
 
-    for client_pk, client in clients_dict.items():
+    for _client_pk, client in clients_dict.items():
         # Remaining clients
         client.has_been_configured = False
         clients_on_route.append(client)
@@ -1398,16 +1386,15 @@ def get_clients_on_delivery_history(delivery_history, func_add_warning_message=N
                     func_add_warning_message(
                         mark_safe(
                             _(
-                                "The client <a href=%(url)s>%(firstname)s %(lastname)s"
+                                "The client <a href={url}>{firstname} {lastname}"
                                 "</a> is found on this delivery sequence but is no "
                                 "longer valid for this delivery."
-                                % {
-                                    "firstname": client.member.firstname,
-                                    "lastname": client.member.lastname,
-                                    "url": reverse(
-                                        "member:client_information", args=(client.pk,)
-                                    ),
-                                }
+                            ).format(
+                                firstname=client.member.firstname,
+                                lastname=client.member.lastname,
+                                url=reverse(
+                                    "member:client_information", args=(client.pk,)
+                                ),
                             )
                         )
                     )
@@ -1415,9 +1402,9 @@ def get_clients_on_delivery_history(delivery_history, func_add_warning_message=N
                     func_add_warning_message(
                         _(
                             "The delivery sequence contains a client with ID"
-                            "%(client_id)s that no longer exists in the "
-                            "database." % {"client_id": client_pk}
-                        )
+                            "{client_id} that no longer exists in the "
+                            "database."
+                        ).format(client_id=client_pk)
                     )
 
     # Then, check if there are clients that exist on default route sequence.
@@ -1431,7 +1418,7 @@ def get_clients_on_delivery_history(delivery_history, func_add_warning_message=N
 
     # Finally, check the clients that had delivery on that day but were not
     # configured on the delivery sequence. Append them to the display sequence.
-    for client_pk, client in clients_dict.items():
+    for _client_pk, client in clients_dict.items():
         client.has_been_configured = False
         clients_on_delivery_history.append(client)
     return clients_on_delivery_history
@@ -1452,7 +1439,7 @@ class RouteDetailView(LoginRequiredMixin, PermissionRequiredMixin, generic.Detai
         Get detailed information on route clients and out-of-route clients
         that are to be rendered on the template.
         """
-        context = super(RouteDetailView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         route = context["route"]
         context["clients_on_route"] = get_clients_on_route(route)
         return context
@@ -1471,7 +1458,7 @@ class RouteEditView(
         Get detailed information on route clients and out-of-route clients
         that are to be rendered on the template.
         """
-        context = super(RouteEditView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         route = context["route"]
         context["clients_on_route"] = get_clients_on_route(route)
         return context
@@ -1480,7 +1467,7 @@ class RouteEditView(
         return reverse_lazy("member:route_detail", args=[self.object.pk])
 
     def form_valid(self, form):
-        response = super(RouteEditView, self).form_valid(form)
+        response = super().form_valid(form)
         messages.add_message(
             self.request, messages.SUCCESS, _("This route has been updated.")
         )
@@ -1526,7 +1513,7 @@ class DeliveryHistoryDetailView(
         Get detailed information on route clients and out-of-route clients
         that are to be rendered on the template.
         """
-        context = super(DeliveryHistoryDetailView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         delivery_history = self.object
         context["delivery_history"] = delivery_history
         context["clients_on_delivery_history"] = get_clients_on_delivery_history(

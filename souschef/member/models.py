@@ -129,7 +129,7 @@ class Member(models.Model):
     )
 
     def __str__(self):
-        return "{} {}".format(self.firstname, self.lastname)
+        return f"{self.firstname} {self.lastname}"
 
     @property
     def home_phone(self):
@@ -269,14 +269,14 @@ class Address(models.Model):
         first_line = []
         first_line.append(str(self.street))
         if self.apartment:
-            first_line.append("Apt.{}".format(self.apartment))
+            first_line.append(f"Apt.{self.apartment}")
         if self.floor:
-            first_line.append("{} Floor".format(self.floor))
+            first_line.append(f"{self.floor} Floor")
 
         first_line = " ".join(first_line)
-        second_line = "{}, {}".format(self.city, self.postal_code)
+        second_line = f"{self.city}, {self.postal_code}"
 
-        return "{}, {}".format(first_line, second_line)
+        return f"{first_line}, {second_line}"
 
 
 class Contact(models.Model):
@@ -309,7 +309,7 @@ class Contact(models.Model):
         return self.value
 
     def __str__(self):
-        return "{} {}".format(self.member.firstname, self.member.lastname)
+        return f"{self.member.firstname} {self.member.lastname}"
 
 
 class Route(models.Model):
@@ -367,14 +367,11 @@ class DeliveryHistory(models.Model):
     )
 
     def __str__(self):
-        return "DeliveryHistory: Route {} delivered on {}".format(
-            self.route.name, self.date
-        )
+        return f"DeliveryHistory: Route {self.route.name} delivered on {self.date}"
 
 
 class ClientManager(models.Manager):
     def get_birthday_boys_and_girls(self):
-
         today = datetime.datetime.now()
 
         clients = self.filter(
@@ -393,17 +390,15 @@ class ClientManager(models.Manager):
 
 class ActiveClientManager(ClientManager):
     def get_queryset(self):
-
         return (
-            super(ActiveClientManager, self).get_queryset().filter(status=Client.ACTIVE)
+            super().get_queryset().filter(status=Client.ACTIVE)
         )
 
 
 class OngoingClientManager(ClientManager):
     def get_queryset(self):
-
         return (
-            super(OngoingClientManager, self)
+            super()
             .get_queryset()
             .filter(status=Client.ACTIVE, delivery_type="O")
         )
@@ -411,9 +406,8 @@ class OngoingClientManager(ClientManager):
 
 class PendingClientManager(ClientManager):
     def get_queryset(self):
-
         return (
-            super(PendingClientManager, self)
+            super()
             .get_queryset()
             .filter(status=Client.PENDING)
         )
@@ -421,9 +415,8 @@ class PendingClientManager(ClientManager):
 
 class ContactClientManager(ClientManager):
     def get_queryset(self):
-
         return (
-            super(ContactClientManager, self)
+            super()
             .get_queryset()
             .filter(
                 Q(status=Client.ACTIVE)
@@ -436,9 +429,8 @@ class ContactClientManager(ClientManager):
 
 class BirthdayContactClientManager(ClientManager):
     def get_queryset(self):
-
         return (
-            super(BirthdayContactClientManager, self)
+            super()
             .get_queryset()
             .filter(
                 Q(status=Client.ACTIVE)
@@ -449,7 +441,6 @@ class BirthdayContactClientManager(ClientManager):
 
 
 class Client(models.Model):
-
     # Characters are used to keep a backward-compatibility
     # with the previous system.
     PENDING = "D"
@@ -553,7 +544,7 @@ class Client(models.Model):
     restrictions = models.ManyToManyField("meal.Restricted_item", through="Restriction")
 
     def __str__(self):
-        return "{} {}".format(self.member.firstname, self.member.lastname)
+        return f"{self.member.firstname} {self.member.lastname}"
 
     objects = ClientManager()
 
@@ -673,10 +664,10 @@ class Client(models.Model):
         has said no to a component on a particular day.
         """
         defaults = []
-        for day, str in DAYS_OF_WEEK:
+        for day, _str in DAYS_OF_WEEK:
             current = {}
             numeric_fields = []
-            for component, label in COMPONENT_GROUP_CHOICES:
+            for component, _label in COMPONENT_GROUP_CHOICES:
                 if component is COMPONENT_GROUP_CHOICES_SIDES:
                     continue  # skip "Sides"
                 item = self.meal_default_week.get(component + "_" + day + "_quantity")
@@ -738,7 +729,6 @@ class Client(models.Model):
 
 
 class ClientScheduledStatus(models.Model):
-
     START = "START"
     END = "END"
 
@@ -860,7 +850,6 @@ class ClientScheduledStatusFilter(FilterSet):
 
 
 class ClientFilter(FilterSet):
-
     name = CharFilter(method="filter_search", label=_("Search by name"))
 
     status = MultipleChoiceFilter(choices=Client.CLIENT_STATUS)
@@ -879,7 +868,6 @@ class ClientFilter(FilterSet):
         names = value.split(" ")
 
         for name in names:
-
             firstname_contains = Q(member__firstname__icontains=name)
 
             lastname_contains = Q(member__lastname__icontains=name)

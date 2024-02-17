@@ -5,7 +5,6 @@ ENV PYTHONUNBUFFERED 1
 RUN apt-get update && \
   apt-get install curl gettext cron -y && \
   apt-get clean
-RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
 RUN apt-get install nodejs build-essential binutils libproj-dev gdal-bin -y && \
   apt-get clean
 

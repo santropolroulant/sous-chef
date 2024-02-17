@@ -37,7 +37,7 @@ class BillingList(LoginRequiredMixin, PermissionRequiredMixin, generic.ListView)
     template_name = "billing/list.html"
 
     def get_context_data(self, **kwargs):
-        context = super(BillingList, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         uf = BillingFilter(self.request.GET, queryset=self.get_queryset())
         context["filter"] = uf
 
@@ -91,7 +91,7 @@ class BillingAdd(LoginRequiredMixin, PermissionRequiredMixin, generic.ListView):
     template_name = "billing/add.html"
 
     def get_context_data(self, **kwargs):
-        context = super(BillingAdd, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         uf = DeliveredOrdersByMonth(self.request.GET, queryset=self.get_queryset())
         context["filter"] = uf
         text = ""
@@ -171,10 +171,10 @@ class BillingSummaryView(
         if self.request.method == "GET" and self.request.GET.get("print"):
             return ["billing/print_summary.html"]
         else:
-            return super(BillingSummaryView, self).get_template_names()
+            return super().get_template_names()
 
     def get_context_data(self, **kwargs):
-        context = super(BillingSummaryView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         billing = self.object
 
         # generate a summary
@@ -235,7 +235,7 @@ class BillingSummaryView(
             summary["total_deliveries"] += nb_deliveries
 
         # sort clients in each payment type group
-        for payment_type, statistics in summary["payment_types_dict"].items():
+        for _payment_type, statistics in summary["payment_types_dict"].items():
             statistics["clients"].sort(key=lambda c: (c["lastname"], c["firstname"]))
 
         # reorder the display for supported & non-supported payment types
@@ -246,9 +246,7 @@ class BillingSummaryView(
                 "credit": 1,  # 1st position
                 "eft": 2,  # 2nd position
                 "3rd": 3,  # 3rd position
-            }.get(
-                tup[0], 99
-            ),  # last position(s)
+            }.get(tup[0], 99),  # last position(s)
         )
 
         context["summary"] = summary
@@ -268,11 +266,11 @@ class BillingSummaryView(
                 )
             )
             formatted_htmls = ['<ul class="ui list">']
-            for i, f, l in size_none_orders_info:
+            for i, f, l in size_none_orders_info:  # noqa: E741 (no idea what these are)
                 formatted_htmls.append(
-                    '<li><a href="{0}" target="_blank">'
-                    "#{1} ({2} {3})"
-                    "</a></li>".format(Order(id=i).get_absolute_url(), i, f, l)
+                    f'<li><a href="{Order(id=i).get_absolute_url()}" target="_blank">'
+                    f"#{i} ({f} {l})"
+                    "</a></li>"
                 )
             formatted_htmls.append("</ul>")
             formatted_html = "".join(formatted_htmls)
@@ -324,7 +322,7 @@ class BillingOrdersView(
     )
 
     def get_context_data(self, **kwargs):
-        context = super(BillingOrdersView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
 
         if self.request.GET.get("client"):
             # has ?client=client_id

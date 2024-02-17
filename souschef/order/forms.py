@@ -31,25 +31,25 @@ class CreateOrdersBatchForm(forms.Form):
             del kwargs["delivery_dates"]
         else:
             delivery_dates = None
-        super(CreateOrdersBatchForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         if delivery_dates:
             for d in delivery_dates:
-                self.fields["size_{}".format(d)] = forms.ChoiceField(
+                self.fields[f"size_{d}"] = forms.ChoiceField(
                     choices=SIZE_CHOICES,
                     widget=forms.Select(attrs={"class": ""}),
                     required=True,
                 )
-                self.fields["delivery_{}".format(d)] = forms.BooleanField(
+                self.fields[f"delivery_{d}"] = forms.BooleanField(
                     required=False
                 )
-                self.fields["pickup_{}".format(d)] = forms.BooleanField(required=False)
-                self.fields["visit_{}".format(d)] = forms.BooleanField(required=False)
+                self.fields[f"pickup_{d}"] = forms.BooleanField(required=False)
+                self.fields[f"visit_{d}"] = forms.BooleanField(required=False)
 
-                for meal, meal_translation in COMPONENT_GROUP_CHOICES:
+                for meal, _meal_translation in COMPONENT_GROUP_CHOICES:
                     if meal is COMPONENT_GROUP_CHOICES_SIDES:
                         continue  # don't put "sides" on the form
-                    self.fields["{}_{}_quantity".format(meal, d)] = forms.IntegerField(
+                    self.fields[f"{meal}_{d}_quantity"] = forms.IntegerField(
                         min_value=0, required=True
                     )
 
@@ -84,18 +84,17 @@ class CreateOrdersBatchForm(forms.Form):
         For each delivery date, the quantities and options should
         not be all empty. Refs #803.
         """
-        cleaned_data = super(CreateOrdersBatchForm, self).clean()
+        cleaned_data = super().clean()
         delivery_dates_str = cleaned_data.get("delivery_dates")
+        delivery_dates = []
         if delivery_dates_str:
             delivery_dates = delivery_dates_str.split("|")
-        else:
-            delivery_dates = []
         fields_not_null_check = [
             ("delivery_{}", lambda x: x is True),
             ("pickup_{}", lambda x: x is True),
             ("visit_{}", lambda x: x is True),
         ]
-        for meal, meal_translation in COMPONENT_GROUP_CHOICES:
+        for meal, _meal_translation in COMPONENT_GROUP_CHOICES:
             if meal is COMPONENT_GROUP_CHOICES_SIDES:
                 continue  # "sides" not in the form
             else:
@@ -113,7 +112,7 @@ class CreateOrdersBatchForm(forms.Form):
                 ]
             ):
                 # Error-highlight all fields on that date.
-                for field_template, check_fn in fields_not_null_check:
+                for field_template, _check_fn in fields_not_null_check:
                     self.add_error(
                         field_template.format(delivery_date),
                         forms.ValidationError(
@@ -136,7 +135,7 @@ class OrderStatusChangeForm(forms.ModelForm):
         }
 
     def clean(self):
-        cleaned_data = super(OrderStatusChangeForm, self).clean()
+        cleaned_data = super().clean()
         status_to = cleaned_data.get("status_to")
         reason = cleaned_data.get("reason")
 

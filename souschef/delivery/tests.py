@@ -54,7 +54,6 @@ from .filters import KitchenCountOrderFilter
 
 
 class KitchenCountReportTestCase(SousChefTestMixin, TestCase):
-
     # This data set includes 'Ground porc' clashing ingredient
     # This data set includes 'Tracy' client lastname
     #   and his side dish is 'compote'
@@ -205,7 +204,6 @@ class KitchenCountReportTestCase(SousChefTestMixin, TestCase):
 
 
 class ChooseDayMainDishIngredientsTestCase(SousChefTestMixin, TestCase):
-
     fixtures = ["sample_data"]
 
     @classmethod
@@ -422,7 +420,6 @@ class ChooseDayMainDishIngredientsTestCase(SousChefTestMixin, TestCase):
 
 
 class DeliveryRouteSheetTestCase(SousChefTestMixin, TestCase):
-
     # This data set includes 'Blondin' client lastname
     #   in 'Centre Sud' route
     # This data set includes 'Tracy' client lastname
@@ -495,7 +492,6 @@ class DeliveryRouteSheetTestCase(SousChefTestMixin, TestCase):
 
 
 class RedirectAnonymousUserTestCase(SousChefTestMixin, TestCase):
-
     fixtures = ["sample_data"]
 
     def test_anonymous_user_gets_redirect_to_login_page(self):
@@ -522,7 +518,7 @@ class OrderlistViewTestCase(SousChefTestMixin, TestCase):
     fixtures = ["sample_data"]
 
     def setUp(self):
-        super(OrderlistViewTestCase, self).setUp()
+        super().setUp()
         self.force_login()
 
     def test_can_filter_orders_by_client_names(self):
@@ -571,7 +567,7 @@ class KitchenCountOrderFilterTestCase(SousChefTestMixin, TestCase):
     fixtures = ["sample_data"]
 
     def setUp(self):
-        super(KitchenCountOrderFilterTestCase, self).setUp()
+        super().setUp()
         self.factory = RequestFactory()
 
     def test_can_filter_orders_by_client_names(self):
@@ -602,7 +598,7 @@ class RoutesInformationViewTestCase(SousChefTestMixin, TestCase):
     fixtures = ["sample_data"]
 
     def setUp(self):
-        super(RoutesInformationViewTestCase, self).setUp()
+        super().setUp()
         self.force_login()
 
     def test_can_embed_additional_route_sheet_information_when_printing(self):
@@ -901,10 +897,10 @@ class ExcludeMalconfiguredClientsTestCase(SousChefTestMixin, TestCase):
 
             # client-specific ingredient (for testing clashes)
             this_chicken = IngredientFactory(
-                name="chicken_{0}".format(client.id), ingredient_group="meat"
+                name=f"chicken_{client.id}", ingredient_group="meat"
             )
             this_wine = IngredientFactory(
-                name="wine_{0}".format(client.id), ingredient_group="oils_and_sauces"
+                name=f"wine_{client.id}", ingredient_group="oils_and_sauces"
             )
 
             # add them to main_dish
@@ -914,7 +910,7 @@ class ExcludeMalconfiguredClientsTestCase(SousChefTestMixin, TestCase):
             # all special veggies, special winehaters
             this_incompatib = IncompatibilityFactory(
                 restricted_item=RestrictedItemFactory(
-                    name="veggie_{0}".format(client.id), restricted_item_group="meat"
+                    name=f"veggie_{client.id}", restricted_item_group="meat"
                 ),
                 ingredient=this_chicken,
             )
@@ -1226,7 +1222,6 @@ class RouteSheetReportTestCase(SousChefTestMixin, TestCase):
         # create history and organize clients for the non empty routes
         for route, num in route_orders_dict.items():
             if num[0] > 0:
-
                 # route has clients with orders : create delivery history
                 response = self.client.post(
                     reverse("delivery:create_delivery_of_today", args=[route.pk])

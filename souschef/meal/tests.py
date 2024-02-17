@@ -128,7 +128,6 @@ class Menu_componentTestCase(TestCase):
 
 
 class CreateMenuAndComponentsTestCase(TestCase):
-
     fixtures = ["meal_initial_data"]
 
     def test_menu_new(self):
@@ -240,7 +239,6 @@ class Restricted_itemTestCase(TestCase):
 
 
 class MealAdminTestCase(TestCase):
-
     fixtures = ["sample_data"]
 
     @classmethod

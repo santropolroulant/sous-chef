@@ -75,7 +75,7 @@ class BillingManager(models.Manager):
             return billing
 
 
-class Billing(models.Model):
+class Billing(models.Model):  # noqa: DJ008
     class Meta:
         ordering = ["-billing_year", "-billing_month"]
 
@@ -159,7 +159,6 @@ class BillingFilter(FilterSet):
         names = value.split(" ")
 
         for name in names:
-
             firstname_contains = Q(client__member__firstname__icontains=name)
 
             lastname_contains = Q(client__member__lastname__icontains=name)

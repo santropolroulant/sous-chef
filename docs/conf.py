@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Sous-chef documentation build configuration file, created by
 # sphinx-quickstart on Thu Apr 21 19:11:27 2016.

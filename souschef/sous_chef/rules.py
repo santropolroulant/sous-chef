@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import rules
 from rules.predicates import (
     is_authenticated,

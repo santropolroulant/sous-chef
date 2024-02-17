@@ -19,8 +19,7 @@ class NoteManager(models.Manager):
 
 class UnreadNoteManager(NoteManager):
     def get_queryset(self):
-
-        return super(UnreadNoteManager, self).get_queryset().filter(is_read=0)
+        return super().get_queryset().filter(is_read=0)
 
 
 class NotePriority(models.Model):
@@ -119,7 +118,6 @@ class Note(models.Model):
 
 
 class NoteFilter(FilterSet):
-
     IS_READ_CHOICES = (
         ("", "All"),
         ("1", "Yes"),

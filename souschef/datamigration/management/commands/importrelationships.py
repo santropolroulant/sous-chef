@@ -50,7 +50,6 @@ class Command(BaseCommand):
                     client = Client.objects.get(member=member)
 
                     if row[self.ROW_FIRSTNAME] != "":
-
                         relationship, created = Member.objects.update_or_create(
                             rid=row[self.ROW_RID],
                             defaults={

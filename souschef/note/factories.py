@@ -1,4 +1,3 @@
-# coding=utf-8
 import random
 
 import factory
@@ -16,7 +15,7 @@ class UserFactory(factory.DjangoModelFactory):
     class Meta:
         model = User
 
-    username = factory.Sequence(lambda x: "user{}".format(x))
+    username = factory.Sequence(lambda x: f"user{x}")
 
 
 class NoteFactory(factory.DjangoModelFactory):

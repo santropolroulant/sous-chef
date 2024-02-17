@@ -213,7 +213,7 @@ class OrderManager(models.Manager):
                 created_orders.append(order)
         return created_orders
 
-    def create_batch_orders(self, delivery_dates, client, items, override_dates=[]):
+    def create_batch_orders(self, delivery_dates, client, items, override_dates):
         """
         Create orders for one or multiple days, for a given client.
         Order items will be created based on client's meals schedule.
@@ -273,7 +273,7 @@ class OrderManager(models.Manager):
         order = Order.objects.create(client=client, delivery_date=delivery_date)
         free_side_dishes = items.get("main_dish_default_quantity") or 0
 
-        for component_group, trans in COMPONENT_GROUP_CHOICES:
+        for component_group, _trans in COMPONENT_GROUP_CHOICES:
             if component_group != COMPONENT_GROUP_CHOICES_SIDES:
                 item_qty = items.get(component_group + "_default_quantity") or 0
                 if item_qty == 0:
@@ -322,9 +322,9 @@ class OrderManager(models.Manager):
                             **common_kwargs,
                         )
 
-        for order_item_type, trans in ORDER_ITEM_TYPE_CHOICES:
+        for order_item_type, _trans in ORDER_ITEM_TYPE_CHOICES:
             if order_item_type != ORDER_ITEM_TYPE_CHOICES_COMPONENT:
-                additional = items.get("{0}_default".format(order_item_type))
+                additional = items.get(f"{order_item_type}_default")
                 if additional:
                     Order_item.objects.create(
                         order=order,
@@ -394,14 +394,14 @@ class Order(models.Model):
         """
         return ", ".join(
             [
-                "{0}x {1}".format(x.total_quantity, x.get_component_group_display())
+                f"{x.total_quantity}x {x.get_component_group_display()}"
                 for x in self.orders.all()
                 if x.order_item_type == "meal_component" or x.component_group
             ]
         )
 
     def __str__(self):
-        return "client={}, delivery_date={}".format(self.client, self.delivery_date)
+        return f"client={self.client}, delivery_date={self.delivery_date}"
 
     @staticmethod
     def get_kitchen_items(delivery_date):
@@ -636,10 +636,7 @@ class Order(models.Model):
 
     @property
     def includes_a_bill(self):
-        for item in self.orders.all():
-            if item.is_a_client_bill:
-                return True
-        return False
+        return any(item.is_a_client_bill for item in self.orders.all())
 
     @includes_a_bill.setter
     def includes_a_bill(self, value):
@@ -721,7 +718,7 @@ def sql_prep(query, valuesdict):
         if val:
             values.append(val)
         else:
-            raise Exception("Query parameter '{}' not found in values".format(n))
+            raise Exception(f"Query parameter '{n}' not found in values")
     return "".join(mod), values
 
 
@@ -1083,7 +1080,6 @@ def component_group_sorting(component):
 
 
 class OrderFilter(FilterSet):
-
     name = CharFilter(method="filter_search", label=_("Search by name"))
 
     status = ChoiceFilter(choices=(("", ""),) + ORDER_STATUS)
@@ -1112,7 +1108,6 @@ class OrderFilter(FilterSet):
 
 
 class DeliveredOrdersByMonth(FilterSet):
-
     delivery_date = CharFilter(method="filter_period")
 
     class Meta:
@@ -1189,12 +1184,8 @@ class Order_item(models.Model):
 
     def __str__(self):
         return (
-            "<For delivery on:> {} <order_item_type:>"
-            " {} <component_group:> {}".format(
-                str(self.order.delivery_date),
-                self.order_item_type,
-                self.component_group,
-            )
+            f"<For delivery on:> {str(self.order.delivery_date)} <order_item_type:>"
+            f" {self.order_item_type} <component_group:> {self.component_group}"
         )
 
     def get_billable_flag_display(self):
@@ -1259,6 +1250,6 @@ class OrderStatusChange(models.Model):
     def save(self, *a, **k):
         """Process a scheduled change when saving."""
         self.full_clean()  # we defined clean method so we need to override
-        super(OrderStatusChange, self).save(*a, **k)
+        super().save(*a, **k)
         self.order.status = self.status_to
         self.order.save()

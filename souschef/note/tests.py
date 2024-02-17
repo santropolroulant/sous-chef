@@ -15,7 +15,6 @@ from souschef.sous_chef.tests import TestMixin as SousChefTestMixin
 
 
 class NoteTestCase(TestCase):
-
     fixtures = ["routes.json"]
 
     @classmethod
@@ -174,7 +173,6 @@ class ClientNoteAddTestCase(NoteTestCase):
 
 
 class RedirectAnonymousUserTestCase(SousChefTestMixin, TestCase):
-
     fixtures = ["routes.json"]
 
     def test_anonymous_user_gets_redirect_to_login_page(self):

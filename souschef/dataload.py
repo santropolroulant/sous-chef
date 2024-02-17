@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # flake8: noqa
 
 from souschef.meal.models import (

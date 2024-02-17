@@ -29,7 +29,6 @@ from souschef.order.models import SIZE_CHOICES
 
 
 class ClientBasicInformation(forms.Form):
-
     firstname = forms.CharField(
         max_length=100,
         label=_("First Name"),
@@ -102,7 +101,6 @@ class ClientBasicInformation(forms.Form):
 
 
 class ClientAddressInformation(forms.Form):
-
     apartment = forms.CharField(
         label=_("Apt #"),
         widget=forms.TextInput(attrs={"placeholder": _("Apt #"), "class": "apartment"}),
@@ -170,17 +168,17 @@ class ClientAddressInformation(forms.Form):
 
 class ClientRestrictionsInformation(forms.Form):
     def __init__(self, *args, **kwargs):
-        super(ClientRestrictionsInformation, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
-        for day, translation in DAYS_OF_WEEK:
-            self.fields["size_{}".format(day)] = forms.ChoiceField(
+        for day, _translation in DAYS_OF_WEEK:
+            self.fields[f"size_{day}"] = forms.ChoiceField(
                 choices=SIZE_CHOICES, widget=forms.Select(), required=False
             )
 
-            for meal, meal_translation in COMPONENT_GROUP_CHOICES:
+            for meal, _meal_translation in COMPONENT_GROUP_CHOICES:
                 if meal is COMPONENT_GROUP_CHOICES_SIDES:
                     continue  # skip "Sides"
-                self.fields["{}_{}_quantity".format(meal, day)] = forms.IntegerField(
+                self.fields[f"{meal}_{day}_quantity"] = forms.IntegerField(
                     required=False, min_value=0, widget=forms.TextInput()
                 )
 
@@ -242,7 +240,7 @@ class ClientRestrictionsInformation(forms.Form):
         Regardless of meal schedules, when a main dish is set, we should
         enforce the setting of its size.
         """
-        super(ClientRestrictionsInformation, self).clean()
+        super().clean()
 
         if self.cleaned_data.get("delivery_type") == "O":
             # Ongoing
@@ -258,10 +256,10 @@ class ClientRestrictionsInformation(forms.Form):
         for day in meals_schedule:
             # At least one of the quantities should be set.
             quantity_fieldnames = []
-            for meal, meal_translation in COMPONENT_GROUP_CHOICES:
+            for meal, _meal_translation in COMPONENT_GROUP_CHOICES:
                 if meal is COMPONENT_GROUP_CHOICES_SIDES:
                     continue  # skip "Sides"
-                fieldname = "{}_{}_quantity".format(meal, day)
+                fieldname = f"{meal}_{day}_quantity"
                 quantity_fieldnames.append(fieldname)
 
             total_quantity = sum(
@@ -279,12 +277,12 @@ class ClientRestrictionsInformation(forms.Form):
                         % {"weekday": day_displays[day]},
                     )
 
-        for day, day_display in DAYS_OF_WEEK:
+        for day, _day_display in DAYS_OF_WEEK:
             # If the main dish is set, size should also be set.
             main_dish_quantity = self.cleaned_data.get(
-                "main_dish_{}_quantity".format(day)
+                f"main_dish_{day}_quantity"
             )
-            fieldname_size = "size_{}".format(day)
+            fieldname_size = f"size_{day}"
             if main_dish_quantity and not self.cleaned_data.get(fieldname_size):
                 self.add_error(
                     fieldname_size, _("Size is required when the main dish is set.")
@@ -292,7 +290,6 @@ class ClientRestrictionsInformation(forms.Form):
 
 
 class MemberForm(forms.Form):
-
     member = forms.CharField(
         label=_("Member"),
         widget=forms.TextInput(
@@ -339,7 +336,7 @@ class MemberForm(forms.Form):
     )
 
     def clean(self):
-        cleaned_data = super(MemberForm, self).clean()
+        cleaned_data = super().clean()
 
         """If the client pays for himself. """
         if cleaned_data.get("same_as_client") is True:
@@ -367,7 +364,6 @@ class MemberForm(forms.Form):
 
 
 class ClientPaymentInformation(MemberForm):
-
     facturation = forms.ChoiceField(
         label=_("Billing Type"),
         choices=RATE_TYPE,
@@ -408,7 +404,7 @@ class ClientPaymentInformation(MemberForm):
     postal_code = CAPostalCodeField(label=_("Postal Code"), required=False)
 
     def clean(self):
-        cleaned_data = super(ClientPaymentInformation, self).clean()
+        cleaned_data = super().clean()
 
         if cleaned_data.get("same_as_client") is True:
             return cleaned_data
@@ -435,7 +431,6 @@ class ClientPaymentInformation(MemberForm):
 
 
 class ClientRelationshipInformation(MemberForm):
-
     nature = forms.CharField(
         label=_("Nature of Relationship"),
         widget=forms.TextInput(
@@ -521,10 +516,11 @@ class ClientRelationshipInformation(MemberForm):
                 self.add_error("email", msg)
                 self.add_error("work_phone", msg)
                 self.add_error("cell_phone", msg)
-            if self.has_referent_relationship:
-                if not self.cleaned_data.get("work_information"):
-                    msg = _("This field is required for a referent " "relationship.")
-                    self.add_error("work_information", msg)
+            if self.has_referent_relationship and not self.cleaned_data.get(
+                "work_information"
+            ):
+                msg = _("This field is required for a referent relationship.")
+                self.add_error("work_information", msg)
 
         if self.has_referent_relationship:
             if not self.cleaned_data.get("referral_date"):
@@ -546,7 +542,7 @@ class ClientScheduledStatusForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        super(ClientScheduledStatusForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.fields["end_date"] = forms.DateField(
             required=False,
             widget=forms.TextInput(
