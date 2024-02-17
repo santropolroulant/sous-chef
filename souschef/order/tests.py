@@ -603,7 +603,7 @@ class OrderCreateBatchTestCase(SousChefTestMixin, TestCase):
         """
         client = self.episodic_client[0]
         created_orders = Order.objects.create_batch_orders(
-            self.delivery_dates, self.episodic_client[0], self.orditems
+            self.delivery_dates, self.episodic_client[0], self.orditems, []
         )
         self.assertEqual(len(created_orders), 4)
 
