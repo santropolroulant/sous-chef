@@ -21,13 +21,13 @@
 <div class="ui secondary pointing fluid menu">
     <h1 class="ui header">{% trans "Delivery routes" %}</h1>
     <div class="right menu">
-      <div class="ui item"><h3><i class="calendar icon"></i>{% now "j F Y" %}</h3></div>
+      <div class="ui item"><h3><i class="calendar icon"></i>{{ delivery_date }}</h3></div>
     </div>
 </div>
 
 <div class="row">
     <div class="column">
-        <a href="?print=yes" class="ui big labeled icon right basic pink button {% if not all_configured %}disabled{% endif %}" title="{% trans 'Download the route sheets report' %}" target="_blank">
+        <a href="?print=yes&delivery_date={{ delivery_date.isoformat }}" class="ui big labeled icon right basic pink button {% if not all_configured %}disabled{% endif %}" title="{% trans 'Download the route sheets report' %}" target="_blank">
             <i class="download icon"></i>{% trans 'Route Sheets' %}
         </a>
         <i class="help-text question pink icon link" data-content="{% trans 'This is activated after organising all deliverable routes.' %}"></i>
@@ -44,8 +44,9 @@
               {# This route has no orders. No need to display useless buttons. #}
               {% elif has_organised == 'no' %}
               {# The delivery history instance doesn't exist yet. #}
-              <form action="{% url 'delivery:create_delivery_of_today' pk=route.pk %}" method="post">
+              <form action="{% url 'delivery:create_delivery' pk=route.pk %}" method="post">
                 {% csrf_token %}
+                <input type="hidden" name="delivery_date" value="{{ delivery_date.isoformat }}">
                 <button class="ui compact labeled icon button" title="{% trans "View, adjust and confirm today's route sequence" %}">
                   <i class="marker icon"></i>{% trans 'Confirm' %}
                 </button>
@@ -55,7 +56,7 @@
               </form>
               {% elif has_organised == 'invalid' %}
               {# The client sequence of the delivery history doesn't match the orders. #}
-              <a href="{% url 'delivery:edit_delivery_of_today' pk=route.pk %}" class="ui compact labeled red icon button" title="{% trans 'Clients have changed, please reconfirm.' %}">
+              <a href="{% url 'delivery:edit_delivery_route' pk=route.pk %}?delivery_date={{ delivery_date.isoformat }}" class="ui compact labeled red icon button" title="{% trans 'Clients have changed, please reconfirm.' %}">
                   <i class="warning icon"></i>{% trans 'Modified' %}
               </a>
               <a class="ui compact labeled disabled icon button">
@@ -63,10 +64,10 @@
               </a>
               {% else %}
               {# Configured. #}
-              <a href="{% url 'delivery:edit_delivery_of_today' pk=route.pk %}" class="ui compact labeled gray icon button" title="{% trans 'View or edit the organised route' %}">
+              <a href="{% url 'delivery:edit_delivery_route' pk=route.pk %}?delivery_date={{ delivery_date.isoformat }}" class="ui compact labeled gray icon button" title="{% trans 'View or edit the organised route' %}">
                   <i class="checkmark icon"></i>{% trans 'Organised' %}
               </a>
-              <a href="{% url 'delivery:route_sheet' pk=route.pk %}" class="ui compact labeled icon button" title="{% trans 'Print the route sheet' %}">
+              <a href="{% url 'delivery:route_sheet' pk=route.pk %}?delivery_date={{ delivery_date.isoformat }}" class="ui compact labeled icon button" title="{% trans 'Print the route sheet' %}">
                   <i class="list layout icon"></i>{% trans 'Route sheet' %}
               </a>
               {% endif %}
@@ -92,7 +93,7 @@
 </div>
 
 {% if can_edit_data %}
-<a class="ui labeled icon big button" href="{% url 'delivery:kitchen_count' %}">
+<a class="ui labeled icon big button" href="{% url 'delivery:kitchen_count' %}?delivery_date={{ delivery_date.isoformat }}">
     <i class="chevron left icon"></i>{% trans "Back" %}
 </a>
 {% endif %}

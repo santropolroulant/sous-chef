@@ -13,27 +13,27 @@
 <div class="ui secondary pointing fluid menu">
     <h1 class="ui header">{% trans "Kitchen Count Report" %}</h1>
     <div class="right menu">
-      <div class="ui item"><h3><i class="calendar icon"></i>{% now "j F Y" %}</h3></div>
+      <div class="ui item"><h3><i class="calendar icon"></i>{{ delivery_date }}</h3></div>
     </div>
 </div>
 
 
 <div class="ui basic segment no-print">
     {% if num_pages > 0 %}
-      <a href="{% url 'delivery:downloadKitchenCount' %}" class="ui labeled icon right pink basic big button" title="{% trans 'Download the kitchen count report' %}">
+      <a href="{% url 'delivery:downloadKitchenCount' %}?delivery_date={{ delivery_date.isoformat }}" class="ui labeled icon right pink basic big button" title="{% trans 'Download the kitchen count report' %}">
         <i class="download icon"></i>{% trans "Kitchen Count" %}
       </a>
     {% else %}
-      <a href="{% url 'delivery:downloadKitchenCount' %}" class="ui disabled labeled icon right pink basic big button" title="{% trans 'No kitchen count report available' %}">
+      <a href="{% url 'delivery:downloadKitchenCount' %}?delivery_date={{ delivery_date.isoformat }}" class="ui disabled labeled icon right pink basic big button" title="{% trans 'No kitchen count report available' %}">
         <i class="download icon"></i>{% trans "Kitchen Count" %}
       </a>
     {% endif %}
     {% if num_labels > 0 %}
-      <a href="{% url 'delivery:mealLabels' %}" class="ui labeled icon right pink basic big button" title="{% trans 'Download the labels' %}">
+      <a href="{% url 'delivery:mealLabels' %}?delivery_date={{ delivery_date.isoformat }}" class="ui labeled icon right pink basic big button" title="{% trans 'Download the labels' %}">
          <i class="download icon"></i>{% trans "Labels" %}
       </a>
     {% else %}
-        <a href="{% url 'delivery:mealLabels' %}" class="ui disabled labeled icon right pink basic big button" title="{% trans 'No labels available' %}">
+        <a href="{% url 'delivery:mealLabels' %}?delivery_date={{ delivery_date.isoformat }}" class="ui disabled labeled icon right pink basic big button" title="{% trans 'No labels available' %}">
            <i class="download icon"></i>{% trans "Labels" %}
         </a>
     {% endif %}
@@ -98,10 +98,10 @@
 
 {% if can_edit_data %}
 <div class="actions">
-    <a class="ui labeled icon big button" href="{% url 'delivery:meal' %}">
+    <a class="ui labeled icon big button" href="{% url 'delivery:meal' %}?delivery_date={{ delivery_date.isoformat }}">
         <i class="chevron left icon"></i>{% trans "Back" %}
     </a>
-    <a class="ui labeled icon yellow big button" href="{% url 'delivery:routes' %}">
+    <a class="ui labeled icon yellow big button" href="{% url 'delivery:routes' %}?delivery_date={{ delivery_date.isoformat }}">
         <i class="chevron right icon"></i>{% trans "Next: Organize Routes" %}
     </a>
 </div>

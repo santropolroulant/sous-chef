@@ -121,18 +121,18 @@ class KitchenCountReportTestCase(SousChefTestMixin, TestCase):
                 "Day s Compote",
             ],
         )
-        response = self.client.get(reverse_lazy("delivery:kitchen_count"))
+        response = self.client.get(
+            reverse_lazy("delivery:kitchen_count"),
+            {"delivery_date": datetime.date.today()},
+        )
         self.assertTrue(b"Ground porc" in response.content)
 
     def test_no_components(self):
         """No orders on this day therefore no component summary"""
         response = self.client.get(
-            reverse_lazy(
-                "delivery:kitchen_count_date",
-                kwargs={"year": "2015", "month": "05", "day": "21"},
-            )
+            reverse("delivery:kitchen_count"),
+            {"delivery_date": "2015-05-21"},
         )
-        response = self.client.get("/delivery/kitchen_count/2015/05/21/")
         self.assertTrue(b"SUBTOTAL" not in response.content)
 
     def test_labels_show_restrictions(self):
@@ -175,8 +175,14 @@ class KitchenCountReportTestCase(SousChefTestMixin, TestCase):
             ],
         )
 
-        self.client.get(reverse_lazy("delivery:kitchen_count"))
-        response = self.client.get(reverse_lazy("delivery:mealLabels"))
+        self.client.get(
+            reverse_lazy("delivery:kitchen_count"),
+            {"delivery_date": datetime.date.today().isoformat()},
+        )
+        response = self.client.get(
+            reverse_lazy("delivery:mealLabels"),
+            {"delivery_date": datetime.date.today().isoformat()},
+        )
         self.assertTrue("ReportLab" in repr(response.content))
 
     def test_pdf_report_show_restrictions(self):
@@ -198,8 +204,14 @@ class KitchenCountReportTestCase(SousChefTestMixin, TestCase):
             ],
         )
 
-        self.client.get("/delivery/kitchen_count/")
-        response = self.client.get("/delivery/viewDownloadKitchenCount/")
+        self.client.get(
+            "/delivery/kitchen_count/",
+            {"delivery_date": datetime.date.today().isoformat()},
+        )
+        response = self.client.get(
+            "/delivery/viewDownloadKitchenCount/",
+            {"delivery_date": datetime.date.today().isoformat()},
+        )
         self.assertTrue("ReportLab" in repr(response.content))
 
 
@@ -221,7 +233,10 @@ class ChooseDayMainDishIngredientsTestCase(SousChefTestMixin, TestCase):
 
     def test_known_ingredients(self):
         """Two ingredients we know must be in the page"""
-        response = self.client.get(reverse_lazy("delivery:meal"))
+        response = self.client.get(
+            reverse_lazy("delivery:meal"),
+            {"delivery_date": datetime.date.today().isoformat()},
+        )
         self.assertTrue(
             b"Ground porc" in response.content and b"Pepper" in response.content
         )
@@ -239,8 +254,12 @@ class ChooseDayMainDishIngredientsTestCase(SousChefTestMixin, TestCase):
         req["sides_ingredients"] = [
             Ingredient.objects.filter(name="zucchini").first().id
         ]
+        req["delivery_date"] = datetime.date.today().isoformat()
         response = self.client.post(reverse_lazy("delivery:meal"), req)
-        response = self.client.get(reverse_lazy("delivery:kitchen_count"))
+        response = self.client.get(
+            reverse_lazy("delivery:kitchen_count"),
+            {"delivery_date": datetime.date.today().isoformat()},
+        )
         self.assertTrue(b"Ginger pork" in response.content)
 
     def test_remember_day_ingredients(self):
@@ -254,10 +273,17 @@ class ChooseDayMainDishIngredientsTestCase(SousChefTestMixin, TestCase):
         req["maindish"] = str(maindish.id)
         req["ingredients"] = ing_ids
         req["sides_ingredients"] = [Ingredient.objects.filter(name="Onions").first().id]
+        req["delivery_date"] = datetime.date.today().isoformat()
         response = self.client.post(reverse_lazy("delivery:meal"), req)
-        response = self.client.get(reverse_lazy("delivery:kitchen_count"))
+        response = self.client.get(
+            reverse_lazy("delivery:kitchen_count"),
+            {"delivery_date": datetime.date.today().isoformat()},
+        )
         self.assertTrue(b"Ginger pork" in response.content)
-        response = self.client.get(reverse_lazy("delivery:meal"))
+        response = self.client.get(
+            reverse_lazy("delivery:meal"),
+            {"delivery_date": datetime.date.today().isoformat()},
+        )
         self.assertTrue(b"Ginger pork" in response.content)
 
     def test_restore_dish_recipe(self):
@@ -273,14 +299,22 @@ class ChooseDayMainDishIngredientsTestCase(SousChefTestMixin, TestCase):
         req["maindish"] = str(maindish.id)
         req["ingredients"] = ing_ids + [Ingredient.objects.get(name="Pepper").id]
         req["sides_ingredients"] = [Ingredient.objects.all().first().id]
+        req["delivery_date"] = datetime.date.today().isoformat()
         response = self.client.post(reverse_lazy("delivery:meal"), req)
-        response = self.client.get(reverse_lazy("delivery:kitchen_count"))
+        response = self.client.get(
+            reverse_lazy("delivery:kitchen_count"),
+            {"delivery_date": datetime.date.today().isoformat()},
+        )
         self.assertTrue(
             b"Ginger pork" in response.content and b"Pepper" in response.content
         )
         # restore recipe
         response = self.client.post(
-            reverse_lazy("delivery:meal"), {"_restore": "Restore recipe"}
+            reverse_lazy("delivery:meal"),
+            {
+                "_restore": "Restore recipe",
+                "delivery_date": datetime.date.today().isoformat(),
+            },
         )
         # update ingredients
         req = {}
@@ -288,9 +322,13 @@ class ChooseDayMainDishIngredientsTestCase(SousChefTestMixin, TestCase):
         req["maindish"] = str(maindish.id)
         req["ingredients"] = ing_ids
         req["sides_ingredients"] = [Ingredient.objects.all().first().id]
+        req["delivery_date"] = datetime.date.today().isoformat()
         response = self.client.post(reverse_lazy("delivery:meal"), req)
         # check that we have Ginger pork with no Pepper in Kitchen count
-        response = self.client.get(reverse_lazy("delivery:kitchen_count"))
+        response = self.client.get(
+            reverse_lazy("delivery:kitchen_count"),
+            {"delivery_date": datetime.date.today().isoformat()},
+        )
         self.assertTrue(
             b"Ginger pork" in response.content and b"Pepper" not in response.content
         )
@@ -307,8 +345,12 @@ class ChooseDayMainDishIngredientsTestCase(SousChefTestMixin, TestCase):
         req["maindish"] = str(maindish.id)
         req["ingredients"] = ing_ids
         req["sides_ingredients"] = [Ingredient.objects.all().first().id]
+        req["delivery_date"] = datetime.date.today().isoformat()
         response = self.client.post(reverse_lazy("delivery:meal"), req)
-        response = self.client.get(reverse_lazy("delivery:kitchen_count"))
+        response = self.client.get(
+            reverse_lazy("delivery:kitchen_count"),
+            {"delivery_date": datetime.date.today().isoformat()},
+        )
         self.assertTrue(b"Coq au vin" in response.content)
 
     def test_post_invalid_form(self):
@@ -317,6 +359,7 @@ class ChooseDayMainDishIngredientsTestCase(SousChefTestMixin, TestCase):
         req = {}
         req["_update"] = "Next: Print Kitchen Count"
         req["maindish"] = "wrong"
+        req["delivery_date"] = datetime.date.today().isoformat()
         response = self.client.post(reverse_lazy("delivery:meal"), req)
 
         self.assertIn(
@@ -333,7 +376,10 @@ class ChooseDayMainDishIngredientsTestCase(SousChefTestMixin, TestCase):
         o.save()
         response = self.client.get(reverse("delivery:order"))
         self.assertNotIn(b'<i class="warning sign red icon"></i>', response.content)
-        response = self.client.get(reverse("delivery:refresh_orders"))
+        response = self.client.post(
+            reverse("delivery:refresh_orders"),
+            {"generateOrderDate": datetime.date.today().isoformat()},
+        )
         self.assertNotIn(b'<i class="warning sign red icon"></i>', response.content)
 
     def test_no_route_error(self):
@@ -343,9 +389,15 @@ class ChooseDayMainDishIngredientsTestCase(SousChefTestMixin, TestCase):
         c = o.client
         c.route = None
         c.save()
-        response = self.client.get(reverse("delivery:order"))
+        response = self.client.get(
+            reverse("delivery:order"),
+            {"delivery_date": datetime.date.today().isoformat()},
+        )
         self.assertIn(b'<i class="warning sign red icon"></i>', response.content)
-        response = self.client.get(reverse("delivery:refresh_orders"))
+        response = self.client.post(
+            reverse("delivery:refresh_orders"),
+            {"generateOrderDate": datetime.date.today().isoformat()},
+        )
         self.assertIn(b'<i class="warning sign red icon"></i>', response.content)
 
     def test_not_geolocalized_error(self):
@@ -356,9 +408,15 @@ class ChooseDayMainDishIngredientsTestCase(SousChefTestMixin, TestCase):
         c.member.address.latitude = None
         c.member.address.longitude = None
         c.member.address.save()
-        response = self.client.get(reverse("delivery:order"))
+        response = self.client.get(
+            reverse("delivery:order"),
+            {"delivery_date": datetime.date.today().isoformat()},
+        )
         self.assertIn(b'<i class="warning sign red icon"></i>', response.content)
-        response = self.client.get(reverse("delivery:refresh_orders"))
+        response = self.client.post(
+            reverse("delivery:refresh_orders"),
+            {"generateOrderDate": datetime.date.today().isoformat()},
+        )
         self.assertIn(b'<i class="warning sign red icon"></i>', response.content)
 
     def test_redirects_users_who_do_not_have_read_permission(self):
@@ -381,7 +439,10 @@ class ChooseDayMainDishIngredientsTestCase(SousChefTestMixin, TestCase):
         self.client.login(username="foo", password="secure")
         url = reverse("delivery:meal")
         # Run
-        response = self.client.get(url)
+        response = self.client.get(
+            url,
+            {"delivery_date": datetime.date.today().isoformat()},
+        )
         # Check
         self.assertEqual(response.status_code, 200)
 
@@ -397,7 +458,10 @@ class ChooseDayMainDishIngredientsTestCase(SousChefTestMixin, TestCase):
         self.client.login(username="foo", password="secure")
         url = reverse("delivery:meal")
         # Run
-        response = self.client.get(url)
+        response = self.client.get(
+            url,
+            {"delivery_date": datetime.date.today().isoformat()},
+        )
         # Check
         for field in response.context["form"]:
             assert field.field.disabled
@@ -414,7 +478,10 @@ class ChooseDayMainDishIngredientsTestCase(SousChefTestMixin, TestCase):
         self.client.login(username="foo", password="secure")
         url = reverse("delivery:meal")
         # Run
-        response = self.client.post(url)
+        response = self.client.post(
+            url,
+            {"delivery_date": datetime.date.today().isoformat()},
+        )
         # Check
         self.assertEqual(response.status_code, 403)
 
@@ -459,7 +526,8 @@ class DeliveryRouteSheetTestCase(SousChefTestMixin, TestCase):
             route=route, date=tz.datetime.today(), client_id_sequence=[client.id]
         )
         response = self.client.get(
-            reverse_lazy("delivery:route_sheet", args=[self.route_id])
+            reverse_lazy("delivery:route_sheet", args=[self.route_id]),
+            {"delivery_date": datetime.date.today().isoformat()},
         )
         self.assertTrue(b"Blondin" in response.content)
 
@@ -486,7 +554,10 @@ class DeliveryRouteSheetTestCase(SousChefTestMixin, TestCase):
         )
         url = reverse("delivery:route_sheet", args=[self.route_id])
         # Run
-        response = self.client.get(url)
+        response = self.client.get(
+            url,
+            {"delivery_date": datetime.date.today().isoformat()},
+        )
         # Check
         self.assertEqual(response.status_code, 200)
 
@@ -503,12 +574,6 @@ class RedirectAnonymousUserTestCase(SousChefTestMixin, TestCase):
         check(reverse("delivery:meal_id", kwargs={"id": meal_id}))
         check(reverse("delivery:routes"))
         check(reverse("delivery:kitchen_count"))
-        check(
-            reverse(
-                "delivery:kitchen_count_date",
-                kwargs={"year": 2016, "month": 11, "day": 30},
-            )
-        )
         check(reverse("delivery:mealLabels"))
         check(reverse("delivery:route_sheet", kwargs={"pk": 1}))
         check(reverse("delivery:refresh_orders"))
@@ -605,8 +670,14 @@ class RoutesInformationViewTestCase(SousChefTestMixin, TestCase):
         # Setup
         url = reverse("delivery:routes")
         # Run
-        response_1 = self.client.get(url)
-        response_2 = self.client.get(url, {"print": "yes"})
+        response_1 = self.client.get(
+            url,
+            {"delivery_date": datetime.date.today().isoformat()},
+        )
+        response_2 = self.client.get(
+            url,
+            {"print": "yes", "delivery_date": datetime.date.today().isoformat()},
+        )
         # Check
         self.assertNotIn("routes_dict", response_1)
         self.assertIn("routes_dict", response_2)
@@ -631,7 +702,10 @@ class RoutesInformationViewTestCase(SousChefTestMixin, TestCase):
         self.client.login(username="foo", password="secure")
         url = reverse("delivery:routes")
         # Run
-        response = self.client.get(url)
+        response = self.client.get(
+            url,
+            {"delivery_date": datetime.date.today().isoformat()},
+        )
         # Check
         self.assertEqual(response.status_code, 200)
 
@@ -681,7 +755,10 @@ class KitchenCountViewTestCase(SousChefTestMixin, TestCase):
         ci.save()
 
         # Run
-        response = self.client.get(url)
+        response = self.client.get(
+            url,
+            {"delivery_date": datetime.date.today().isoformat()},
+        )
         # Check
         self.assertEqual(response.status_code, 200)
 
@@ -709,7 +786,10 @@ class MealLabelsViewTestCase(SousChefTestMixin, TestCase):
         self.client.login(username="foo", password="secure")
         url = reverse("delivery:mealLabels")
         # Run
-        response = self.client.get(url)
+        response = self.client.get(
+            url,
+            {"delivery_date": datetime.date.today().isoformat()},
+        )
         # Check
         self.assertEqual(response.status_code, 200)
 
@@ -736,7 +816,10 @@ class RefreshOrderViewTestCase(SousChefTestMixin, TestCase):
         self.client.login(username="foo", password="secure")
         url = reverse("delivery:refresh_orders")
         # Run
-        response = self.client.get(url)
+        response = self.client.post(
+            url,
+            {"generateOrderDate": datetime.date.today().isoformat()},
+        )
         # Check
         self.assertEqual(response.status_code, 200)
 
@@ -781,22 +864,24 @@ class RefreshOrderViewTestCase(SousChefTestMixin, TestCase):
 
         self.force_login()
         url = reverse("delivery:refresh_orders")
-        response = self.client.get(url)
+        response = self.client.post(
+            url, {"generateOrderDate": datetime.date.today().isoformat()}
+        )
         self.assertEqual(response.status_code, 200)
 
         self.assertEqual(Order.objects.all().count(), 0)  # No order should be created.
 
 
-class ExcludeMalconfiguredClientsTestCase(SousChefTestMixin, TestCase):
+class ExcludeMisconfiguredClientsTestCase(SousChefTestMixin, TestCase):
     """
     Test 4 clients:
     - c_valid: correctly configured
                id==10, avoid veggie_10->chicken_10, avoid wine_10
-    - c_nr:    malconfigured: route==None
+    - c_nr:    misconfigured: route==None
                id==20, avoid veggie_20->chicken_20, avoid wine_20
-    - c_ng:    malconfigured: not .isgeolocalized
+    - c_ng:    misconfigured: not .isgeolocalized
                id==30, avoid veggie_30->chicken_30, avoid wine_30
-    - c_nrng:  malconfigured: route==None and not .isgeolocalized
+    - c_nrng:  misconfigured: route==None and not .isgeolocalized
                id==40, avoid veggie_40->chicken_40, avoid wine_40
 
     Test meal = chicken_10 + wine_10 + chicken_20 + wine_20 + ...
@@ -927,7 +1012,10 @@ class ExcludeMalconfiguredClientsTestCase(SousChefTestMixin, TestCase):
         self.force_login()
 
     def _refresh_orders(self):
-        return self.client.get(reverse("delivery:refresh_orders"))
+        return self.client.post(
+            reverse("delivery:refresh_orders"),
+            {"generateOrderDate": datetime.date.today().isoformat()},
+        )
 
     def _today_meal(self):
         return self.client.post(
@@ -942,11 +1030,15 @@ class ExcludeMalconfiguredClientsTestCase(SousChefTestMixin, TestCase):
                 "sides_ingredients": map(
                     lambda ingred: str(ingred.id), self.ingred_chickens
                 ),
+                "delivery_date": datetime.date.today().isoformat(),
             },
         )
 
     def test_step_1__review_orders(self):
-        response = self.client.get(reverse("delivery:order"))
+        response = self.client.get(
+            reverse("delivery:order"),
+            {"delivery_date": datetime.date.today().isoformat()},
+        )
         self.assertEqual(len(response.context["orders"]), 0)
         self.assertEqual(
             response.content.count(b'<i class="warning sign red icon"></i>'), 0
@@ -961,8 +1053,15 @@ class ExcludeMalconfiguredClientsTestCase(SousChefTestMixin, TestCase):
     def test_step_3__component_table(self):
         _ = self._refresh_orders()
         response = self._today_meal()
-        self.assertRedirects(response, reverse("delivery:meal"))
-        response = self.client.get(reverse("delivery:kitchen_count"))
+        self.assertRedirects(
+            response,
+            reverse("delivery:meal")
+            + f"?delivery_date={datetime.date.today().isoformat()}",
+        )
+        response = self.client.get(
+            reverse("delivery:kitchen_count"),
+            {"delivery_date": datetime.date.today().isoformat()},
+        )
         component_lines = response.context["component_lines"]
         main_dish_component_line = next(
             cl
@@ -976,8 +1075,15 @@ class ExcludeMalconfiguredClientsTestCase(SousChefTestMixin, TestCase):
     def test_step_3__clashing_ingredients_restrictions_table(self):
         _ = self._refresh_orders()
         response = self._today_meal()
-        self.assertRedirects(response, reverse("delivery:meal"))
-        response = self.client.get(reverse("delivery:kitchen_count"))
+        self.assertRedirects(
+            response,
+            reverse("delivery:meal")
+            + f"?delivery_date={datetime.date.today().isoformat()}",
+        )
+        response = self.client.get(
+            reverse("delivery:kitchen_count"),
+            {"delivery_date": datetime.date.today().isoformat()},
+        )
         meal_lines = response.context["meal_lines"]
 
         # contains c_valid (10)
@@ -1042,8 +1148,15 @@ class ExcludeMalconfiguredClientsTestCase(SousChefTestMixin, TestCase):
     def test_step_3__labels(self):
         _ = self._refresh_orders()
         response = self._today_meal()
-        self.assertRedirects(response, reverse("delivery:meal"))
-        response = self.client.get(reverse("delivery:kitchen_count"))
+        self.assertRedirects(
+            response,
+            reverse("delivery:meal")
+            + f"?delivery_date={datetime.date.today().isoformat()}",
+        )
+        response = self.client.get(
+            reverse("delivery:kitchen_count"),
+            {"delivery_date": datetime.date.today().isoformat()},
+        )
         num_labels = response.context["num_labels"]
         self.assertEqual(num_labels, 1)  # only c_valid
 
@@ -1055,7 +1168,10 @@ class ExcludeMalconfiguredClientsTestCase(SousChefTestMixin, TestCase):
         """
         _ = self._refresh_orders()
         _ = self._today_meal()
-        response = self.client.get(reverse("delivery:routes"))
+        response = self.client.get(
+            reverse("delivery:routes"),
+            {"delivery_date": datetime.date.today().isoformat()},
+        )
         route_orders_tuples = response.context["route_details"]
         route_orders_dict = dict(map(lambda t: (t[0], t[1:]), route_orders_tuples))
         self.assertIn(self.route1, route_orders_dict)
@@ -1075,15 +1191,20 @@ class ExcludeMalconfiguredClientsTestCase(SousChefTestMixin, TestCase):
             ).exists()
         )
         # Assert print doesn't work
-        response = self.client.get(reverse("delivery:routes"), {"print": "yes"})
+        response = self.client.get(
+            reverse("delivery:routes"),
+            {"print": "yes", "delivery_date": datetime.date.today().isoformat()},
+        )
         self.assertEqual(response.status_code, 404)
         # Assert route sheets don't exist
         response = self.client.get(
-            reverse("delivery:route_sheet", args=[self.route1.pk])
+            reverse("delivery:route_sheet", args=[self.route1.pk]),
+            {"delivery_date": datetime.date.today().isoformat()},
         )
         self.assertEqual(response.status_code, 404)
         response = self.client.get(
-            reverse("delivery:route_sheet", args=[self.route2.pk])
+            reverse("delivery:route_sheet", args=[self.route2.pk]),
+            {"delivery_date": datetime.date.today().isoformat()},
         )
         self.assertEqual(response.status_code, 404)
 
@@ -1096,7 +1217,10 @@ class ExcludeMalconfiguredClientsTestCase(SousChefTestMixin, TestCase):
             client_id_sequence=[999999, 888888, self.c_valid.pk],
         )
         # Assert print doesn't work
-        response = self.client.get(reverse("delivery:routes"), {"print": "yes"})
+        response = self.client.get(
+            reverse("delivery:routes"),
+            {"print": "yes", "delivery_date": datetime.date.today().isoformat()},
+        )
         self.assertEqual(response.status_code, 404)
 
     def test_step_4__routes_after_organizing(self):
@@ -1107,10 +1231,13 @@ class ExcludeMalconfiguredClientsTestCase(SousChefTestMixin, TestCase):
         _ = self._today_meal()
         # Work on Route 1
         response = self.client.post(
-            reverse("delivery:create_delivery_of_today", args=[self.route1.pk])
+            reverse("delivery:create_delivery", args=[self.route1.pk]),
+            {"delivery_date": datetime.date.today().isoformat()},
         )
         self.assertRedirects(
-            response, reverse("delivery:edit_delivery_of_today", args=[self.route1.pk])
+            response,
+            reverse("delivery:edit_delivery_route", args=[self.route1.pk])
+            + f"?delivery_date={datetime.date.today().isoformat()}",
         )
         self.assertTrue(
             DeliveryHistory.objects.filter(
@@ -1118,26 +1245,36 @@ class ExcludeMalconfiguredClientsTestCase(SousChefTestMixin, TestCase):
             ).exists()
         )
         response = self.client.get(
-            reverse("delivery:edit_delivery_of_today", args=[self.route1.pk])
+            reverse("delivery:edit_delivery_route", args=[self.route1.pk]),
+            {"delivery_date": datetime.date.today().isoformat()},
         )
         self.assertEqual(response.status_code, 200)
         response = self.client.post(
-            reverse("delivery:edit_delivery_of_today", args=[self.route1.pk]),
+            reverse("delivery:edit_delivery_route", args=[self.route1.pk]),
             {
+                "delivery_date": datetime.date.today().isoformat(),
                 "vehicle": "walking",
                 "comments": "My bicycle is broken",
                 "client_id_sequence": json.dumps([self.c_valid.pk]),
             },
         )
-        self.assertRedirects(response, reverse("delivery:routes"))
+        self.assertRedirects(
+            response,
+            reverse("delivery:routes")
+            + f"?delivery_date={datetime.date.today().isoformat()}",
+        )
 
         # Assert configured because Route 2 is empty.
-        response = self.client.get(reverse("delivery:routes"))
+        response = self.client.get(
+            reverse("delivery:routes"),
+            {"delivery_date": datetime.date.today().isoformat()},
+        )
         self.assertTrue(response.context["all_configured"])
 
         # Assert Route 2 doesn't allow the creation of delivery
         response = self.client.post(
-            reverse("delivery:create_delivery_of_today", args=[self.route2.pk])
+            reverse("delivery:create_delivery", args=[self.route2.pk]),
+            {"delivery_date": datetime.date.today().isoformat()},
         )
         self.assertEqual(response.status_code, 404)
         self.assertFalse(
@@ -1146,16 +1283,21 @@ class ExcludeMalconfiguredClientsTestCase(SousChefTestMixin, TestCase):
             ).exists()
         )
         response = self.client.get(
-            reverse("delivery:edit_delivery_of_today", args=[self.route2.pk])
+            reverse("delivery:edit_delivery_route", args=[self.route2.pk]),
+            {"delivery_date": datetime.date.today().isoformat()},
         )
         self.assertEqual(response.status_code, 404)
         response = self.client.post(
-            reverse("delivery:edit_delivery_of_today", args=[self.route2.pk])
+            reverse("delivery:edit_delivery_route", args=[self.route2.pk]),
+            {"delivery_date": datetime.date.today().isoformat()},
         )
         self.assertEqual(response.status_code, 404)
 
         # Assert print works
-        response = self.client.get(reverse("delivery:routes"), {"print": "yes"})
+        response = self.client.get(
+            reverse("delivery:routes"),
+            {"delivery_date": datetime.date.today().isoformat(), "print": "yes"},
+        )
         self.assertEqual(response.status_code, 200)
         # Check print result
         routes_dict = json.loads(response["routes_dict"])
@@ -1173,7 +1315,8 @@ class ExcludeMalconfiguredClientsTestCase(SousChefTestMixin, TestCase):
         # Assert route sheets exist and check route sheets
         # Route 1
         response1 = self.client.get(
-            reverse("delivery:route_sheet", args=[self.route1.pk])
+            reverse("delivery:route_sheet", args=[self.route1.pk]),
+            {"delivery_date": datetime.date.today().isoformat()},
         )
         self.assertEqual(response1.status_code, 200)
         # 1 dessert 1 L main_dish
@@ -1195,7 +1338,8 @@ class ExcludeMalconfiguredClientsTestCase(SousChefTestMixin, TestCase):
 
         # Route 2 - not found
         response2 = self.client.get(
-            reverse("delivery:route_sheet", args=[self.route2.pk])
+            reverse("delivery:route_sheet", args=[self.route2.pk]),
+            {"delivery_date": datetime.date.today().isoformat()},
         )
         self.assertEqual(response2.status_code, 404)
 
@@ -1212,7 +1356,9 @@ class RouteSheetReportTestCase(SousChefTestMixin, TestCase):
         Order.objects.auto_create_orders(datetime.date.today(), Client.active.all())
 
         # list all the routes
-        response = self.client.get(reverse("delivery:routes"))
+        response = self.client.get(
+            reverse("delivery:routes"), {"delivery_date": datetime.date.today()}
+        )
         self.assertEqual(response.status_code, 200)
         # get details of each route : {route:(order_count, ...), ...}
         route_orders_dict = dict(
@@ -1224,16 +1370,19 @@ class RouteSheetReportTestCase(SousChefTestMixin, TestCase):
             if num[0] > 0:
                 # route has clients with orders : create delivery history
                 response = self.client.post(
-                    reverse("delivery:create_delivery_of_today", args=[route.pk])
+                    reverse("delivery:create_delivery", args=[route.pk]),
+                    {"delivery_date": datetime.date.today().isoformat()},
                 )
                 self.assertRedirects(
                     response,
-                    reverse("delivery:edit_delivery_of_today", args=[route.pk]),
+                    reverse("delivery:edit_delivery_route", args=[route.pk])
+                    + f"?delivery_date={datetime.date.today().isoformat()}",
                 )
 
                 # get the clients in the route
                 response = self.client.get(
-                    reverse("delivery:edit_delivery_of_today", args=[route.pk])
+                    reverse("delivery:edit_delivery_route", args=[route.pk]),
+                    {"delivery_date": datetime.date.today()},
                 )
                 self.assertEqual(response.status_code, 200)
                 client_pks = [
@@ -1242,16 +1391,27 @@ class RouteSheetReportTestCase(SousChefTestMixin, TestCase):
 
                 # organize the clients in the route
                 response = self.client.post(
-                    reverse("delivery:edit_delivery_of_today", args=[route.pk]),
+                    reverse("delivery:edit_delivery_route", args=[route.pk]),
                     {
                         "vehicle": "walking",
                         "comments": "Nice day !",
                         "client_id_sequence": json.dumps(client_pks),
+                        "delivery_date": datetime.date.today().isoformat(),
                     },
                 )
-                self.assertRedirects(response, reverse("delivery:routes"))
+                self.assertRedirects(
+                    response,
+                    reverse("delivery:routes")
+                    + f"?delivery_date={datetime.date.today().isoformat()}",
+                )
 
         # generate the PDF route sheets of all the routes
-        response = self.client.get(reverse("delivery:routes"), {"print": "yes"})
+        response = self.client.get(
+            reverse("delivery:routes"),
+            {
+                "print": "yes",
+                "delivery_date": datetime.date.today().isoformat(),
+            },
+        )
         self.assertEqual(response.status_code, 200)
         self.assertTrue("ReportLab" in repr(response.content))
