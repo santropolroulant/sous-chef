@@ -5,7 +5,7 @@
 {% load static %}
 {% load rules %}
 
-{% block title %}{% trans "Edit today's delivery:" %}: {{ delivery_history.route.name }} {% endblock %}
+{% block title %}{% trans "Edit delivery:" %}: {{ delivery_history.route.name }} {% endblock %}
 
 {% block extrahead %}
     {% load leaflet_tags %}
@@ -19,9 +19,9 @@
 {% include 'kitchen_count_steps.html' with step='routes' %}
 
 <div class="ui secondary pointing fluid menu">
-    <h1 class="ui header">{% trans "Edit today's delivery:" %} {{ delivery_history.route.name }} </h1>
+    <h1 class="ui header">{% trans "Edit delivery:" %} {{ delivery_history.route.name }} </h1>
     <div class="right menu">
-      <div class="ui item"><h3><i class="calendar icon"></i>{% now "j F Y" %}</h3></div>
+      <div class="ui item"><h3><i class="calendar icon"></i>{{ delivery_date }}</h3></div>
     </div>
 </div>
 
@@ -173,8 +173,9 @@
     </div>
 
     <div class="ui row">
+      <input type="hidden" name="delivery_date" value="{{ delivery_date.isoformat }}">
       <button class="ui big yellow button" type="submit">{% trans "Save" %}</button>
-      <a href="{% url 'delivery:routes' %}" class="ui big gray button">
+      <a href="{% url 'delivery:routes' %}?delivery_date={{ delivery_date.isoformat }}" class="ui big gray button">
         {% trans 'Cancel' %}
       </a>
     </div>

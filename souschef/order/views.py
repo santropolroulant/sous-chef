@@ -251,7 +251,6 @@ class CreateOrdersBatch(LoginRequiredMixin, PermissionRequiredMixin, generic.For
                     invalid_date = next(
                         date for date in context["accordions_inactive"] if date in field
                     )
-                    print(invalid_date)
                     context["accordions_inactive"].remove(invalid_date)
                 except StopIteration:
                     pass

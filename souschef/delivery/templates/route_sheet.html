@@ -11,9 +11,9 @@
 {% include 'kitchen_count_steps.html' with step='delivery_sheet' %}
 
 <div class="ui secondary pointing fluid menu">
-    <h1 class="ui header">Route Sheet for : {{route.name}}</h1>
+    <h1 class="ui header">Route Sheet for: {{route.name}}</h1>
     <div class="right menu">
-      <div class="ui item"><h3><i class="calendar icon"></i>{% now "j F Y" %}</h3></div>
+      <div class="ui item"><h3><i class="calendar icon"></i>{{ delivery_date }}</h3></div>
     </div>
 </div>
 
@@ -95,7 +95,7 @@
 </table>
 
 <div class="actions">
-  <a href="{% url 'delivery:routes' %}" class="ui big labeled {% if orders == 0 %} disabled {% endif %} icon button" title="{% trans 'View routes list' %}">
+  <a href="{% url 'delivery:routes' %}?delivery_date={{ delivery_date.isoformat }}" class="ui big labeled {% if orders == 0 %} disabled {% endif %} icon button" title="{% trans 'View routes list' %}">
     <i class="chevron left icon"></i>{% trans 'View routes' %}
   </a>
 </div>

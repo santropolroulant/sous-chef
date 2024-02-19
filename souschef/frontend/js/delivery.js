@@ -57,17 +57,35 @@ $(function() {
 
     $('.button.orders').click(function(){
         $('.button.orders i').addClass('loading');
+        var csrfToken = $("[name=csrfmiddlewaretoken]").val();
+        var generateOrderDate = $("[name=generate_order_date]").val();
         $.ajax({
-            type: 'GET',
+            type: 'POST',
             url: $(this).attr('data-url'),
-            success: function (xhr, ajaxOptions, thrownError) {
-                $("#generated-orders").html(xhr);
-                enableGeneratedOrdersCancelButton();
-                var count = $("#generated-orders-table tbody tr").length;
-                $('.orders-count span').html(count);
-                $('.orders-count').attr('data-order-count', count);
-                $('.button.orders i').removeClass('loading');
+            headers: {
+              'X-CSRFToken': csrfToken,
             },
+            data: {
+              'generateOrderDate': generateOrderDate,
+            },
+            success: function (xhr, ajaxOptions, thrownError) {
+              $('#generate-orders-error-message-content').text('');
+              $('#generate-orders-error-message').hide();
+              $("#generated-orders").html(xhr);
+              enableGeneratedOrdersCancelButton();
+              var count = $("#generated-orders-table tbody tr").length;
+              $('.orders-count span').html(count);
+              $('.orders-count').attr('data-order-count', count);
+              $('.button.orders i').removeClass('loading');
+            },
+            error: function (xhr, textStatus, errorThrown) {
+              console.log('error!');
+              console.log(textStatus);
+              console.log(errorThrown);
+              $('#generate-orders-error-message-content').text(errorThrown);
+              $('#generate-orders-error-message').show();
+              $('.button.orders i').removeClass('loading');
+            }
         });
     });
 
@@ -83,5 +101,22 @@ $(function() {
             }
         });
         $(self).attr('disabled', 'disabled');
+    });
+
+    var today = new Date();
+
+    $('#generate_order_date_calendar').calendar({
+      type: 'date',
+      minDate: today,
+      formatter: {
+          date: function (date, settings) {
+              return date ? dateFormat(date, 'yyyy-mm-dd') : '';
+          }
+      },
+      onChange: function(date, text, mode) {
+        if (date) {
+          window.location = "/delivery/order/?delivery_date=" + dateFormat(date, 'yyyy-mm-dd');
+        }
+      },
     });
 });

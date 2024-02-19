@@ -13,7 +13,7 @@
 <div class="ui secondary pointing fluid menu">
     <h1 class="ui header">{% trans "Pick ingredients" %}</h1>
     <div class="right menu">
-        <div class="ui item"><h3><i class="calendar icon"></i>{% now "j F Y" %}</h3></div>
+        <div class="ui item"><h3><i class="calendar icon"></i>{{ delivery_date }}</h3></div>
     </div>
 </div>
 
@@ -77,11 +77,12 @@
 
         {% if can_edit_data %}
         <div class="actions">
-          <a class="ui labeled icon big button" href="{% url 'delivery:order' %}">
+          <a class="ui labeled icon big button" href="{% url 'delivery:order' %}?delivery_date={{ delivery_date.isoformat }}">
             <i class="chevron left icon"></i>{% trans "Back" %}
           </a>
+          <input type="hidden" name="delivery_date" value="{{ delivery_date.isoformat }}">
           <input class="ui big yellow button confirmingredients {% if not ingredients_changed %}disabled{% endif %}" type="submit" value="{% trans "Confirm all ingredients" %}" name="_update" />
-          <a class="ui labeled icon yellow big button nextkitchencount {% if ingredients_changed %}disabled{% endif %}" href="{% url 'delivery:kitchen_count' %}">
+          <a class="ui labeled icon yellow big button nextkitchencount {% if ingredients_changed %}disabled{% endif %}" href="{% url 'delivery:kitchen_count' %}?delivery_date={{ delivery_date.isoformat }}">
             <i class="chevron right icon"></i>{% trans "Next: Print Kitchen Count" %}
           </a>
         </div>

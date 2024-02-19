@@ -1,9 +1,8 @@
 import collections
-import datetime
 import json
 import os
 import textwrap
-from datetime import date
+from datetime import date, datetime
 from shutil import copyfile
 
 import labels  # package pylabels
@@ -29,7 +28,6 @@ from django.urls import (
     reverse,
     reverse_lazy,
 )
-from django.utils import timezone
 from django.utils.translation import ugettext
 from django.utils.translation import ugettext_lazy as _
 from django.views import generic
@@ -82,9 +80,11 @@ LOGO_IMAGE = os.path.join(
 DELIVERY_STARTING_POINT_LAT_LONG = (45.516564, -73.575145)  # Santropol Roulant
 
 
-def get_orders_for_kitchen_count(order_statuses):
+def get_orders_for_kitchen_count(order_statuses, delivery_date=None):
     return (
-        Order.objects.get_orders(order_statuses=order_statuses)
+        Order.objects.get_orders(
+            delivery_date=delivery_date, order_statuses=order_statuses
+        )
         .order_by("client__route__pk", "pk")
         .prefetch_related("orders")
         .select_related("client__member", "client__route", "client__member__address")
@@ -108,9 +108,10 @@ def get_has_orders_in_status(orders, status):
     return get_number_of_orders_in_status(orders, status) > 0
 
 
-def get_kitchen_count_context():
+def get_kitchen_count_context(delivery_date):
     orders = get_orders_for_kitchen_count(
-        (ORDER_STATUS_ORDERED, ORDER_STATUS_CANCELLED)
+        delivery_date=delivery_date,
+        order_statuses=(ORDER_STATUS_ORDERED, ORDER_STATUS_CANCELLED),
     )
 
     return {
@@ -125,7 +126,7 @@ def get_kitchen_count_context():
     }
 
 
-class Orderlist(LoginRequiredMixin, PermissionRequiredMixin, FilterView):
+class ReviewOrders(LoginRequiredMixin, PermissionRequiredMixin, FilterView):
     # Display all the order on a given day
     context_object_name = "orders"
     filterset_class = KitchenCountOrderFilter
@@ -133,9 +134,15 @@ class Orderlist(LoginRequiredMixin, PermissionRequiredMixin, FilterView):
     permission_required = "sous_chef.read"
     template_name = "review_orders.html"
 
+    def get(self, request, *args, **kwargs):
+        self._delivery_date = None
+        if "delivery_date" in request.GET:
+            self._delivery_date = date.fromisoformat(request.GET.get("delivery_date"))
+        return super().get(request, *args, **kwargs)
+
     def get_queryset(self):
         return get_orders_for_kitchen_count(
-            (ORDER_STATUS_ORDERED, ORDER_STATUS_CANCELLED)
+            (ORDER_STATUS_ORDERED, ORDER_STATUS_CANCELLED), self._delivery_date
         )
 
     def get_context_data(self, **kwargs):
@@ -156,16 +163,23 @@ class Orderlist(LoginRequiredMixin, PermissionRequiredMixin, FilterView):
         context["nb_of_ordered_orders"] = get_number_of_orders_in_status(
             context["orders"], ORDER_STATUS_ORDERED
         )
-        print(context)
+        context["delivery_date"] = self._delivery_date
+        context["delivery_date_iso"] = (
+            self._delivery_date and self._delivery_date.isoformat() or ""
+        )
         return context
 
 
 class MealInformation(LoginRequiredMixin, PermissionRequiredMixin, generic.View):
-    # Choose today's main dish and its ingredients
+    # Choose the main dish and its ingredients
     permission_required = "sous_chef.read"
 
     def get(self, request, **kwargs):
-        # Display today's main dish and its ingredients
+        """Display main dish and its ingredients."""
+
+        if not request.GET.get("delivery_date"):
+            raise Http404("delivery_date parameter missing")
+        delivery_date = date.fromisoformat(request.GET["delivery_date"])
 
         #  get sides component
         try:
@@ -175,29 +189,28 @@ class MealInformation(LoginRequiredMixin, PermissionRequiredMixin, generic.View)
         except Component.DoesNotExist as e:
             raise Exception(
                 "The database must contain exactly one component "
-                + "having 'Component group' = 'Sides' "
+                + "having 'Component group' = 'Sides'."
             ) from e
 
-        date = datetime.date.today()
         main_dishes = Component.objects.order_by(Lower("name")).filter(
             component_group=COMPONENT_GROUP_CHOICES_MAIN_DISH
         )
 
         if "id" in kwargs:
-            # today's main dish has been chosen by user (onchange)
+            # main dish has been chosen by user (onchange)
             main_dish = Component.objects.get(id=int(kwargs["id"]))
             # delete all existing ingredients for the date except for sides
-            Component_ingredient.objects.filter(date=date).exclude(
+            Component_ingredient.objects.filter(date=delivery_date).exclude(
                 component=sides_component
             ).delete()
         else:
-            # see if a menu exists for today
+            # see if a menu exists for that date
             menu_comps = Menu_component.objects.filter(
-                menu__date=date,
+                menu__date=delivery_date,
                 component__component_group=COMPONENT_GROUP_CHOICES_MAIN_DISH,
             )
             if menu_comps:  # noqa: SIM108
-                # main dish is known in today's menu
+                # main dish is known in the menu
                 main_dish = menu_comps[0].component
             else:
                 # take first main dish
@@ -205,9 +218,11 @@ class MealInformation(LoginRequiredMixin, PermissionRequiredMixin, generic.View)
 
         recipe_ingredients = Component.get_recipe_ingredients(main_dish.id)
         # see if existing chosen ingredients for the main dish
-        dish_ingredients = Component.get_day_ingredients(main_dish.id, date)
+        dish_ingredients = Component.get_day_ingredients(main_dish.id, delivery_date)
         # see if existing chosen ingredients for the sides
-        sides_ingredients = Component.get_day_ingredients(sides_component.id, date)
+        sides_ingredients = Component.get_day_ingredients(
+            sides_component.id, delivery_date
+        )
         # need this for restore button
         recipe_changed = len(dish_ingredients) > 0 and set(dish_ingredients) != set(
             recipe_ingredients
@@ -235,14 +250,15 @@ class MealInformation(LoginRequiredMixin, PermissionRequiredMixin, generic.View)
             "ingredients.html",
             {
                 "form": form,
-                "date": str(date),
+                "date": str(delivery_date),
+                "delivery_date": delivery_date,
                 "recipe_changed": recipe_changed,
                 "ingredients_changed": ingredients_changed,
             },
         )
 
     def post(self, request):
-        # Choose ingredients in today's main dish and in Sides
+        # Choose ingredients in main dish and in Sides
 
         # Prevent users to go further if they don't have the permission
         # to edit data.
@@ -250,7 +266,7 @@ class MealInformation(LoginRequiredMixin, PermissionRequiredMixin, generic.View)
             raise PermissionDenied
 
         # print("Pick Ingredients POST request=", request.POST)  # For DEBUG
-        date = datetime.date.today()
+        delivery_date = date.fromisoformat(request.POST["delivery_date"])
         form = DishIngredientsForm(request.POST)
         # get sides component
         try:
@@ -266,10 +282,13 @@ class MealInformation(LoginRequiredMixin, PermissionRequiredMixin, generic.View)
         if "_restore" in request.POST:
             # restore ingredients of main dish to those in recipe
             # delete all existing ingredients for the date except for sides
-            Component_ingredient.objects.filter(date=date).exclude(
+            Component_ingredient.objects.filter(date=delivery_date).exclude(
                 component=sides_component
             ).delete()
-            return HttpResponseRedirect(reverse_lazy("delivery:meal"))
+            return HttpResponseRedirect(
+                reverse_lazy("delivery:meal")
+                + f"?delivery_date={request.POST['delivery_date']}"
+            )
         elif "_update" in request.POST:
             # update ingredients of main dish and ingredients of sides
             if form.is_valid():
@@ -277,20 +296,20 @@ class MealInformation(LoginRequiredMixin, PermissionRequiredMixin, generic.View)
                 sides_ingredients = form.cleaned_data["sides_ingredients"]
                 component = form.cleaned_data["maindish"]
                 # delete all main dish and sides ingredients for the date
-                Component_ingredient.objects.filter(date=date).delete()
+                Component_ingredient.objects.filter(date=delivery_date).delete()
                 # add revised ingredients for the date + dish
                 for ing in ingredients:
                     ci = Component_ingredient(
-                        component=component, ingredient=ing, date=date
+                        component=component, ingredient=ing, date=delivery_date
                     )
                     ci.save()
                 # add revised ingredients for the date + sides
                 for ing in sides_ingredients:
                     ci = Component_ingredient(
-                        component=sides_component, ingredient=ing, date=date
+                        component=sides_component, ingredient=ing, date=delivery_date
                     )
                     ci.save()
-                # Create menu and its components for today
+                # Create menu and its components
                 compnames = [component.name]  # main dish
                 # take first sorted name of each other component group
                 for group, _ignore in COMPONENT_GROUP_CHOICES:
@@ -300,15 +319,19 @@ class MealInformation(LoginRequiredMixin, PermissionRequiredMixin, generic.View)
                         )
                         if compname:
                             compnames.append(compname[0].name)
-                Menu.create_menu_and_components(date, compnames)
-                return HttpResponseRedirect(reverse_lazy("delivery:meal"))
+                Menu.create_menu_and_components(delivery_date, compnames)
+                return HttpResponseRedirect(
+                    reverse("delivery:meal")
+                    + f"?delivery_date={request.POST['delivery_date']}"
+                )
         # END IF
         return render(
             request,
             "ingredients.html",
             {
                 "form": form,
-                "date": str(date),
+                "date": str(delivery_date),
+                "delivery_date": delivery_date,
                 "recipe_changed": False,
                 "ingredients_changed": True,
             },
@@ -324,9 +347,8 @@ class RoutesInformation(LoginRequiredMixin, PermissionRequiredMixin, generic.Vie
     has been "organized by the user".
 
     By default the view displays a list of all the known routes
-    indicating for each route the number of orders today and its
-    organize state. The view then creates the context to be rendered
-    on the page.
+    indicating for each route the number of orders and its organize state.
+    The view then creates the context to be rendered on the page.
 
     If the request includes argument "print=yes", the view obtains
     for each route the detailed orders to be delivered, sorts them in the
@@ -341,6 +363,7 @@ class RoutesInformation(LoginRequiredMixin, PermissionRequiredMixin, generic.Vie
         return self.request.GET.get("print", False)
 
     def get(self, request, *args, **kwargs):
+        delivery_date = date.fromisoformat(request.GET["delivery_date"])
         routes = Route.objects.all()
         route_details = []
         all_configured = True
@@ -351,7 +374,7 @@ class RoutesInformation(LoginRequiredMixin, PermissionRequiredMixin, generic.Vie
             order_count = len(clients)
             try:
                 delivery_history = DeliveryHistory.objects.get(
-                    route=route, date=timezone.datetime.today()
+                    route=route, date=delivery_date
                 )
                 set1 = set(delivery_history.client_id_sequence)
                 set2 = set(clients)
@@ -372,16 +395,21 @@ class RoutesInformation(LoginRequiredMixin, PermissionRequiredMixin, generic.Vie
             return render(
                 request,
                 "routes.html",
-                {"route_details": route_details, "all_configured": all_configured},
+                {
+                    "all_configured": all_configured,
+                    "delivery_date": delivery_date,
+                    "route_details": route_details,
+                },
             )
         else:
             # download route sheets report as PDF
             if not all_configured:
                 raise Http404
-            today = timezone.datetime.today()
             routes_dict = {}
-            for delivery_history in DeliveryHistory.objects.filter(date=today):
-                route_list = Order.get_delivery_list(today, delivery_history.route_id)
+            for delivery_history in DeliveryHistory.objects.filter(date=delivery_date):
+                route_list = Order.get_delivery_list(
+                    delivery_date, delivery_history.route_id
+                )
                 route_list = sort_sequence_ids(
                     route_list, delivery_history.client_id_sequence
                 )
@@ -392,7 +420,7 @@ class RoutesInformation(LoginRequiredMixin, PermissionRequiredMixin, generic.Vie
                     "detail_lines": detail_lines,
                 }
             # generate PDF report
-            MultiRouteReport.routes_make_pages(routes_dict)
+            MultiRouteReport.routes_make_pages(routes_dict, delivery_date)
             try:
                 f = open(settings.ROUTE_SHEETS_FILE, "rb")  # noqa: SIM115
             except Exception as e:
@@ -403,7 +431,7 @@ class RoutesInformation(LoginRequiredMixin, PermissionRequiredMixin, generic.Vie
             response[
                 "Content-Disposition"
             ] = 'attachment; filename="routesheets{}.pdf"'.format(
-                datetime.date.today().strftime("%Y%m%d")
+                delivery_date.strftime("%Y%m%d")
             )
             # add serializable data in response header to be used in unit tests
             routes_dict_fortest = {}
@@ -421,10 +449,11 @@ class RoutesInformation(LoginRequiredMixin, PermissionRequiredMixin, generic.Vie
             return response
 
 
-class CreateDeliveryOfToday(LoginRequiredMixin, PermissionRequiredMixin, generic.View):
+class CreateDelivery(LoginRequiredMixin, PermissionRequiredMixin, generic.View):
     permission_required = "sous_chef.edit"
 
     def post(self, request, pk, *args, **kwargs):
+        delivery_date = date.fromisoformat(request.POST["delivery_date"])
         route = get_object_or_404(Route, pk=pk)
         if not Order.objects.get_shippable_orders_by_route(
             route.id, exclude_non_geolocalized=True
@@ -433,29 +462,38 @@ class CreateDeliveryOfToday(LoginRequiredMixin, PermissionRequiredMixin, generic
             raise Http404
 
         try:
-            DeliveryHistory.objects.get(route=route, date=timezone.datetime.today())
+            DeliveryHistory.objects.get(route=route, date=delivery_date)
         except DeliveryHistory.DoesNotExist:
             DeliveryHistory.objects.create(
-                route=route, date=timezone.datetime.today(), vehicle=route.vehicle
+                route=route, date=delivery_date, vehicle=route.vehicle
             )
         return HttpResponseRedirect(
-            reverse("delivery:edit_delivery_of_today", kwargs={"pk": pk})
+            reverse("delivery:edit_delivery_route", kwargs={"pk": pk})
+            + f"?delivery_date={delivery_date.isoformat()}"
         )
 
 
-class EditDeliveryOfToday(
+class EditDeliveryRoute(
     LoginRequiredMixin, PermissionRequiredMixin, generic.edit.UpdateView
 ):
     model = DeliveryHistory
     fields = ("vehicle", "client_id_sequence", "comments")
     permission_required = "sous_chef.edit"
-    template_name = "edit_delivery_of_today.html"
+    template_name = "edit_delivery_route.html"
+
+    def get(self, request, *args, **kwargs):
+        self._delivery_date = date.fromisoformat(request.GET["delivery_date"])
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self._delivery_date = date.fromisoformat(request.POST["delivery_date"])
+        return super().post(request, *args, **kwargs)
 
     def get_object(self, *args, **kwargs):
         return get_object_or_404(
             DeliveryHistory.objects.select_related("route"),
             route=self.kwargs.get("pk"),
-            date=timezone.datetime.today(),
+            date=self._delivery_date,
         )
 
     def get_context_data(self, **kwargs):
@@ -471,17 +509,21 @@ class EditDeliveryOfToday(
                 self.request, messages.ERROR, m
             ),
         )
+        context["delivery_date"] = self._delivery_date
         return context
 
     def get_success_url(self):
-        return reverse_lazy("delivery:routes")
+        return (
+            reverse("delivery:routes")
+            + f"?delivery_date={self._delivery_date.isoformat()}"
+        )
 
     def form_valid(self, form):
         response = super().form_valid(form)
         messages.add_message(
             self.request,
             messages.SUCCESS,
-            _("Today's delivery on route %(route_name)s has been updated.")
+            _("Delivery on route %(route_name)s has been updated.")
             % {"route_name": self.object.route.name},
         )
         return response
@@ -711,7 +753,7 @@ class MultiRouteReport:
                 MultiRouteReport.route_start_page = self.page + 1
 
     # static method
-    def routes_make_pages(routes_dict):
+    def routes_make_pages(routes_dict, delivery_date):
         """Generate the route sheets pages as a PDF file.
 
         Ensures that a new route starts on the front side of a sheet,
@@ -762,7 +804,7 @@ class MultiRouteReport:
             canvas.drawString(
                 x=1.5 * rl_inch,
                 y=PAGE_HEIGHT - 0.0 * rl_inch,
-                text="{}".format(datetime.date.today().strftime("%a., %d %B %Y")),
+                text="{}".format(delivery_date.strftime("%a., %d %B %Y")),
             )
             canvas.drawString(
                 x=3.25 * rl_inch,
@@ -802,7 +844,7 @@ class MultiRouteReport:
             )
             doc.canv.restoreState()
 
-        def go():
+        def go(delivery_date):
             """Generate the pages.
 
             Returns:
@@ -963,14 +1005,14 @@ class MultiRouteReport:
 
             # Copy the route sheets file to keep a history
             name = settings.ROUTE_SHEETS_FILE.rstrip(".pdf")
-            time = datetime.date.today().strftime("%Y%m%d")
+            time = delivery_date.strftime("%Y%m%d")
             destination_of_copy = f"{name}_{time}.pdf"
             copyfile(settings.ROUTE_SHEETS_FILE, destination_of_copy)
 
             return doc.page  # number of last page
 
         # END def
-        return go()  # returns number of pages generated
+        return go(delivery_date)  # returns number of pages generated
 
 
 # END Route sheet report.
@@ -979,113 +1021,118 @@ class MultiRouteReport:
 # Kitchen count report view, helper classes and functions
 
 
+class KitchenCountDownload(LoginRequiredMixin, PermissionRequiredMixin, generic.View):
+    permission_required = "sous_chef.read"
+
+    def get(self, request, *args, **kwargs):
+        delivery_date = date.fromisoformat(request.GET["delivery_date"])
+        # download kitchen count report as PDF
+        try:
+            f = open(settings.KITCHEN_COUNT_FILE, "rb")  # noqa: SIM115
+        except Exception as e:
+            raise Http404(
+                "File " + settings.KITCHEN_COUNT_FILE + " does not exist"
+            ) from e
+        response = HttpResponse(content_type="application/pdf")
+        response[
+            "Content-Disposition"
+        ] = 'attachment; filename="kitchencount{}.pdf"'.format(
+            delivery_date.strftime("%Y%m%d")
+        )
+        response.write(f.read())
+        f.close()
+        return response
+
+
 class KitchenCount(LoginRequiredMixin, PermissionRequiredMixin, generic.View):
     permission_required = "sous_chef.read"
 
     def get(self, request, *args, **kwargs):
-        if reverse("delivery:downloadKitchenCount") in request.path:
-            # download kitchen count report as PDF
-            try:
-                f = open(settings.KITCHEN_COUNT_FILE, "rb")  # noqa: SIM115
-            except Exception as e:
-                raise Http404(
-                    "File " + settings.KITCHEN_COUNT_FILE + " does not exist"
-                ) from e
-            response = HttpResponse(content_type="application/pdf")
-            response[
-                "Content-Disposition"
-            ] = 'attachment; filename="kitchencount{}.pdf"'.format(
-                datetime.date.today().strftime("%Y%m%d")
+        delivery_date = date.fromisoformat(request.GET["delivery_date"])
+
+        # Display kitchen count report for given delivery date
+        # and generate meal labels.
+        #  get sides component
+        try:
+            sides_component = Component.objects.get(
+                component_group=COMPONENT_GROUP_CHOICES_SIDES
             )
-            response.write(f.read())
-            f.close()
-            return response
+        except Component.DoesNotExist as e:
+            raise Exception(
+                "The database must contain exactly one component "
+                + "having 'Component group' = 'Sides' "
+            ) from e
+        # check if main dish ingredients were confirmed
+        main_ingredients = Component_ingredient.objects.filter(
+            date=delivery_date
+        ).exclude(component=sides_component)
+        # check if sides ingredients were confirmed
+        sides_ingredients = Component_ingredient.objects.filter(
+            component=sides_component, date=delivery_date
+        )
+        if len(main_ingredients) == 0 or len(sides_ingredients) == 0:
+            # some ingredients not confirmed, must go back one step
+            messages.add_message(
+                self.request,
+                messages.WARNING,
+                _(
+                    "Please check main dish and confirm "
+                    "all ingredients before proceeding to kitchen count."
+                ),
+            )
+            return HttpResponseRedirect(
+                reverse_lazy("delivery:meal")
+                + f"?delivery_date={request.GET['delivery_date']}"
+            )
+
+        kitchen_list_unfiltered = Order.get_kitchen_items(delivery_date)
+
+        # filter out route=None clients and not geolocalized clients
+        kitchen_list = {}
+        geolocalized_client_ids = list(
+            Client.objects.filter(
+                pk__in=kitchen_list_unfiltered.keys(),
+                member__address__latitude__isnull=False,
+                member__address__longitude__isnull=False,
+            ).values_list("pk", flat=True)
+        )
+
+        for client_id, kitchen_item in kitchen_list_unfiltered.items():
+            if (
+                kitchen_item.routename is not None
+                and client_id in geolocalized_client_ids
+            ):
+                kitchen_list[client_id] = kitchen_item
+
+        component_lines, meal_lines = kcr_make_lines(kitchen_list, delivery_date)
+        if component_lines:
+            # we have orders on that date
+            num_pages = kcr_make_pages(  # kitchen count as PDF
+                delivery_date,
+                component_lines,
+                meal_lines,  # summary
+            )  # detail
+            num_labels = kcr_make_labels(  # meal labels as PDF
+                delivery_date,
+                kitchen_list,  # KitchenItems
+                component_lines[0].name,  # main dish name
+                component_lines[0].ingredients,
+            )  # main dish ingredients
         else:
-            # Display kitchen count report for given delivery date
-            #   or for today by default; generate meal labels
-            if "year" in kwargs and "month" in kwargs and "day" in kwargs:
-                date = datetime.date(
-                    int(kwargs["year"]), int(kwargs["month"]), int(kwargs["day"])
-                )
-            else:
-                date = datetime.date.today()
-            #  get sides component
-            try:
-                sides_component = Component.objects.get(
-                    component_group=COMPONENT_GROUP_CHOICES_SIDES
-                )
-            except Component.DoesNotExist as e:
-                raise Exception(
-                    "The database must contain exactly one component "
-                    + "having 'Component group' = 'Sides' "
-                ) from e
-            # check if main dish ingredients were confirmed
-            main_ingredients = Component_ingredient.objects.filter(date=date).exclude(
-                component=sides_component
-            )
-            # check if sides ingredients were confirmed
-            sides_ingredients = Component_ingredient.objects.filter(
-                component=sides_component, date=date
-            )
-            if len(main_ingredients) == 0 or len(sides_ingredients) == 0:
-                # some ingredients not confirmed, must go back one step
-                messages.add_message(
-                    self.request,
-                    messages.WARNING,
-                    _(
-                        "Please check main dish and confirm"
-                        + " all ingredients before proceeding to kitchen count"
-                    ),
-                )
-                return HttpResponseRedirect(reverse_lazy("delivery:meal"))
-
-            kitchen_list_unfiltered = Order.get_kitchen_items(date)
-
-            # filter out route=None clients and not geolocalized clients
-            kitchen_list = {}
-            geolocalized_client_ids = list(
-                Client.objects.filter(
-                    pk__in=kitchen_list_unfiltered.keys(),
-                    member__address__latitude__isnull=False,
-                    member__address__longitude__isnull=False,
-                ).values_list("pk", flat=True)
-            )
-
-            for client_id, kitchen_item in kitchen_list_unfiltered.items():
-                if (
-                    kitchen_item.routename is not None
-                    and client_id in geolocalized_client_ids
-                ):
-                    kitchen_list[client_id] = kitchen_item
-
-            component_lines, meal_lines = kcr_make_lines(kitchen_list, date)
-            if component_lines:
-                # we have orders today
-                num_pages = kcr_make_pages(  # kitchen count as PDF
-                    date,
-                    component_lines,
-                    meal_lines,  # summary
-                )  # detail
-                num_labels = kcr_make_labels(  # meal labels as PDF
-                    date,
-                    kitchen_list,  # KitchenItems
-                    component_lines[0].name,  # main dish name
-                    component_lines[0].ingredients,
-                )  # main dish ingredients
-            else:
-                # no orders today
-                num_pages = 0
-                num_labels = 0
-            return render(
-                request,
-                "kitchen_count.html",
-                {
-                    "component_lines": component_lines,
-                    "meal_lines": meal_lines,
-                    "num_pages": num_pages,
-                    "num_labels": num_labels,
-                },
-            )
+            # no orders on that date
+            num_pages = 0
+            num_labels = 0
+        return render(
+            request,
+            "kitchen_count.html",
+            {
+                "component_lines": component_lines,
+                "delivery_date": delivery_date,
+                "meal_lines": meal_lines,
+                "num_pages": num_pages,
+                "num_labels": num_labels,
+            },
+        )
 
 
 component_line_fields = [  # Component summary Line on Kitchen Count.
@@ -1097,9 +1144,9 @@ component_line_fields = [  # Component summary Line on Kitchen Count.
     "lqty",
     0,  # Quantity of large size main dishes
     "name",
-    "",  # String : component name
-    "ingredients" "",
-]  # String : today's ingredients in main dish
+    "",  # String: component name
+    "ingredients" "",  # String: ingredients in main dish
+]
 ComponentLine = collections.namedtuple("ComponentLine", component_line_fields[0::2])
 
 
@@ -1173,7 +1220,7 @@ def kcr_cumulate(regular, large, meal):
     return (regular, large)
 
 
-def kcr_make_lines(kitchen_list, date):
+def kcr_make_lines(kitchen_list, kcr_date):
     """Generate the sections and lines for the kitchen count report.
 
     Count all the dishes that have to be prepared and identify all the
@@ -1185,7 +1232,7 @@ def kcr_make_lines(kitchen_list, date):
             order/models) which contain detailed information about
             all the meals that have to be prepared for the day and
             the client requirements and restrictions.
-        date : A date.datetime object giving the date on which the
+        kcr_date : A date.datetime object giving the date on which the
             meals will be delivered.
 
     Returns:
@@ -1222,7 +1269,7 @@ def kcr_make_lines(kitchen_list, date):
                         [
                             ing.name
                             for ing in Component.get_day_ingredients(
-                                meal_component.id, date
+                                meal_component.id, kcr_date
                             )
                         ]
                     ),
@@ -1317,18 +1364,17 @@ def kcr_make_lines(kitchen_list, date):
     return (component_lines_sorted, meal_lines)
 
 
-def kcr_make_pages(date, component_lines, meal_lines):
+def kcr_make_pages(kcr_date, component_lines, meal_lines):
     """Generate the kitchen count report pages as a PDF file.
 
     Uses ReportLab see http://www.reportlab.com/documentation/faq/
 
     Args:
-        date : The delivery date of the meals.
+        kcr_date : The delivery date of the meals.
         component_lines : A list of ComponentLine objects, the summary of
             component quantities and sizes for the date's meal.
         meal_lines : A list of MealLine objects, the details of the clients
-            for the date that have ingredients clashing with those in today's
-            main dish.
+            for the date that have ingredients clashing with those in main dish.
 
     Returns:
         An integer : The number of pages generated.
@@ -1352,7 +1398,7 @@ def kcr_make_pages(date, component_lines, meal_lines):
         canvas.drawRightString(
             x=6.0 * rl_inch,
             y=PAGE_HEIGHT,
-            text="{}".format(datetime.date.today().strftime("%a., %d %B %Y")),
+            text="{}".format(kcr_date.strftime("%a., %d %B %Y")),
         )
         canvas.drawRightString(
             x=PAGE_WIDTH - 0.75 * rl_inch,
@@ -1542,7 +1588,7 @@ def kcr_make_pages(date, component_lines, meal_lines):
         # Copy the kitchen count file to keep a history
         destination_of_copy = (
             f"{settings.KITCHEN_COUNT_FILE.rstrip('.pdf')}"
-            f"_{datetime.date.today().strftime('%Y%m%d')}"
+            f"_{kcr_date.strftime('%Y%m%d')}"
             f".pdf"
         )
         copyfile(settings.KITCHEN_COUNT_FILE, destination_of_copy)
@@ -1740,7 +1786,7 @@ def draw_label(label, width, height, data):
             vertic_pos -= 9
 
 
-def kcr_make_labels(date, kitchen_list, main_dish_name, main_dish_ingredients):
+def kcr_make_labels(kcr_date, kitchen_list, main_dish_name, main_dish_ingredients):
     """Generate Meal Labels sheets as a PDF file.
 
     Generate a label for each main dish serving to be delivered. The
@@ -1750,14 +1796,14 @@ def kcr_make_labels(date, kitchen_list, main_dish_name, main_dish_ingredients):
     and ReportLab
 
     Args:
-        date : The delivery date of the meals.
-        kitchen_list : A dictionary of KitchenItem objects (see
+        kcr_date: The delivery date of the meals.
+        kitchen_list: A dictionary of KitchenItem objects (see
             order/models) which contain detailed information about
             all the meals that have to be prepared for the day and
             the client requirements and restrictions.
-        main_dish_name : A string, the name of today's main dish.
-        main_dish_ingredient : A string, the comma separated list
-            of all the ingredients in today's main dish.
+        main_dish_name: A string, the name of the main dish.
+        main_dish_ingredient: A string, the comma separated list
+            of all the ingredients in the main dish.
 
     Returns:
         An integer : The number of labels generated.
@@ -1793,7 +1839,7 @@ def kcr_make_labels(date, kitchen_list, main_dish_name, main_dish_ingredients):
         meal_label = MealLabel(*meal_label_fields[1::2])
         meal_label = meal_label._replace(
             route=kititm.routename.upper(),
-            date="{}".format(date.strftime("%a, %b-%d")),
+            date="{}".format(kcr_date.strftime("%a, %b-%d")),
             main_dish_name=main_dish_name,
             name=kititm.lastname + ", " + kititm.firstname[0:2] + ".",
         )
@@ -1915,7 +1961,7 @@ def kcr_make_labels(date, kitchen_list, main_dish_name, main_dish_ingredients):
     # Copy the meal labels file to keep a history
     destination_of_copy = (
         f"{settings.MEAL_LABELS_FILE.rstrip('.pdf')}_"
-        f"{datetime.date.today().strftime('%Y%m%d')}.pdf"
+        f"{kcr_date.strftime('%Y%m%d')}.pdf"
     )
     copyfile(settings.MEAL_LABELS_FILE, destination_of_copy)
     return sheet.label_count
@@ -1931,6 +1977,7 @@ class MealLabels(LoginRequiredMixin, PermissionRequiredMixin, generic.View):
     permission_required = "sous_chef.read"
 
     def get(self, request, **kwargs):
+        delivery_date = date.fromisoformat(request.GET["delivery_date"])
         try:
             f = open(settings.MEAL_LABELS_FILE, "rb")  # noqa: SIM115
         except Exception as e:
@@ -1939,7 +1986,7 @@ class MealLabels(LoginRequiredMixin, PermissionRequiredMixin, generic.View):
             ) from e
         response = HttpResponse(content_type="application/pdf")
         response["Content-Disposition"] = 'attachment; filename="labels{}.pdf"'.format(
-            datetime.date.today().strftime("%Y%m%d")
+            delivery_date.strftime("%Y%m%d")
         )
         response.write(f.read())
         f.close()
@@ -1950,20 +1997,21 @@ class DeliveryRouteSheet(LoginRequiredMixin, PermissionRequiredMixin, generic.Vi
     permission_required = "sous_chef.read"
 
     def get(self, request, **kwargs):
-        today = timezone.datetime.today()
+        delivery_date = date.fromisoformat(request.GET["delivery_date"])
         delivery_history = get_object_or_404(
-            DeliveryHistory, route__pk=kwargs["pk"], date=today
+            DeliveryHistory, route__pk=kwargs["pk"], date=delivery_date
         )
-        route_list = Order.get_delivery_list(today, delivery_history.route_id)
+        route_list = Order.get_delivery_list(delivery_date, delivery_history.route_id)
         route_list = sort_sequence_ids(route_list, delivery_history.client_id_sequence)
         summary_lines, detail_lines = drs_make_lines(route_list)
         return render(
             request,
             "route_sheet.html",
             {
+                "delivery_date": delivery_date,
+                "detail_lines": detail_lines,
                 "route": delivery_history.route,
                 "summary_lines": summary_lines,
-                "detail_lines": detail_lines,
             },
         )
 
@@ -2074,12 +2122,24 @@ def calculateRoutePointsEuclidean(data):
     return [node_to_waypoint[node] for node in nodes if node in node_to_waypoint]
 
 
+def to_delivery_date(date_str):
+    if not date_str:
+        return None
+    try:
+        return date.fromisoformat(date_str)
+    except ValueError:
+        return None
+
+
 class RefreshOrderView(LoginRequiredMixin, PermissionRequiredMixin, generic.View):
     permission_required = "sous_chef.edit"
 
-    def get(self, request):
-        delivery_date = date.today()
-        clients = Client.ongoing.all()
-        Order.objects.auto_create_orders(delivery_date, clients)
-        context = get_kitchen_count_context()
+    def post(self, request):
+        delivery_date = to_delivery_date(request.POST["generateOrderDate"])
+        if delivery_date and delivery_date >= datetime.now().date():
+            clients = Client.ongoing.all()
+            Order.objects.auto_create_orders(delivery_date, clients)
+        else:
+            print(f"RefreshOrderView: Invalid date provided: {delivery_date}")
+        context = get_kitchen_count_context(delivery_date)
         return render(request, "partials/generated_orders.html", context)
