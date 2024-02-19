@@ -3,7 +3,6 @@ import json
 import os
 import textwrap
 from datetime import date, datetime
-from shutil import copyfile
 
 import labels  # package pylabels
 from django.conf import settings
@@ -78,6 +77,22 @@ LOGO_IMAGE = os.path.join(
     "160widthSR-Logo-Screen-PurpleGreen-HI-RGB1.jpg",
 )
 DELIVERY_STARTING_POINT_LAT_LONG = (45.516564, -73.575145)  # Santropol Roulant
+
+
+def _get_pdf_filename(base_filename, delivery_date):
+    return f"{base_filename.rstrip('.pdf')}_{delivery_date.strftime('%Y%m%d')}.pdf"
+
+
+def get_meals_label_filename(delivery_date):
+    return _get_pdf_filename(settings.MEAL_LABELS_FILE, delivery_date)
+
+
+def get_kitchen_count_filename(delivery_date):
+    return _get_pdf_filename(settings.KITCHEN_COUNT_FILE, delivery_date)
+
+
+def get_route_sheets_filename(delivery_date):
+    return _get_pdf_filename(settings.ROUTE_SHEETS_FILE, delivery_date)
 
 
 def get_orders_for_kitchen_count(order_statuses, delivery_date=None):
@@ -421,12 +436,11 @@ class RoutesInformation(LoginRequiredMixin, PermissionRequiredMixin, generic.Vie
                 }
             # generate PDF report
             MultiRouteReport.routes_make_pages(routes_dict, delivery_date)
+            filename = get_route_sheets_filename(delivery_date)
             try:
-                f = open(settings.ROUTE_SHEETS_FILE, "rb")  # noqa: SIM115
+                f = open(filename, "rb")  # noqa: SIM115
             except Exception as e:
-                raise Http404(
-                    "File " + settings.ROUTE_SHEETS_FILE + " does not exist"
-                ) from e
+                raise Http404(f"File {filename} does not exist.") from e
             response = HttpResponse(content_type="application/pdf")
             response[
                 "Content-Disposition"
@@ -844,14 +858,14 @@ class MultiRouteReport:
             )
             doc.canv.restoreState()
 
-        def go(delivery_date):
+        def go():
             """Generate the pages.
 
             Returns:
                 An integer : The number of pages generated.
             """
             doc = MultiRouteReport.RLMultiRouteDocTemplate(
-                settings.ROUTE_SHEETS_FILE,
+                get_route_sheets_filename(delivery_date),
                 leftMargin=0.5 * rl_inch,
                 rightMargin=0.5 * rl_inch,
                 bottomMargin=0.5 * rl_inch,
@@ -1003,16 +1017,10 @@ class MultiRouteReport:
                 onLaterPages=drawHeader,
             )
 
-            # Copy the route sheets file to keep a history
-            name = settings.ROUTE_SHEETS_FILE.rstrip(".pdf")
-            time = delivery_date.strftime("%Y%m%d")
-            destination_of_copy = f"{name}_{time}.pdf"
-            copyfile(settings.ROUTE_SHEETS_FILE, destination_of_copy)
-
             return doc.page  # number of last page
 
         # END def
-        return go(delivery_date)  # returns number of pages generated
+        return go()  # returns number of pages generated
 
 
 # END Route sheet report.
@@ -1027,12 +1035,11 @@ class KitchenCountDownload(LoginRequiredMixin, PermissionRequiredMixin, generic.
     def get(self, request, *args, **kwargs):
         delivery_date = date.fromisoformat(request.GET["delivery_date"])
         # download kitchen count report as PDF
+        filename = get_kitchen_count_filename(delivery_date)
         try:
-            f = open(settings.KITCHEN_COUNT_FILE, "rb")  # noqa: SIM115
+            f = open(filename, "rb")  # noqa: SIM115
         except Exception as e:
-            raise Http404(
-                "File " + settings.KITCHEN_COUNT_FILE + " does not exist"
-            ) from e
+            raise Http404(f"File {filename} does not exist.") from e
         response = HttpResponse(content_type="application/pdf")
         response[
             "Content-Disposition"
@@ -1441,7 +1448,7 @@ def kcr_make_pages(kcr_date, component_lines, meal_lines):
         Returns:
             An integer : The number of pages generated.
         """
-        doc = RLSimpleDocTemplate(settings.KITCHEN_COUNT_FILE)
+        doc = RLSimpleDocTemplate(get_kitchen_count_filename(kcr_date))
         story = []
 
         # begin Summary section
@@ -1585,13 +1592,6 @@ def kcr_make_pages(kcr_date, component_lines, meal_lines):
 
         # build full document
         doc.build(story, onFirstPage=myFirstPage, onLaterPages=myLaterPages)
-        # Copy the kitchen count file to keep a history
-        destination_of_copy = (
-            f"{settings.KITCHEN_COUNT_FILE.rstrip('.pdf')}"
-            f"_{kcr_date.strftime('%Y%m%d')}"
-            f".pdf"
-        )
-        copyfile(settings.KITCHEN_COUNT_FILE, destination_of_copy)
         return doc.page
 
     return go()  # returns number of pages generated
@@ -1957,13 +1957,7 @@ def kcr_make_labels(kcr_date, kitchen_list, main_dish_name, main_dish_ingredient
         sheet.add_label(label)
 
     if sheet.label_count > 0:
-        sheet.save(settings.MEAL_LABELS_FILE)
-    # Copy the meal labels file to keep a history
-    destination_of_copy = (
-        f"{settings.MEAL_LABELS_FILE.rstrip('.pdf')}_"
-        f"{kcr_date.strftime('%Y%m%d')}.pdf"
-    )
-    copyfile(settings.MEAL_LABELS_FILE, destination_of_copy)
+        sheet.save(get_meals_label_filename(kcr_date))
     return sheet.label_count
 
 
@@ -1978,12 +1972,11 @@ class MealLabels(LoginRequiredMixin, PermissionRequiredMixin, generic.View):
 
     def get(self, request, **kwargs):
         delivery_date = date.fromisoformat(request.GET["delivery_date"])
+        filename = get_meals_label_filename(delivery_date)
         try:
-            f = open(settings.MEAL_LABELS_FILE, "rb")  # noqa: SIM115
+            f = open(filename, "rb")  # noqa: SIM115
         except Exception as e:
-            raise Http404(
-                "File " + settings.MEAL_LABELS_FILE + " does not exist"
-            ) from e
+            raise Http404(f"File {filename} does not exist.") from e
         response = HttpResponse(content_type="application/pdf")
         response["Content-Disposition"] = 'attachment; filename="labels{}.pdf"'.format(
             delivery_date.strftime("%Y%m%d")
