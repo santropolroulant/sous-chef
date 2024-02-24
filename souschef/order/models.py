@@ -102,7 +102,7 @@ class OrderManager(models.Manager):
         )
 
     def get_shippable_orders_by_route(
-        self, route_id, delivery_date=None, exclude_non_geolocalized=False
+        self, route_id, delivery_date, exclude_non_geolocalized=False
     ):
         """
         Return the orders ready to be delivered for a given route.

@@ -101,9 +101,7 @@ class NamedUrlSessionWizardView_i18nURL(NamedUrlSessionWizardView):
                 non_i18n_step = i18n_step
             finally:
                 kwargs["step"] = non_i18n_step
-        return super().dispatch(
-            request, *args, **kwargs
-        )
+        return super().dispatch(request, *args, **kwargs)
 
     def get_step_url(self, step):
         """
@@ -952,9 +950,7 @@ class ClientUpdateRelationshipsInformation(ClientUpdateInformation):
     prefix = "relationships"
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(
-            **kwargs
-        )
+        context = super().get_context_data(**kwargs)
         context.update({"current_step": "relationships"})
         context.update({"pk": self.kwargs["pk"]})
         context["step_template"] = "client/partials/forms/" "relationships.html"
@@ -1355,7 +1351,7 @@ def get_clients_on_delivery_history(delivery_history, func_add_warning_message=N
     """
     orders = Order.objects.get_shippable_orders_by_route(
         delivery_history.route.pk,
-        delivery_date=delivery_history.date,
+        delivery_history.date,
         exclude_non_geolocalized=True,
     ).select_related("client", "client__member", "client__member__address")
     clients = []
