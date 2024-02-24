@@ -5,14 +5,14 @@ with open("README.md") as fh:
 
 setuptools.setup(
     name="souschef",
-    version="1.3.8dev2",
+    version="1.3.8dev3",
     license="AGPL-3.0",
     author="Santropol Roulant and Savoir Faire Linux",
     author_email="info@santropolroulant.org",
     description="Webapp used to manage orders for meals-on-wheel delivery",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/pypa/sous-chef",
+    url="https://github.com/santropolroulant/sous-chef",
     packages=setuptools.find_packages(),
     include_package_data=True,
     classifiers=[

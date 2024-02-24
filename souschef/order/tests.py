@@ -98,7 +98,9 @@ class OrderManagerTestCase(TestCase):
         A shippable order must be created in the database, and its ORDER_STATUS
         must be 'O' (Ordered).
         """
-        orders = Order.objects.get_shippable_orders_by_route(self.route.id)
+        orders = Order.objects.get_shippable_orders_by_route(
+            self.route.id, date.today()
+        )
         self.assertEqual(
             len(orders),
             len(self.orders) + len(self.paused_orders),

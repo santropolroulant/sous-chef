@@ -384,7 +384,7 @@ class RoutesInformation(LoginRequiredMixin, PermissionRequiredMixin, generic.Vie
         all_configured = True
         for route in routes:
             clients = Order.objects.get_shippable_orders_by_route(
-                route.id, exclude_non_geolocalized=True
+                route.id, delivery_date, exclude_non_geolocalized=True
             ).values_list("client__pk", flat=True)
             order_count = len(clients)
             try:
@@ -470,7 +470,7 @@ class CreateDelivery(LoginRequiredMixin, PermissionRequiredMixin, generic.View):
         delivery_date = date.fromisoformat(request.POST["delivery_date"])
         route = get_object_or_404(Route, pk=pk)
         if not Order.objects.get_shippable_orders_by_route(
-            route.id, exclude_non_geolocalized=True
+            route.id, delivery_date, exclude_non_geolocalized=True
         ).exists():
             # No clients on this route.
             raise Http404
