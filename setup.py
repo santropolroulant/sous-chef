@@ -5,7 +5,7 @@ with open("README.md") as fh:
 
 setuptools.setup(
     name="souschef",
-    version="1.3.8dev3",
+    version="1.3.8dev4",
     license="AGPL-3.0",
     author="Santropol Roulant and Savoir Faire Linux",
     author_email="info@santropolroulant.org",

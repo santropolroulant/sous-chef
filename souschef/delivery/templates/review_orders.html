@@ -16,7 +16,7 @@
 <div class="ui secondary pointing fluid menu">
     <h1 class="ui header">
         {% if delivery_date %}
-            {% trans "Generate and Review orders" %}
+            {% trans "Review orders" %}
         {% else %}
             {% trans "Kitchen Count" %}
         {% endif %}
@@ -95,7 +95,7 @@
         <h4 class="ui horizontal divider header">
             <i class="unhide icon"></i>
             {% blocktrans trimmed %}
-                Review order for {{ delivery_date }}
+                Review orders for {{ delivery_date }}
             {% endblocktrans %}
         </h4>
 
