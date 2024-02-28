@@ -3,7 +3,7 @@
 <div class="ui four ordered steps">
   <a class="{% if step == 'orders' %} active{% endif %} step" href="{% url 'delivery:order' %}?delivery_date={{ delivery_date.isoformat }}">
     <div class="content">
-      <div class="title">{% trans 'Generate orders' %}</div>
+      <div class="title">{% trans 'Review orders' %}</div>
       <div class="description">{% trans 'Generate and review orders.' %}</div>
     </div>
   </a>

@@ -41,7 +41,8 @@ $(function() {
 
     $('.ui.dropdown.maindish.selection').dropdown('setting', 'onChange', function(value, text, $selectedItem) {
         $url = $(".field.dish.selection").data('url');
-        window.location.replace($url+value);
+        var deliveryDate = $("input[name=delivery_date]").val();
+        window.location.replace($url+value+"?delivery_date="+deliveryDate);
     });
 
     $('.ui.dropdown.mainingredients.selection').dropdown('setting', 'onChange', function(value, text, $selectedItem) {
