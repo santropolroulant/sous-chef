@@ -1111,7 +1111,8 @@ class KitchenCount(LoginRequiredMixin, PermissionRequiredMixin, generic.View):
             ):
                 kitchen_list[client_id] = kitchen_item
 
-        component_lines, meal_lines = kcr_make_lines(kitchen_list, delivery_date)
+        component_lines = kcr_make_component_lines(kitchen_list, delivery_date)
+        meal_lines = kcr_make_meal_lines(kitchen_list)
         if component_lines:
             # we have orders on that date
             num_pages = kcr_make_pages(  # kitchen count as PDF
@@ -1157,22 +1158,32 @@ component_line_fields = [  # Component summary Line on Kitchen Count.
 ComponentLine = collections.namedtuple("ComponentLine", component_line_fields[0::2])
 
 
-meal_line_fields = [  # Special Meal Line on Kitchen Count.
-    # field name       default value
+# Special Meal Line on Kitchen Count.
+# structure: first line = field name, second line = default value
+meal_line_fields = [
+    # str: Lastname and abbreviated first name
     "client",
-    "",  # String : Lastname and abbreviated first name
+    "",
+    # str: Quantity of regular size main dishes
     "rqty",
-    "",  # String : Quantity of regular size main dishes
+    "",
+    # str: Quantity of large size main dishes
     "lqty",
-    "",  # String : Quantity of large size main dishes
+    "",
+    # str: Ingredients that clashes
     "ingr_clash",
-    "",  # String : Ingredients that clash
+    "",
+    # str: Other ingredients to avoid
     "rest_ingr",
-    "",  # String : Other ingredients to avoid
+    "",
+    # str: Restricted items
     "rest_item",
-    "",  # String : Restricted items
+    "",
     "span",
     "1",
+    # str: food preparation
+    "food_prep",
+    "",
 ]  # Number of lines to "rowspan" in table
 MealLine = collections.namedtuple("MealLine", meal_line_fields[0::2])
 
@@ -1190,7 +1201,7 @@ def meal_line(kititm):
         A MealLine object
     """
     return MealLine(
-        client=kititm.lastname + ", " + kititm.firstname[0:2] + ".",
+        client=format_client_name(kititm.firstname, kititm.lastname),
         rqty=(str(kititm.meal_qty) if kititm.meal_size == SIZE_CHOICES_REGULAR else ""),
         lqty=(str(kititm.meal_qty) if kititm.meal_size == SIZE_CHOICES_LARGE else ""),
         ingr_clash="",
@@ -1203,6 +1214,7 @@ def meal_line(kititm):
         ),
         rest_item=", ".join(kititm.restricted_items),
         span="1",
+        food_prep=", ".join(sorted(kititm.preparation)),
     )
 
 
@@ -1227,7 +1239,66 @@ def kcr_cumulate(regular, large, meal):
     return (regular, large)
 
 
-def kcr_make_lines(kitchen_list, kcr_date):
+def kcr_make_meal_lines(kitchen_list):
+    meal_lines = []
+    rtotal, ltotal = (0, 0)
+    # Ingredients clashes (and other columns)
+    rsubtotal, lsubtotal = (0, 0)
+    clients = iter(
+        sorted(
+            [
+                (client_id, kitchen_item)
+                for client_id, kitchen_item in kitchen_list.items()
+                if kitchen_item.incompatible_ingredients or kitchen_item.preparation
+            ],
+            key=lambda item: item[1].incompatible_ingredients,
+        )
+    )
+
+    # first line of a combination of ingredients
+    line_start = 0
+    rsubtotal, lsubtotal = (0, 0)
+    client_id, kitchen_item = next(clients, (0, 0))  # has end sentinel
+    while client_id > 0:
+        if rsubtotal == 0 and lsubtotal == 0:
+            # add line for subtotal at top of combination
+            meal_lines.append(MealLine(*meal_line_fields[1::2]))
+        combination = kitchen_item.incompatible_ingredients
+        meal_lines.append(meal_line(kitchen_item))
+        rsubtotal, lsubtotal = kcr_cumulate(rsubtotal, lsubtotal, kitchen_item)
+        client_id, kitchen_item = next(clients, (0, 0))
+        if client_id == 0 or combination != kitchen_item.incompatible_ingredients:
+            # last line of this combination of ingredients
+            line_end = len(meal_lines)
+            # set rowspan to total number of lines for this combination
+            meal_lines[line_start] = meal_lines[line_start]._replace(
+                client="SUBTOTAL",
+                rqty=str(rsubtotal),
+                lqty=str(lsubtotal),
+                ingr_clash=", ".join(combination),
+                span=str(line_end - line_start),
+            )
+            rtotal, ltotal = (rtotal + rsubtotal, ltotal + lsubtotal)
+            rsubtotal, lsubtotal = (0, 0)
+            # hide ingredients for lines following the first
+            for j in range(line_start + 1, line_end):
+                meal_lines[j] = meal_lines[j]._replace(span="-1")
+            # Add a blank line as separator
+            meal_lines.append(MealLine(*meal_line_fields[1::2]))
+            # first line of next combination of ingredients
+            line_start = len(meal_lines)
+    # END WHILE
+
+    meal_lines.append(
+        MealLine(*meal_line_fields[1::2])._replace(
+            rqty=str(rtotal), lqty=str(ltotal), ingr_clash="TOTAL SPECIALS"
+        )
+    )
+
+    return meal_lines
+
+
+def kcr_make_component_lines(kitchen_list, kcr_date):
     """Generate the sections and lines for the kitchen count report.
 
     Count all the dishes that have to be prepared and identify all the
@@ -1243,8 +1314,7 @@ def kcr_make_lines(kitchen_list, kcr_date):
             meals will be delivered.
 
     Returns:
-        A tuple. First value is the component (dishes) summary lines. The
-          second value is the special meals lines.
+        Component (dishes) summary lines.
     """
     # Build component summary
     component_lines = {}
@@ -1311,64 +1381,11 @@ def kcr_make_lines(kitchen_list, kcr_date):
     else:
         component_lines_sorted = []
 
-    # Build special meal lines
+    return component_lines_sorted
 
-    meal_lines = []
-    rtotal, ltotal = (0, 0)
-    # Ingredients clashes (and other columns)
-    rsubtotal, lsubtotal = (0, 0)
-    clients = iter(
-        sorted(
-            [
-                (ke, val)
-                for ke, val in kitchen_list.items()
-                if val.incompatible_ingredients
-            ],
-            key=lambda x: x[1].incompatible_ingredients,
-        )
-    )
 
-    # first line of a combination of ingredients
-    line_start = 0
-    rsubtotal, lsubtotal = (0, 0)
-    k, v = next(clients, (0, 0))  # has end sentinel
-    while k > 0:
-        if rsubtotal == 0 and lsubtotal == 0:
-            # add line for subtotal at top of combination
-            meal_lines.append(MealLine(*meal_line_fields[1::2]))
-        combination = v.incompatible_ingredients
-        meal_lines.append(meal_line(v))
-        rsubtotal, lsubtotal = kcr_cumulate(rsubtotal, lsubtotal, v)
-        k, v = next(clients, (0, 0))
-        if k == 0 or combination != v.incompatible_ingredients:
-            # last line of this combination of ingredients
-            line_end = len(meal_lines)
-            # set rowspan to total number of lines for this combination
-            meal_lines[line_start] = meal_lines[line_start]._replace(
-                client="SUBTOTAL",
-                rqty=str(rsubtotal),
-                lqty=str(lsubtotal),
-                ingr_clash=", ".join(combination),
-                span=str(line_end - line_start),
-            )
-            rtotal, ltotal = (rtotal + rsubtotal, ltotal + lsubtotal)
-            rsubtotal, lsubtotal = (0, 0)
-            # hide ingredients for lines following the first
-            for j in range(line_start + 1, line_end):
-                meal_lines[j] = meal_lines[j]._replace(span="-1")
-            # Add a blank line as separator
-            meal_lines.append(MealLine(*meal_line_fields[1::2]))
-            # first line of next combination of ingredients
-            line_start = len(meal_lines)
-    # END WHILE
-
-    meal_lines.append(
-        MealLine(*meal_line_fields[1::2])._replace(
-            rqty=str(rtotal), lqty=str(ltotal), ingr_clash="TOTAL SPECIALS"
-        )
-    )
-
-    return (component_lines_sorted, meal_lines)
+def format_client_name(firstname, lastname):
+    return f"{lastname}, {firstname[:2]}."
 
 
 def kcr_make_pages(kcr_date, component_lines, meal_lines):
@@ -1509,7 +1526,7 @@ def kcr_make_pages(kcr_date, component_lines, meal_lines):
                 RLParagraph("Regular", styles["NormalRight"]),
                 RLParagraph("Large", styles["NormalRight"]),
                 "",
-                RLParagraph("Client", styles["NormalLeft"]),
+                RLParagraph("Client & Food Prep", styles["NormalLeft"]),
                 RLParagraph("Other restrictions", styles["NormalLeft"]),
             ]
         )
@@ -1522,7 +1539,7 @@ def kcr_make_pages(kcr_date, component_lines, meal_lines):
                 # Total line at the bottom
                 rows.append(
                     [
-                        RLParagraph(ml.ingr_clash, styles["NormalLeftBold"]),
+                        RLParagraph(ml.ingr_clash or "∅", styles["NormalLeftBold"]),
                         RLParagraph(ml.rqty, styles["NormalRightBold"]),
                         RLParagraph(ml.lqty, styles["NormalRightBold"]),
                         "",
@@ -1551,7 +1568,7 @@ def kcr_make_pages(kcr_date, component_lines, meal_lines):
                         None,  # cap
                         [1, 2],
                     )  # dashes
-                    value = RLParagraph(ml.ingr_clash, styles["LargeBoldLeft"])
+                    value = RLParagraph(ml.ingr_clash or "∅", styles["LargeBoldLeft"])
                 else:
                     # span = -1 means clash data must be blanked out
                     #   because it is the same as the initial spanned row
@@ -1563,13 +1580,17 @@ def kcr_make_pages(kcr_date, component_lines, meal_lines):
                 else:
                     client = ml.client
                     qty_style = "NormalRight"
+                food_prep = f"({ml.food_prep})" if ml.food_prep else ""
                 rows.append(
                     [
                         value,
                         RLParagraph(ml.rqty, styles[qty_style]),
                         RLParagraph(ml.lqty, styles[qty_style]),
                         "",
-                        RLParagraph(client, styles["NormalLeft"]),
+                        [
+                            RLParagraph(client, styles["NormalLeft"]),
+                            RLParagraph(food_prep, styles["NormalLeftBold"]),
+                        ],
                         [
                             RLParagraph(
                                 ml.rest_ingr
