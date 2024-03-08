@@ -2,7 +2,9 @@ import collections
 import json
 import os
 import textwrap
+from dataclasses import dataclass
 from datetime import date, datetime
+from typing import List
 
 import labels  # package pylabels
 from django.conf import settings
@@ -1113,12 +1115,20 @@ class KitchenCount(LoginRequiredMixin, PermissionRequiredMixin, generic.View):
 
         component_lines = kcr_make_component_lines(kitchen_list, delivery_date)
         meal_lines = kcr_make_meal_lines(kitchen_list)
+        preperation_lines_with_incompatible_ingr = kcr_make_preparation_lines(
+            kitchen_list, "only_clients_with_incompatible_ingredients"
+        )
+        preperation_lines_without_incompatible_ingr = kcr_make_preparation_lines(
+            kitchen_list, "only_clients_without_incompatible_ingredients"
+        )
         if component_lines:
             # we have orders on that date
             num_pages = kcr_make_pages(  # kitchen count as PDF
                 delivery_date,
                 component_lines,
                 meal_lines,  # summary
+                preperation_lines_with_incompatible_ingr,
+                preperation_lines_without_incompatible_ingr,
             )  # detail
             num_labels = kcr_make_labels(  # meal labels as PDF
                 delivery_date,
@@ -1249,7 +1259,7 @@ def kcr_make_meal_lines(kitchen_list):
             [
                 (client_id, kitchen_item)
                 for client_id, kitchen_item in kitchen_list.items()
-                if kitchen_item.incompatible_ingredients or kitchen_item.preparation
+                if kitchen_item.incompatible_ingredients
             ],
             key=lambda item: item[1].incompatible_ingredients,
         )
@@ -1388,17 +1398,74 @@ def format_client_name(firstname, lastname):
     return f"{lastname}, {firstname[:2]}."
 
 
-def kcr_make_pages(kcr_date, component_lines, meal_lines):
+@dataclass
+class PreparationLine:
+    preparation_method: str
+    quantity: int
+    client_names: List[str]
+
+
+def kcr_make_preparation_lines(kitchen_list, client_filter):
+    """Get food preparation method for clients not having clashing (incompatible)
+    ingredients."""
+    if client_filter == "only_clients_with_incompatible_ingredients":
+
+        def select_item(item):
+            return bool(item.incompatible_ingredients)
+    elif client_filter == "only_clients_without_incompatible_ingredients":
+
+        def select_item(item):
+            return not item.incompatible_ingredients
+    else:
+        raise ValueError(f"Incompatible client_filter: {client_filter}")
+
+    items = [item for item in kitchen_list.values() if select_item(item)]
+
+    # Group KitchenItem per preparation method
+    items_per_preparation = collections.defaultdict(list)
+    for item in items:
+        for prep in item.preparation:
+            items_per_preparation[prep].append(item)
+
+    preparation_lines = []
+    for prep in sorted(items_per_preparation.keys()):
+        client_names = sorted(
+            format_client_name(item.firstname, item.lastname)
+            + (f" (x {item.meal_qty})" if item.meal_qty > 1 else "")
+            for item in items_per_preparation[prep]
+        )
+        quantity = sum(item.meal_qty for item in items_per_preparation[prep])
+
+        preparation_lines.append(
+            PreparationLine(
+                preparation_method=prep,
+                quantity=quantity,
+                client_names=client_names,
+            )
+        )
+
+    return preparation_lines
+
+
+def kcr_make_pages(
+    kcr_date,
+    component_lines,
+    meal_lines,
+    preperation_lines_with_incompatible_ingr,
+    preperation_lines_without_incompatible_ingr,
+):
     """Generate the kitchen count report pages as a PDF file.
 
     Uses ReportLab see http://www.reportlab.com/documentation/faq/
 
     Args:
-        kcr_date : The delivery date of the meals.
-        component_lines : A list of ComponentLine objects, the summary of
+        kcr_date: The delivery date of the meals.
+        component_lines: A list of ComponentLine objects, the summary of
             component quantities and sizes for the date's meal.
-        meal_lines : A list of MealLine objects, the details of the clients
+        meal_lines: A list of MealLine objects, the details of the clients
             for the date that have ingredients clashing with those in main dish.
+        preperation_lines_with_incompatible_ingr: list[PreperationLine]
+        preperation_lines_without_incompatible_ingr: list[PreperationLine]
 
     Returns:
         An integer : The number of pages generated.
@@ -1458,6 +1525,43 @@ def kcr_make_pages(kcr_date, component_lines, meal_lines):
         canvas.saveState()
         drawHeader(canvas, doc)
         canvas.restoreState()
+
+    def get_food_preperation_table(preperation_lines, heading_suffix):
+        rows = []
+        line = 0
+        tab_style = RLTableStyle([("VALIGN", (0, 0), (-1, -1), "TOP")])
+        rows.append(
+            [
+                RLParagraph("Food Preparation", styles["NormalLeft"]),
+                RLParagraph("Quantity", styles["NormalRight"]),
+                "",
+                [
+                    RLParagraph("Clients", styles["NormalLeft"]),
+                    RLParagraph(f"({heading_suffix})", styles["NormalLeftBold"]),
+                ],
+            ]
+        )
+        tab_style.add("LINEABOVE", (0, line), (-1, line), 1, rl_colors.black)
+        tab_style.add("LINEBELOW", (0, line), (-1, line), 1, rl_colors.black)
+        tab_style.add("LINEBEFORE", (0, line), (0, line), 1, rl_colors.black)
+        tab_style.add("LINEAFTER", (-1, line), (-1, line), 1, rl_colors.black)
+        line += 1
+
+        for prepline in preperation_lines:
+            rows.append(
+                [
+                    RLParagraph(prepline.preparation_method, styles["LargeBoldLeft"]),
+                    RLParagraph(str(prepline.quantity), styles["NormalRightBold"]),
+                    "",
+                    RLParagraph(
+                        ";&nbsp;&nbsp; ".join(prepline.client_names),
+                        styles["NormalLeft"],
+                    ),
+                ]
+            )
+        tab = RLTable(rows, colWidths=(150, 50, 10, 310), repeatRows=1)
+        tab.setStyle(tab_style)
+        return tab
 
     def go():
         """Generate the pages.
@@ -1610,6 +1714,21 @@ def kcr_make_pages(kcr_date, component_lines, meal_lines):
         story.append(tab)
         story.append(RLSpacer(1, 1 * rl_inch))
         # end Detail section
+
+        story.append(RLPageBreak())
+        story.append(
+            get_food_preperation_table(
+                preperation_lines_with_incompatible_ingr, "with restrictions"
+            )
+        )
+        story.append(RLSpacer(1, 1 * rl_inch))
+
+        story.append(
+            get_food_preperation_table(
+                preperation_lines_without_incompatible_ingr, "without restrictions"
+            )
+        )
+        story.append(RLSpacer(1, 1 * rl_inch))
 
         # build full document
         doc.build(story, onFirstPage=myFirstPage, onLaterPages=myLaterPages)
