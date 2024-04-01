@@ -1784,6 +1784,9 @@ def draw_label(label, width, height, data):
     # dimensions are in font points (72 points = 1 inch)
     # Line 1
     vertic_pos = height * 0.85
+    # Leave a margin on top of the label to make it easier to read in actual usage,
+    # as the top of the label can be hidden by the rim of the container.
+    vertic_pos -= 25
     horiz_margin = 9  # distance from edge of label 9/72 = 1/8 inch
     if data.name:
         label.add(
