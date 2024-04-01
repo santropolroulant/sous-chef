@@ -2031,41 +2031,6 @@ def kcr_make_labels(kcr_date, kitchen_list, main_dish_name, main_dish_ingredient
             meal_label = meal_label._replace(
                 sides_clashes=[prefix] + sides_clashes_list
             )
-        other_restrictions = []
-        if kititm.sides_clashes:
-            other_restrictions.extend(
-                sorted(list(set(kititm.avoid_ingredients) - set(kititm.sides_clashes)))
-            )
-            other_restrictions.extend(
-                sorted(list(set(kititm.restricted_items) - set(kititm.sides_clashes)))
-            )
-        else:
-            other_restrictions.extend(
-                sorted(
-                    list(
-                        set(kititm.avoid_ingredients)
-                        - set(kititm.incompatible_ingredients)
-                    )
-                )
-            )
-            other_restrictions.extend(
-                sorted(
-                    list(
-                        set(kititm.restricted_items)
-                        - set(kititm.incompatible_ingredients)
-                    )
-                )
-            )
-        if other_restrictions:
-            meal_label = meal_label._replace(
-                other_restrictions=textwrap.wrap(
-                    ugettext("Other restrictions")
-                    + " : {}".format(" , ".join(other_restrictions)),
-                    width=65,
-                    break_long_words=False,
-                    break_on_hyphens=False,
-                )
-            )
         for _j in range(1, kititm.meal_qty + 1):
             meal_labels.append(meal_label)
 
