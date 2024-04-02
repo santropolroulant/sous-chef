@@ -442,6 +442,11 @@ class Order(models.Model):
             ):
                 # found new avoid ingredient clash in sides
                 kitchen_list[row.cid].sides_clashes.append(row.ingredient)
+                # we also add side clash ingredients into main ingredient clashes
+                # so they can be grouped and displayed together
+                kitchen_list[row.cid].incompatible_ingredients.append(
+                    f"{row.ingredient} (sides)"
+                )
             if row.ingredient not in kitchen_list[row.cid].avoid_ingredients:
                 # remember ingredient to avoid
                 kitchen_list[row.cid].avoid_ingredients.append(row.ingredient)

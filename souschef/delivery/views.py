@@ -2,6 +2,7 @@ import collections
 import json
 import os
 import textwrap
+from copy import deepcopy
 from dataclasses import dataclass
 from datetime import date, datetime
 from typing import List
@@ -1273,19 +1274,23 @@ def kcr_make_meal_lines(kitchen_list):
         if rsubtotal == 0 and lsubtotal == 0:
             # add line for subtotal at top of combination
             meal_lines.append(MealLine(*meal_line_fields[1::2]))
-        combination = kitchen_item.incompatible_ingredients
+        ingredients_clashing = kitchen_item.incompatible_ingredients
         meal_lines.append(meal_line(kitchen_item))
         rsubtotal, lsubtotal = kcr_cumulate(rsubtotal, lsubtotal, kitchen_item)
         client_id, kitchen_item = next(clients, (0, 0))
-        if client_id == 0 or combination != kitchen_item.incompatible_ingredients:
-            # last line of this combination of ingredients
+        if (
+            client_id == 0
+            or ingredients_clashing != kitchen_item.incompatible_ingredients
+        ):
+            # last line of this combination of clashing ingredients
             line_end = len(meal_lines)
-            # set rowspan to total number of lines for this combination
+            # set rowspan to total number of lines for this combination of clashing
+            # ingredients
             meal_lines[line_start] = meal_lines[line_start]._replace(
                 client="SUBTOTAL",
                 rqty=str(rsubtotal),
                 lqty=str(lsubtotal),
-                ingr_clash=", ".join(combination),
+                ingr_clash=", ".join(ingredients_clashing),
                 span=str(line_end - line_start),
             )
             rtotal, ltotal = (rtotal + rsubtotal, ltotal + lsubtotal)
@@ -1573,23 +1578,34 @@ def kcr_make_pages(
         story = []
 
         # begin Summary section
-        story.append(RLSpacer(1, 0.25 * rl_inch))
         rows = []
+
+        # Menu name
+        menu = component_lines[0].name if component_lines else ""
+        title_style = deepcopy(styles["NormalLeftBold"])
+        title_style.spaceBefore = 0
+        title_style.leftIndent = 60
+        title_style.fontSize = 14
+        story.append(RLParagraph(menu, title_style))
+        story.append(RLSpacer(1, 0.5 * rl_inch))
+
+        # Component table
+        small_left = deepcopy(styles["SmallRight"])
+        small_left.alignment = 0
+
         rows.append(
             [
+                RLParagraph("Component", styles["NormalLeft"]),
+                RLParagraph("Total", styles["NormalLeft"]),
                 "",
-                RLParagraph("TOTAL", styles["NormalCenter"]),
-                "",
-                RLParagraph("Menu", styles["NormalLeft"]),
                 RLParagraph("Ingredients", styles["NormalLeft"]),
             ]
         )
         rows.append(
             [
                 "",
-                RLParagraph("Regular", styles["SmallRight"]),
-                RLParagraph("Large", styles["SmallRight"]),
-                "",
+                RLParagraph("Regular", small_left),
+                RLParagraph("Large", small_left),
                 "",
             ]
         )
@@ -1599,21 +1615,20 @@ def kcr_make_pages(
                     cl.component_group,
                     cl.rqty,
                     cl.lqty,
-                    cl.name,
                     RLParagraph(cl.ingredients, styles["NormalLeft"]),
                 ]
             )
         tab = RLTable(
             rows,
-            colWidths=(100, 40, 40, 120, 220),
+            colWidths=(100, 40, 40, 340),
             style=[
-                ("VALIGN", (0, 0), (-1, 1), "TOP"),
-                ("VALIGN", (0, 2), (-1, -1), "BOTTOM"),
-                ("GRID", (1, 0), (-1, 1), 1, rl_colors.black),
+                # style, start cell, end cell, params
+                ("VALIGN", (0, 2), (-1, -1), "TOP"),
+                ("LINEABOVE", (0, 0), (-1, 0), 1, rl_colors.black),
+                ("LINEBELOW", (0, 0), (-1, 0), 1, rl_colors.black),
+                ("LINEBEFORE", (0, 0), (0, 0), 1, rl_colors.black),
+                ("LINEAFTER", (-1, 0), (-1, 0), 1, rl_colors.black),
                 ("SPAN", (1, 0), (2, 0)),
-                ("ALIGN", (1, 2), (2, -1), "RIGHT"),
-                ("SPAN", (3, 0), (3, 1)),
-                ("SPAN", (4, 0), (4, 1)),
             ],
         )
         story.append(tab)
