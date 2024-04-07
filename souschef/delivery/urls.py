@@ -6,9 +6,7 @@ from souschef.delivery.views import (
     DeliveryRouteSheet,
     EditDeliveryRoute,
     KitchenCount,
-    KitchenCountDownload,
     MealInformation,
-    MealLabels,
     RefreshOrderView,
     ReviewOrders,
     RoutesInformation,
@@ -32,12 +30,6 @@ urlpatterns = [
         name="create_delivery",
     ),
     url(_(r"^kitchen_count/$"), KitchenCount.as_view(), name="kitchen_count"),
-    url(
-        _(r"^viewDownloadKitchenCount/$"),
-        KitchenCountDownload.as_view(),
-        name="downloadKitchenCount",
-    ),
-    url(_(r"^viewMealLabels/$"), MealLabels.as_view(), name="mealLabels"),
     url(
         _(r"^route_sheet/(?P<pk>\d+)/$"),
         DeliveryRouteSheet.as_view(),

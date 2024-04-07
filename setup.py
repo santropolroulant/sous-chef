@@ -41,6 +41,7 @@ setuptools.setup(
         "django>=1.11,<1.11.999",
         "factory_boy>=2.8,<2.8.999",
         "mysqlclient>=1.3,<1.3.999",
+        "pypdf>=4.2,<5",
         "pylabels>=1.2,<1.2.999",
         "reportlab>=3.4,<3.4.999",
         "rules>=1.2,<1.2.999",

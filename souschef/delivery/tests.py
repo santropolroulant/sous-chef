@@ -1,5 +1,6 @@
 import datetime
 import json
+from io import BytesIO
 
 from django.contrib.auth.models import User
 from django.db.models import Q
@@ -12,10 +13,8 @@ from django.urls import (
     reverse_lazy,
 )
 from django.utils import timezone as tz
-from django.utils.translation import (
-    ugettext,
-    ugettext_lazy,
-)
+from django.utils.translation import ugettext
+from pypdf import PdfReader
 
 from souschef.meal.factories import (
     ComponentFactory,
@@ -59,45 +58,26 @@ class KitchenCountReportTestCase(SousChefTestMixin, TestCase):
     #   and his side dish is 'compote'
     fixtures = ["sample_data"]
 
-    @classmethod
-    def setUpTestData(cls):
-        Menu.create_menu_and_components(
-            datetime.date(2016, 5, 21),
-            [
-                "Ginger pork",
-                "Green Salad",
-                "Fruit Salad",
-                "Day s Dessert",
-                "Day s Diabetic Dessert",
-                "Day s Pudding",
-                "Day s Compote",
-            ],
-        )
-
     def setUp(self):
         self.force_login()
 
     def test_clashing_ingredient(self):
         """An ingredient we know will clash must be in the page"""
-        self.today = datetime.date.today()
+        today = datetime.date.today()
         # create orders today
         clients = Client.active.all()
-        Order.objects.auto_create_orders(self.today, clients)
+        Order.objects.auto_create_orders(today, clients)
         # main dish and its ingredients today
         main_dishes = Component.objects.filter(name="Ginger pork")
         main_dish = main_dishes[0]
         dish_ingredients = Component.get_recipe_ingredients(main_dish.id)
         for ing in dish_ingredients:
-            ci = Component_ingredient(
-                component=main_dish, ingredient=ing, date=self.today
-            )
+            ci = Component_ingredient(component=main_dish, ingredient=ing, date=today)
             ci.save()
         # Add extra ingredient so that more clashing clients will
         #  require two pages on the PDF kitchen count report
         extra = Ingredient.objects.get(name="Walnuts")
-        ci = Component_ingredient(
-            component=main_dish, ingredient=extra, date=self.today
-        )
+        ci = Component_ingredient(component=main_dish, ingredient=extra, date=today)
         ci.save()
         # add sides ingredient
         sides_component = Component.objects.get(
@@ -105,12 +85,12 @@ class KitchenCountReportTestCase(SousChefTestMixin, TestCase):
         )
         extra = Ingredient.objects.get(name="Cabbage")
         ci = Component_ingredient(
-            component=sides_component, ingredient=extra, date=self.today
+            component=sides_component, ingredient=extra, date=today
         )
         ci.save()
         # menu today
         Menu.create_menu_and_components(
-            self.today,
+            today,
             [
                 "Ginger pork",
                 "Green Salad",
@@ -123,32 +103,65 @@ class KitchenCountReportTestCase(SousChefTestMixin, TestCase):
         )
         response = self.client.get(
             reverse_lazy("delivery:kitchen_count"),
-            {"delivery_date": datetime.date.today()},
+            {"delivery_date": datetime.date.today(), "download": "kitchen_count"},
         )
-        self.assertTrue(b"Ground porc" in response.content)
+        self.assertEqual(response.status_code, 200)
+        pdf_data = PdfReader(BytesIO(response.content))
+        pdf_content = pdf_data.pages[0].extract_text()
+        self.assertTrue("Ground porc" in pdf_content)
 
     def test_no_components(self):
-        """No orders on this day therefore no component summary"""
-        response = self.client.get(
-            reverse("delivery:kitchen_count"),
-            {"delivery_date": "2015-05-21"},
+        """No orders on this day therefore no documents to download."""
+        menu_day = datetime.date(1999, 1, 1)
+        Menu.create_menu_and_components(
+            menu_day,
+            [
+                "Ginger pork",
+                "Green Salad",
+                "Fruit Salad",
+                "Day s Dessert",
+                "Day s Diabetic Dessert",
+                "Day s Pudding",
+                "Day s Compote",
+            ],
         )
-        self.assertTrue(b"SUBTOTAL" not in response.content)
-
-    def test_labels_show_restrictions(self):
-        """An ingredient we know will clash must be in the labels"""
-        # generate orders today
-        self.today = datetime.date.today()
-        clients = Client.active.all()
-        Order.objects.auto_create_orders(self.today, clients)
         # main dish and its ingredients today
         main_dishes = Component.objects.filter(name="Ginger pork")
         main_dish = main_dishes[0]
         dish_ingredients = Component.get_recipe_ingredients(main_dish.id)
         for ing in dish_ingredients:
             ci = Component_ingredient(
-                component=main_dish, ingredient=ing, date=self.today
+                component=main_dish, ingredient=ing, date=menu_day
             )
+            ci.save()
+        # add sides ingredient
+        sides_component = Component.objects.get(
+            component_group=COMPONENT_GROUP_CHOICES_SIDES
+        )
+        extra = Ingredient.objects.get(name="Cabbage")
+        ci = Component_ingredient(
+            component=sides_component, ingredient=extra, date=menu_day
+        )
+        ci.save()
+
+        response = self.client.get(
+            reverse("delivery:kitchen_count"),
+            {"delivery_date": menu_day.isoformat()},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(b"There is no data to download." in response.content)
+
+    def test_pdf_kitchen_count_and_labels_reports(self):
+        # generate orders today
+        today = datetime.date.today()
+        clients = Client.active.all()
+        Order.objects.auto_create_orders(today, clients)
+        # main dish and its ingredients today
+        main_dishes = Component.objects.filter(name="Ginger pork")
+        main_dish = main_dishes[0]
+        dish_ingredients = Component.get_recipe_ingredients(main_dish.id)
+        for ing in dish_ingredients:
+            ci = Component_ingredient(component=main_dish, ingredient=ing, date=today)
             ci.save()
         # Add sides ingredient
         sides_component = Component.objects.get(
@@ -157,12 +170,12 @@ class KitchenCountReportTestCase(SousChefTestMixin, TestCase):
         # This ingredient is in the restrictions of some clients in the data
         sides_ingredient = Ingredient.objects.get(name="Brussel sprouts")
         ci = Component_ingredient(
-            component=sides_component, ingredient=sides_ingredient, date=self.today
+            component=sides_component, ingredient=sides_ingredient, date=today
         )
         ci.save()
         # menu today
         Menu.create_menu_and_components(
-            self.today,
+            today,
             [
                 "Ginger pork",
                 "Green Salad",
@@ -175,24 +188,32 @@ class KitchenCountReportTestCase(SousChefTestMixin, TestCase):
             ],
         )
 
-        self.client.get(
-            reverse_lazy("delivery:kitchen_count"),
-            {"delivery_date": datetime.date.today().isoformat()},
-        )
         response = self.client.get(
-            reverse_lazy("delivery:mealLabels"),
-            {"delivery_date": datetime.date.today().isoformat()},
+            reverse_lazy("delivery:kitchen_count"),
+            {
+                "delivery_date": datetime.date.today().isoformat(),
+                "download": "kitchen_count",
+            },
         )
+        self.assertEqual(response.status_code, 200)
         self.assertTrue("ReportLab" in repr(response.content))
 
-    def test_pdf_report_show_restrictions(self):
-        """An ingredient we know will clash must be in the pdf report"""
-        # generate orders today
-        self.today = datetime.date.today()
+        response = self.client.get(
+            reverse_lazy("delivery:kitchen_count"),
+            {"delivery_date": datetime.date.today().isoformat(), "download": "labels"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue("ReportLab" in repr(response.content))
+
+    def test_ingredients_not_defined_redirect(self):
+        # generate orders
+        today = datetime.date.today()
         clients = Client.active.all()
-        Order.objects.auto_create_orders(self.today, clients)
-        Menu.create_menu_and_components(
-            self.today,
+        created_orders = Order.objects.auto_create_orders(today, clients)
+        self.assertTrue(created_orders)
+
+        num_menu_comp_created = Menu.create_menu_and_components(
+            today,
             [
                 "Ginger pork",
                 "Green Salad",
@@ -203,16 +224,17 @@ class KitchenCountReportTestCase(SousChefTestMixin, TestCase):
                 "Day s Compote",
             ],
         )
+        self.assertEqual(num_menu_comp_created, 7)
 
-        self.client.get(
-            "/delivery/kitchen_count/",
-            {"delivery_date": datetime.date.today().isoformat()},
-        )
         response = self.client.get(
-            "/delivery/viewDownloadKitchenCount/",
-            {"delivery_date": datetime.date.today().isoformat()},
+            reverse_lazy("delivery:kitchen_count"),
+            {
+                "delivery_date": today.isoformat(),
+            },
         )
-        self.assertTrue("ReportLab" in repr(response.content))
+        # Ingredients were not defined; kitchen count page will redirect to the
+        # ingredients page.
+        self.assertEqual(response.status_code, 302)
 
 
 class ChooseDayMainDishIngredientsTestCase(SousChefTestMixin, TestCase):
@@ -258,9 +280,15 @@ class ChooseDayMainDishIngredientsTestCase(SousChefTestMixin, TestCase):
         response = self.client.post(reverse_lazy("delivery:meal"), req)
         response = self.client.get(
             reverse_lazy("delivery:kitchen_count"),
-            {"delivery_date": datetime.date.today().isoformat()},
+            {
+                "delivery_date": datetime.date.today().isoformat(),
+                "download": "kitchen_count",
+            },
         )
-        self.assertTrue(b"Ginger pork" in response.content)
+        self.assertEqual(response.status_code, 200)
+        pdf_data = PdfReader(BytesIO(response.content))
+        pdf_content = pdf_data.pages[0].extract_text()
+        self.assertTrue("Ginger pork" in pdf_content)
 
     def test_remember_day_ingredients(self):
         """After Kitchen Count Report we remember chosen ingredients."""
@@ -277,9 +305,15 @@ class ChooseDayMainDishIngredientsTestCase(SousChefTestMixin, TestCase):
         response = self.client.post(reverse_lazy("delivery:meal"), req)
         response = self.client.get(
             reverse_lazy("delivery:kitchen_count"),
-            {"delivery_date": datetime.date.today().isoformat()},
+            {
+                "delivery_date": datetime.date.today().isoformat(),
+                "download": "kitchen_count",
+            },
         )
-        self.assertTrue(b"Ginger pork" in response.content)
+        self.assertEqual(response.status_code, 200)
+        pdf_data = PdfReader(BytesIO(response.content))
+        pdf_content = pdf_data.pages[0].extract_text()
+        self.assertTrue("Ginger pork" in pdf_content)
         response = self.client.get(
             reverse_lazy("delivery:meal"),
             {"delivery_date": datetime.date.today().isoformat()},
@@ -303,11 +337,16 @@ class ChooseDayMainDishIngredientsTestCase(SousChefTestMixin, TestCase):
         response = self.client.post(reverse_lazy("delivery:meal"), req)
         response = self.client.get(
             reverse_lazy("delivery:kitchen_count"),
-            {"delivery_date": datetime.date.today().isoformat()},
+            {
+                "delivery_date": datetime.date.today().isoformat(),
+                "download": "kitchen_count",
+            },
         )
-        self.assertTrue(
-            b"Ginger pork" in response.content and b"Pepper" in response.content
-        )
+        self.assertEqual(response.status_code, 200)
+        pdf_data = PdfReader(BytesIO(response.content))
+        pdf_content = pdf_data.pages[0].extract_text()
+        self.assertTrue("Ginger pork" in pdf_content)
+        self.assertTrue("Pepper" in pdf_content)
         # restore recipe
         response = self.client.post(
             reverse_lazy("delivery:meal"),
@@ -327,11 +366,16 @@ class ChooseDayMainDishIngredientsTestCase(SousChefTestMixin, TestCase):
         # check that we have Ginger pork with no Pepper in Kitchen count
         response = self.client.get(
             reverse_lazy("delivery:kitchen_count"),
-            {"delivery_date": datetime.date.today().isoformat()},
+            {
+                "delivery_date": datetime.date.today().isoformat(),
+                "download": "kitchen_count",
+            },
         )
-        self.assertTrue(
-            b"Ginger pork" in response.content and b"Pepper" not in response.content
-        )
+        self.assertEqual(response.status_code, 200)
+        pdf_data = PdfReader(BytesIO(response.content))
+        pdf_content = pdf_data.pages[0].extract_text()
+        self.assertTrue("Ginger pork" in pdf_content)
+        self.assertTrue("Pepper" not in pdf_content)
 
     def test_change_main_dish(self):
         """Change dish then go directly to Kitchen Count Report."""
@@ -349,9 +393,15 @@ class ChooseDayMainDishIngredientsTestCase(SousChefTestMixin, TestCase):
         response = self.client.post(reverse_lazy("delivery:meal"), req)
         response = self.client.get(
             reverse_lazy("delivery:kitchen_count"),
-            {"delivery_date": datetime.date.today().isoformat()},
+            {
+                "delivery_date": datetime.date.today().isoformat(),
+                "download": "kitchen_count",
+            },
         )
-        self.assertTrue(b"Coq au vin" in response.content)
+        self.assertEqual(response.status_code, 200)
+        pdf_data = PdfReader(BytesIO(response.content))
+        pdf_content = pdf_data.pages[0].extract_text()
+        self.assertTrue("Coq au vin" in pdf_content)
 
     def test_post_invalid_form(self):
         """Invalid form."""
@@ -574,7 +624,6 @@ class RedirectAnonymousUserTestCase(SousChefTestMixin, TestCase):
         check(reverse("delivery:meal_id", kwargs={"id": meal_id}))
         check(reverse("delivery:routes"))
         check(reverse("delivery:kitchen_count"))
-        check(reverse("delivery:mealLabels"))
         check(reverse("delivery:route_sheet", kwargs={"pk": 1}))
         check(reverse("delivery:refresh_orders"))
 
@@ -676,7 +725,7 @@ class RoutesInformationViewTestCase(SousChefTestMixin, TestCase):
         )
         response_2 = self.client.get(
             url,
-            {"print": "yes", "delivery_date": datetime.date.today().isoformat()},
+            {"download": "yes", "delivery_date": datetime.date.today().isoformat()},
         )
         # Check
         self.assertNotIn("routes_dict", response_1)
@@ -754,37 +803,6 @@ class KitchenCountViewTestCase(SousChefTestMixin, TestCase):
         )
         ci.save()
 
-        # Run
-        response = self.client.get(
-            url,
-            {"delivery_date": datetime.date.today().isoformat()},
-        )
-        # Check
-        self.assertEqual(response.status_code, 200)
-
-
-class MealLabelsViewTestCase(SousChefTestMixin, TestCase):
-    fixtures = ["sample_data"]
-
-    def test_redirects_users_who_do_not_have_read_permission(self):
-        # Setup
-        User.objects.create_user(
-            username="foo", email="foo@example.com", password="secure"
-        )
-        self.client.login(username="foo", password="secure")
-        url = reverse("delivery:mealLabels")
-        # Run & check
-        self.assertRedirectsWithAllMethods(url)
-
-    def test_allow_access_to_users_with_read_permission(self):
-        # Setup
-        user = User.objects.create_user(
-            username="foo", email="foo@example.com", password="secure"
-        )
-        user.is_staff = True
-        user.save()
-        self.client.login(username="foo", password="secure")
-        url = reverse("delivery:mealLabels")
         # Run
         response = self.client.get(
             url,
@@ -1050,101 +1068,6 @@ class ExcludeMisconfiguredClientsTestCase(SousChefTestMixin, TestCase):
             response.content.count(b'<i class="warning sign red icon"></i>'), 3
         )
 
-    def test_step_3__component_table(self):
-        _ = self._refresh_orders()
-        response = self._today_meal()
-        self.assertRedirects(
-            response,
-            reverse("delivery:meal")
-            + f"?delivery_date={datetime.date.today().isoformat()}",
-        )
-        response = self.client.get(
-            reverse("delivery:kitchen_count"),
-            {"delivery_date": datetime.date.today().isoformat()},
-        )
-        component_lines = response.context["component_lines"]
-        main_dish_component_line = next(
-            cl
-            for cl in component_lines
-            if cl.component_group == ugettext_lazy("Main Dish")
-        )
-        self.assertEqual(main_dish_component_line.rqty, 0)
-        # only c_valid
-        self.assertEqual(main_dish_component_line.lqty, 1)
-
-    def test_step_3__clashing_ingredients_restrictions_table(self):
-        _ = self._refresh_orders()
-        response = self._today_meal()
-        self.assertRedirects(
-            response,
-            reverse("delivery:meal")
-            + f"?delivery_date={datetime.date.today().isoformat()}",
-        )
-        response = self.client.get(
-            reverse("delivery:kitchen_count"),
-            {"delivery_date": datetime.date.today().isoformat()},
-        )
-        meal_lines = response.context["meal_lines"]
-
-        # contains c_valid (10)
-        ml_valid_clash = next(
-            ml
-            for ml in meal_lines
-            if "chicken_10" in ml.ingr_clash and "wine_10" in ml.ingr_clash
-        )
-        self.assertEqual(ml_valid_clash.rqty, "0")
-        self.assertEqual(ml_valid_clash.lqty, "1")
-        ml_valid_restrict = next(ml for ml in meal_lines if "veggie_10" in ml.rest_item)
-        self.assertIn("Valid", ml_valid_restrict.client)
-
-        # doesn't contain c_nronly (20)
-        self.assertRaises(
-            StopIteration,
-            lambda: next(
-                ml
-                for ml in meal_lines
-                if "chicken_20" in ml.ingr_clash and "wine_20" in ml.ingr_clash
-            ),
-        )
-        self.assertRaises(
-            StopIteration,
-            lambda: next(ml for ml in meal_lines if "veggie_20" in ml.rest_item),
-        )
-
-        # doesn't contain c_ngonly (30)
-        self.assertRaises(
-            StopIteration,
-            lambda: next(
-                ml
-                for ml in meal_lines
-                if "chicken_30" in ml.ingr_clash and "wine_30" in ml.ingr_clash
-            ),
-        )
-        self.assertRaises(
-            StopIteration,
-            lambda: next(ml for ml in meal_lines if "veggie_30" in ml.rest_item),
-        )
-
-        # doesn't contain c_nrng (40)
-        self.assertRaises(
-            StopIteration,
-            lambda: next(
-                ml
-                for ml in meal_lines
-                if "chicken_40" in ml.ingr_clash and "wine_40" in ml.ingr_clash
-            ),
-        )
-        self.assertRaises(
-            StopIteration,
-            lambda: next(ml for ml in meal_lines if "veggie_40" in ml.rest_item),
-        )
-
-        # TOTAL SPECIALS
-        ml_last = meal_lines[-1]
-        self.assertEqual(ml_last.ingr_clash, "TOTAL SPECIALS")
-        self.assertEqual(ml_last.rqty, "0")
-        self.assertEqual(ml_last.lqty, "1")
-
     def test_step_3__labels(self):
         _ = self._refresh_orders()
         response = self._today_meal()
@@ -1157,8 +1080,7 @@ class ExcludeMisconfiguredClientsTestCase(SousChefTestMixin, TestCase):
             reverse("delivery:kitchen_count"),
             {"delivery_date": datetime.date.today().isoformat()},
         )
-        num_labels = response.context["num_labels"]
-        self.assertEqual(num_labels, 1)  # only c_valid
+        self.assertEqual(response.context["has_data"], True)
 
     def test_step_4__routes_before_organizing(self):
         """
@@ -1193,7 +1115,7 @@ class ExcludeMisconfiguredClientsTestCase(SousChefTestMixin, TestCase):
         # Assert print doesn't work
         response = self.client.get(
             reverse("delivery:routes"),
-            {"print": "yes", "delivery_date": datetime.date.today().isoformat()},
+            {"download": "yes", "delivery_date": datetime.date.today().isoformat()},
         )
         self.assertEqual(response.status_code, 404)
         # Assert route sheets don't exist
@@ -1219,7 +1141,7 @@ class ExcludeMisconfiguredClientsTestCase(SousChefTestMixin, TestCase):
         # Assert print doesn't work
         response = self.client.get(
             reverse("delivery:routes"),
-            {"print": "yes", "delivery_date": datetime.date.today().isoformat()},
+            {"download": "yes", "delivery_date": datetime.date.today().isoformat()},
         )
         self.assertEqual(response.status_code, 404)
 
@@ -1296,7 +1218,7 @@ class ExcludeMisconfiguredClientsTestCase(SousChefTestMixin, TestCase):
         # Assert print works
         response = self.client.get(
             reverse("delivery:routes"),
-            {"delivery_date": datetime.date.today().isoformat(), "print": "yes"},
+            {"delivery_date": datetime.date.today().isoformat(), "download": "yes"},
         )
         self.assertEqual(response.status_code, 200)
         # Check print result
@@ -1409,7 +1331,7 @@ class RouteSheetReportTestCase(SousChefTestMixin, TestCase):
         response = self.client.get(
             reverse("delivery:routes"),
             {
-                "print": "yes",
+                "download": "yes",
                 "delivery_date": datetime.date.today().isoformat(),
             },
         )

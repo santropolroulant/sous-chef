@@ -5,6 +5,7 @@ import textwrap
 from copy import deepcopy
 from dataclasses import dataclass
 from datetime import date, datetime
+from pathlib import Path
 from typing import List
 
 import labels  # package pylabels
@@ -82,20 +83,24 @@ LOGO_IMAGE = os.path.join(
 DELIVERY_STARTING_POINT_LAT_LONG = (45.516564, -73.575145)  # Santropol Roulant
 
 
-def _get_pdf_filename(base_filename, delivery_date):
-    return f"{base_filename.rstrip('.pdf')}_{delivery_date.strftime('%Y%m%d')}.pdf"
+def _get_pdf_file_path(filename, delivery_date):
+    delivery = delivery_date.strftime("%Y-%m-%d")
+    today = datetime.now().replace(microsecond=0).isoformat()
+    filepath = Path(filename)
+    new_name = f"{filepath.name.rstrip('.pdf')}_{delivery}__{today}.pdf"
+    return filepath.parent / delivery / new_name
 
 
-def get_meals_label_filename(delivery_date):
-    return _get_pdf_filename(settings.MEAL_LABELS_FILE, delivery_date)
+def get_meals_label_file_path(delivery_date):
+    return _get_pdf_file_path(settings.MEAL_LABELS_FILE, delivery_date)
 
 
-def get_kitchen_count_filename(delivery_date):
-    return _get_pdf_filename(settings.KITCHEN_COUNT_FILE, delivery_date)
+def get_kitchen_count_file_path(delivery_date):
+    return _get_pdf_file_path(settings.KITCHEN_COUNT_FILE, delivery_date)
 
 
-def get_route_sheets_filename(delivery_date):
-    return _get_pdf_filename(settings.ROUTE_SHEETS_FILE, delivery_date)
+def get_route_sheets_file_path(delivery_date):
+    return _get_pdf_file_path(settings.ROUTE_SHEETS_FILE, delivery_date)
 
 
 def get_orders_for_kitchen_count(order_statuses, delivery_date=None):
@@ -368,7 +373,7 @@ class RoutesInformation(LoginRequiredMixin, PermissionRequiredMixin, generic.Vie
     indicating for each route the number of orders and its organize state.
     The view then creates the context to be rendered on the page.
 
-    If the request includes argument "print=yes", the view obtains
+    If the request includes argument "download=yes", the view obtains
     for each route the detailed orders to be delivered, sorts them in the
     chosen sequence and combines all the routes in a PDF report that
     is stored in the BASE_DIR and then downloaded by the browser.
@@ -377,8 +382,8 @@ class RoutesInformation(LoginRequiredMixin, PermissionRequiredMixin, generic.Vie
     permission_required = "sous_chef.read"
 
     @property
-    def doprint(self):
-        return self.request.GET.get("print", False)
+    def download(self):
+        return self.request.GET.get("download", False)
 
     def get(self, request, *args, **kwargs):
         delivery_date = date.fromisoformat(request.GET["delivery_date"])
@@ -408,7 +413,7 @@ class RoutesInformation(LoginRequiredMixin, PermissionRequiredMixin, generic.Vie
             if order_count > 0 and has_organised != "yes":
                 all_configured = False
 
-        if not self.doprint:
+        if not self.download:
             # display list of delivery routes on web page
             return render(
                 request,
@@ -438,18 +443,8 @@ class RoutesInformation(LoginRequiredMixin, PermissionRequiredMixin, generic.Vie
                     "detail_lines": detail_lines,
                 }
             # generate PDF report
-            MultiRouteReport.routes_make_pages(routes_dict, delivery_date)
-            filename = get_route_sheets_filename(delivery_date)
-            try:
-                f = open(filename, "rb")  # noqa: SIM115
-            except Exception as e:
-                raise Http404(f"File {filename} does not exist.") from e
-            response = HttpResponse(content_type="application/pdf")
-            response[
-                "Content-Disposition"
-            ] = 'attachment; filename="routesheets{}.pdf"'.format(
-                delivery_date.strftime("%Y%m%d")
-            )
+            file_path = MultiRouteReport.routes_make_pages(routes_dict, delivery_date)
+            response = download_pdf(file_path)
             # add serializable data in response header to be used in unit tests
             routes_dict_fortest = {}
             for key, item in routes_dict.items():
@@ -460,9 +455,6 @@ class RoutesInformation(LoginRequiredMixin, PermissionRequiredMixin, generic.Vie
                     ],
                 }
             response["routes_dict"] = json.dumps(routes_dict_fortest)
-            #
-            response.write(f.read())
-            f.close()
             return response
 
 
@@ -867,8 +859,10 @@ class MultiRouteReport:
             Returns:
                 An integer : The number of pages generated.
             """
+            file_path = get_route_sheets_file_path(delivery_date)
+            file_path.parent.mkdir(parents=True, exist_ok=True)
             doc = MultiRouteReport.RLMultiRouteDocTemplate(
-                get_route_sheets_filename(delivery_date),
+                str(file_path),
                 leftMargin=0.5 * rl_inch,
                 rightMargin=0.5 * rl_inch,
                 bottomMargin=0.5 * rl_inch,
@@ -1020,10 +1014,10 @@ class MultiRouteReport:
                 onLaterPages=drawHeader,
             )
 
-            return doc.page  # number of last page
+            return file_path
 
         # END def
-        return go()  # returns number of pages generated
+        return go()  # returns the file path
 
 
 # END Route sheet report.
@@ -1032,25 +1026,89 @@ class MultiRouteReport:
 # Kitchen count report view, helper classes and functions
 
 
-class KitchenCountDownload(LoginRequiredMixin, PermissionRequiredMixin, generic.View):
-    permission_required = "sous_chef.read"
+class IngredientsMissingError(Exception):
+    pass
 
-    def get(self, request, *args, **kwargs):
-        delivery_date = date.fromisoformat(request.GET["delivery_date"])
-        # download kitchen count report as PDF
-        filename = get_kitchen_count_filename(delivery_date)
-        try:
-            f = open(filename, "rb")  # noqa: SIM115
-        except Exception as e:
-            raise Http404(f"File {filename} does not exist.") from e
-        response = HttpResponse(content_type="application/pdf")
-        response[
-            "Content-Disposition"
-        ] = 'attachment; filename="kitchencount{}.pdf"'.format(
-            delivery_date.strftime("%Y%m%d")
+
+def get_kitchen_list(delivery_date):
+    # Display kitchen count report for given delivery date
+    # and generate meal labels.
+    #  get sides component
+    try:
+        sides_component = Component.objects.get(
+            component_group=COMPONENT_GROUP_CHOICES_SIDES
         )
+    except Component.DoesNotExist as e:
+        raise Exception(
+            "The database must contain exactly one component "
+            + "having 'Component group' = 'Sides' "
+        ) from e
+    # check if main dish ingredients were confirmed
+    main_ingredients = Component_ingredient.objects.filter(date=delivery_date).exclude(
+        component=sides_component
+    )
+    # check if sides ingredients were confirmed
+    sides_ingredients = Component_ingredient.objects.filter(
+        component=sides_component, date=delivery_date
+    )
+    if len(main_ingredients) == 0 or len(sides_ingredients) == 0:
+        raise IngredientsMissingError
+
+    kitchen_list_unfiltered = Order.get_kitchen_items(delivery_date)
+
+    # filter out route=None clients and not geolocalized clients
+    kitchen_list = {}
+    geolocalized_client_ids = list(
+        Client.objects.filter(
+            pk__in=kitchen_list_unfiltered.keys(),
+            member__address__latitude__isnull=False,
+            member__address__longitude__isnull=False,
+        ).values_list("pk", flat=True)
+    )
+
+    for client_id, kitchen_item in kitchen_list_unfiltered.items():
+        if kitchen_item.routename is not None and client_id in geolocalized_client_ids:
+            kitchen_list[client_id] = kitchen_item
+
+    return kitchen_list
+
+
+def make_kitchen_count(kitchen_list, delivery_date):
+    component_lines = kcr_make_component_lines(kitchen_list, delivery_date)
+    meal_lines = kcr_make_meal_lines(kitchen_list)
+    preperation_lines_with_incompatible_ingr = kcr_make_preparation_lines(
+        kitchen_list, "only_clients_with_incompatible_ingredients"
+    )
+    preperation_lines_without_incompatible_ingr = kcr_make_preparation_lines(
+        kitchen_list, "only_clients_without_incompatible_ingredients"
+    )
+    if component_lines:
+        # we have orders on that date
+        return kcr_make_pages(  # kitchen count as PDF
+            delivery_date,
+            component_lines,
+            meal_lines,  # summary
+            preperation_lines_with_incompatible_ingr,
+            preperation_lines_without_incompatible_ingr,
+        )  # detail
+
+
+def make_labels(kitchen_list, delivery_date):
+    component_lines = kcr_make_component_lines(kitchen_list, delivery_date)
+    if component_lines:
+        return kcr_make_labels(  # meal labels as PDF
+            delivery_date,
+            kitchen_list,  # KitchenItems
+            component_lines[0].name,  # main dish name
+            component_lines[0].ingredients,
+        )  # main dish ingredients
+
+
+def download_pdf(file_path):
+    with open(file_path, "rb") as f:
+        response = HttpResponse(content_type="application/pdf")
+        response["Content-Disposition"] = f'attachment; filename="{file_path.name}"'
         response.write(f.read())
-        f.close()
         return response
 
 
@@ -1059,28 +1117,11 @@ class KitchenCount(LoginRequiredMixin, PermissionRequiredMixin, generic.View):
 
     def get(self, request, *args, **kwargs):
         delivery_date = date.fromisoformat(request.GET["delivery_date"])
+        download = request.GET.get("download")
 
-        # Display kitchen count report for given delivery date
-        # and generate meal labels.
-        #  get sides component
         try:
-            sides_component = Component.objects.get(
-                component_group=COMPONENT_GROUP_CHOICES_SIDES
-            )
-        except Component.DoesNotExist as e:
-            raise Exception(
-                "The database must contain exactly one component "
-                + "having 'Component group' = 'Sides' "
-            ) from e
-        # check if main dish ingredients were confirmed
-        main_ingredients = Component_ingredient.objects.filter(
-            date=delivery_date
-        ).exclude(component=sides_component)
-        # check if sides ingredients were confirmed
-        sides_ingredients = Component_ingredient.objects.filter(
-            component=sides_component, date=delivery_date
-        )
-        if len(main_ingredients) == 0 or len(sides_ingredients) == 0:
+            kitchen_list = get_kitchen_list(delivery_date)
+        except IngredientsMissingError:
             # some ingredients not confirmed, must go back one step
             messages.add_message(
                 self.request,
@@ -1095,62 +1136,19 @@ class KitchenCount(LoginRequiredMixin, PermissionRequiredMixin, generic.View):
                 + f"?delivery_date={request.GET['delivery_date']}"
             )
 
-        kitchen_list_unfiltered = Order.get_kitchen_items(delivery_date)
+        file_path = None
+        if download == "kitchen_count":
+            file_path = make_kitchen_count(kitchen_list, delivery_date)
+        elif download == "labels":
+            file_path = make_labels(kitchen_list, delivery_date)
 
-        # filter out route=None clients and not geolocalized clients
-        kitchen_list = {}
-        geolocalized_client_ids = list(
-            Client.objects.filter(
-                pk__in=kitchen_list_unfiltered.keys(),
-                member__address__latitude__isnull=False,
-                member__address__longitude__isnull=False,
-            ).values_list("pk", flat=True)
-        )
+        if file_path:
+            return download_pdf(file_path)
 
-        for client_id, kitchen_item in kitchen_list_unfiltered.items():
-            if (
-                kitchen_item.routename is not None
-                and client_id in geolocalized_client_ids
-            ):
-                kitchen_list[client_id] = kitchen_item
-
-        component_lines = kcr_make_component_lines(kitchen_list, delivery_date)
-        meal_lines = kcr_make_meal_lines(kitchen_list)
-        preperation_lines_with_incompatible_ingr = kcr_make_preparation_lines(
-            kitchen_list, "only_clients_with_incompatible_ingredients"
-        )
-        preperation_lines_without_incompatible_ingr = kcr_make_preparation_lines(
-            kitchen_list, "only_clients_without_incompatible_ingredients"
-        )
-        if component_lines:
-            # we have orders on that date
-            num_pages = kcr_make_pages(  # kitchen count as PDF
-                delivery_date,
-                component_lines,
-                meal_lines,  # summary
-                preperation_lines_with_incompatible_ingr,
-                preperation_lines_without_incompatible_ingr,
-            )  # detail
-            num_labels = kcr_make_labels(  # meal labels as PDF
-                delivery_date,
-                kitchen_list,  # KitchenItems
-                component_lines[0].name,  # main dish name
-                component_lines[0].ingredients,
-            )  # main dish ingredients
-        else:
-            # no orders on that date
-            num_pages = 0
-            num_labels = 0
         return render(
             request,
             "kitchen_count.html",
-            {
-                "component_lines": component_lines,
-                "delivery_date": delivery_date,
-                "meal_lines": meal_lines,
-                "num_pages": num_pages,
-                "num_labels": num_labels,
-            },
+            {"delivery_date": delivery_date, "has_data": bool(kitchen_list)},
         )
 
 
@@ -1574,7 +1572,9 @@ def kcr_make_pages(
         Returns:
             An integer : The number of pages generated.
         """
-        doc = RLSimpleDocTemplate(get_kitchen_count_filename(kcr_date))
+        file_path = get_kitchen_count_file_path(kcr_date)
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        doc = RLSimpleDocTemplate(str(file_path))
         story = []
 
         # begin Summary section
@@ -1747,9 +1747,9 @@ def kcr_make_pages(
 
         # build full document
         doc.build(story, onFirstPage=myFirstPage, onLaterPages=myLaterPages)
-        return doc.page
+        return file_path
 
-    return go()  # returns number of pages generated
+    return go()  # returns the file path
 
 
 # END Kitchen count report view, helper classes and functions
@@ -2079,34 +2079,18 @@ def kcr_make_labels(kcr_date, kitchen_list, main_dish_name, main_dish_ingredient
     for label in sorted(meal_labels, key=lambda x: x.sortkey):
         sheet.add_label(label)
 
+    file_path = None
     if sheet.label_count > 0:
-        sheet.save(get_meals_label_filename(kcr_date))
-    return sheet.label_count
+        file_path = get_meals_label_file_path(kcr_date)
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        sheet.save(str(file_path))
+    return file_path
 
 
 # END Meal labels
 
 
 # Delivery route sheet view, helper classes and functions.
-
-
-class MealLabels(LoginRequiredMixin, PermissionRequiredMixin, generic.View):
-    permission_required = "sous_chef.read"
-
-    def get(self, request, **kwargs):
-        delivery_date = date.fromisoformat(request.GET["delivery_date"])
-        filename = get_meals_label_filename(delivery_date)
-        try:
-            f = open(filename, "rb")  # noqa: SIM115
-        except Exception as e:
-            raise Http404(f"File {filename} does not exist.") from e
-        response = HttpResponse(content_type="application/pdf")
-        response["Content-Disposition"] = 'attachment; filename="labels{}.pdf"'.format(
-            delivery_date.strftime("%Y%m%d")
-        )
-        response.write(f.read())
-        f.close()
-        return response
 
 
 class DeliveryRouteSheet(LoginRequiredMixin, PermissionRequiredMixin, generic.View):
