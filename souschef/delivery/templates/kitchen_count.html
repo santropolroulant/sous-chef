@@ -17,84 +17,49 @@
     </div>
 </div>
 
+<div class="ui stackable relaxed grid container">
+
+  <div class="sixteen wide column">
+
+      <div class="ui basic segment">
+      <div class="ui list">
+          <a class="item">
+              <i class="download icon"></i>
+              <div class="content">
+                  <div class="header">{% trans 'Kitchen Count and Labels' %}</div>
+                  {% if has_data %}
+                  <div class="description">You may download the Kitchen Count and Labels reports below.</div>
+                  {% else %}
+                  <div class="description">There is no data to download.</div>
+                  {% endif %}
+              </div>
+          </a>
+      </div>
+      <div class="ui row"></div>
+  </div>
+</div>
+</div>
 
 <div class="ui basic segment no-print">
-    {% if num_pages > 0 %}
-      <a href="{% url 'delivery:downloadKitchenCount' %}?delivery_date={{ delivery_date.isoformat }}" class="ui labeled icon right pink basic big button" title="{% trans 'Download the kitchen count report' %}">
+    {% if has_data %}
+      <a href="{% url 'delivery:kitchen_count' %}?delivery_date={{ delivery_date.isoformat }}&download=kitchen_count" class="ui labeled icon right pink basic big button" title="{% trans 'Download the kitchen count report' %}">
         <i class="download icon"></i>{% trans "Kitchen Count" %}
       </a>
     {% else %}
-      <a href="{% url 'delivery:downloadKitchenCount' %}?delivery_date={{ delivery_date.isoformat }}" class="ui disabled labeled icon right pink basic big button" title="{% trans 'No kitchen count report available' %}">
+      <a href="{% url 'delivery:kitchen_count' %}?delivery_date={{ delivery_date.isoformat }}&download=kitchen_count" class="ui disabled labeled icon right pink basic big button" title="{% trans 'No kitchen count report available' %}">
         <i class="download icon"></i>{% trans "Kitchen Count" %}
       </a>
     {% endif %}
-    {% if num_labels > 0 %}
-      <a href="{% url 'delivery:mealLabels' %}?delivery_date={{ delivery_date.isoformat }}" class="ui labeled icon right pink basic big button" title="{% trans 'Download the labels' %}">
+    {% if has_data %}
+      <a href="{% url 'delivery:kitchen_count' %}?delivery_date={{ delivery_date.isoformat }}&download=labels" class="ui labeled icon right pink basic big button" title="{% trans 'Download the labels' %}">
          <i class="download icon"></i>{% trans "Labels" %}
       </a>
     {% else %}
-        <a href="{% url 'delivery:mealLabels' %}?delivery_date={{ delivery_date.isoformat }}" class="ui disabled labeled icon right pink basic big button" title="{% trans 'No labels available' %}">
+        <a href="{% url 'delivery:kitchen_count' %}?delivery_date={{ delivery_date.isoformat }}&download=labels" class="ui disabled labeled icon right pink basic big button" title="{% trans 'No labels available' %}">
            <i class="download icon"></i>{% trans "Labels" %}
         </a>
     {% endif %}
 </div>
-
-
-<table class="ui very basic celled table">
-  <thead>
-   <tr class="top aligned">
-    <th class="">{% trans 'Component' %}</th>
-    <th class="">{% trans "TOTAL" %}<br>{% trans 'Regular' %}</th>
-    <th class="">{% trans "TOTAL" %}<br>{% trans 'Large' %}</th>
-    <th class="">{% trans 'Dish today' %}</th>
-    <th class="">{% trans 'Ingredients today' %}</th>
-   </tr>
-  </thead>
-  <tbody>
-    {% for obj in component_lines %}
-      <tr>
-        <td><strong>{{obj.component_group}}</strong></td>
-        <td>{{obj.rqty}}</td>
-        <td>{{obj.lqty}}</td>
-        <td>{{obj.name}}</td>
-        <td>{{obj.ingredients}}</td>
-      </tr>
-    {% endfor %}
-  </tbody>
-</table>
-
-<table class="ui very compact celled structured table">
-  <thead>
-   <tr class="top center aligned">
-    <th class="">{% trans 'Clashing ingredients' %}</th>
-    <th class="">{% trans 'Qty' %} - {% trans 'Reg' %}</th>
-    <th class="">{% trans 'Qty' %} - {% trans 'Lge' %}</th>
-    <th class="">{% trans 'Client' %}</th>
-    <th class="">{% trans 'Restrictions' %}</th>
-   </tr>
-  </thead>
-  <tbody>
-    {% for obj in meal_lines %}
-      <tr{% if obj.client == "" and obj.ingr_clash == "" %} class="active"{% endif %}>
-        {% if obj.span == "1" %}
-            <td><strong>{{obj.ingr_clash}}</strong></td>
-        {% elif obj.span != "-1" %}
-              <td rowspan={{obj.span}}>{{obj.ingr_clash}}</td>
-        {% endif %}
-        {% if obj.client == "SUBTOTAL" %}
-            <td class="center aligned"><strong>{{obj.rqty}}</strong></td>
-            <td class="center aligned"><strong>{{obj.lqty}}</strong></td>
-            <td><strong>{{obj.client}}</strong></td>
-        {% else %}
-            <td class="center aligned">{{obj.rqty}}</td>
-            <td class="center aligned">{{obj.lqty}}</td>
-            <td>{{obj.client}}</td>
-        {% endif %}
-        <td>{{obj.rest_ingr}}{% if obj.rest_ingr %} ; {% endif %} <strong>{{obj.rest_item}}</strong></td>
-      </tr>
-    {% endfor %}
-  </tbody>
-</table>
 
 {% if can_edit_data %}
 <div class="actions">

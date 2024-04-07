@@ -27,7 +27,7 @@
 
 <div class="row">
     <div class="column">
-        <a href="?print=yes&delivery_date={{ delivery_date.isoformat }}" class="ui big labeled icon right basic pink button {% if not all_configured %}disabled{% endif %}" title="{% trans 'Download the route sheets report' %}" target="_blank">
+        <a href="?delivery_date={{ delivery_date.isoformat }}&download=yes" class="ui big labeled icon right basic pink button {% if not all_configured %}disabled{% endif %}" title="{% trans 'Download the route sheets report' %}">
             <i class="download icon"></i>{% trans 'Route Sheets' %}
         </a>
         <i class="help-text question pink icon link" data-content="{% trans 'This is activated after organising all deliverable routes.' %}"></i>
