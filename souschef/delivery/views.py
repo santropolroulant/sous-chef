@@ -5,6 +5,7 @@ import textwrap
 from copy import deepcopy
 from dataclasses import dataclass
 from datetime import date, datetime
+from pathlib import Path
 from typing import List
 
 import labels  # package pylabels
@@ -82,20 +83,24 @@ LOGO_IMAGE = os.path.join(
 DELIVERY_STARTING_POINT_LAT_LONG = (45.516564, -73.575145)  # Santropol Roulant
 
 
-def _get_pdf_filename(base_filename, delivery_date):
-    return f"{base_filename.rstrip('.pdf')}_{delivery_date.strftime('%Y%m%d')}.pdf"
+def _get_pdf_file_path(filename, delivery_date):
+    delivery = delivery_date.strftime("%Y-%m-%d")
+    today = datetime.now().replace(microsecond=0).isoformat()
+    filepath = Path(filename)
+    new_name = f"{filepath.name.rstrip('.pdf')}_{delivery}__{today}.pdf"
+    return filepath.parent / delivery / new_name
 
 
-def get_meals_label_filename(delivery_date):
-    return _get_pdf_filename(settings.MEAL_LABELS_FILE, delivery_date)
+def get_meals_label_file_path(delivery_date):
+    return _get_pdf_file_path(settings.MEAL_LABELS_FILE, delivery_date)
 
 
-def get_kitchen_count_filename(delivery_date):
-    return _get_pdf_filename(settings.KITCHEN_COUNT_FILE, delivery_date)
+def get_kitchen_count_file_path(delivery_date):
+    return _get_pdf_file_path(settings.KITCHEN_COUNT_FILE, delivery_date)
 
 
-def get_route_sheets_filename(delivery_date):
-    return _get_pdf_filename(settings.ROUTE_SHEETS_FILE, delivery_date)
+def get_route_sheets_file_path(delivery_date):
+    return _get_pdf_file_path(settings.ROUTE_SHEETS_FILE, delivery_date)
 
 
 def get_orders_for_kitchen_count(order_statuses, delivery_date=None):
@@ -439,11 +444,11 @@ class RoutesInformation(LoginRequiredMixin, PermissionRequiredMixin, generic.Vie
                 }
             # generate PDF report
             MultiRouteReport.routes_make_pages(routes_dict, delivery_date)
-            filename = get_route_sheets_filename(delivery_date)
+            file_path = get_route_sheets_file_path(delivery_date)
             try:
-                f = open(filename, "rb")  # noqa: SIM115
+                f = open(file_path, "rb")  # noqa: SIM115
             except Exception as e:
-                raise Http404(f"File {filename} does not exist.") from e
+                raise Http404(f"File {file_path} does not exist.") from e
             response = HttpResponse(content_type="application/pdf")
             response[
                 "Content-Disposition"
@@ -867,8 +872,10 @@ class MultiRouteReport:
             Returns:
                 An integer : The number of pages generated.
             """
+            file_path = get_route_sheets_file_path(delivery_date)
+            file_path.parent.mkdir(parents=True, exist_ok=True)
             doc = MultiRouteReport.RLMultiRouteDocTemplate(
-                get_route_sheets_filename(delivery_date),
+                str(file_path),
                 leftMargin=0.5 * rl_inch,
                 rightMargin=0.5 * rl_inch,
                 bottomMargin=0.5 * rl_inch,
@@ -1038,11 +1045,11 @@ class KitchenCountDownload(LoginRequiredMixin, PermissionRequiredMixin, generic.
     def get(self, request, *args, **kwargs):
         delivery_date = date.fromisoformat(request.GET["delivery_date"])
         # download kitchen count report as PDF
-        filename = get_kitchen_count_filename(delivery_date)
+        file_path = get_kitchen_count_file_path(delivery_date)
         try:
-            f = open(filename, "rb")  # noqa: SIM115
+            f = open(file_path, "rb")  # noqa: SIM115
         except Exception as e:
-            raise Http404(f"File {filename} does not exist.") from e
+            raise Http404(f"File {file_path} does not exist.") from e
         response = HttpResponse(content_type="application/pdf")
         response[
             "Content-Disposition"
@@ -1574,7 +1581,9 @@ def kcr_make_pages(
         Returns:
             An integer : The number of pages generated.
         """
-        doc = RLSimpleDocTemplate(get_kitchen_count_filename(kcr_date))
+        file_path = get_kitchen_count_file_path(kcr_date)
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        doc = RLSimpleDocTemplate(str(file_path))
         story = []
 
         # begin Summary section
@@ -2080,7 +2089,9 @@ def kcr_make_labels(kcr_date, kitchen_list, main_dish_name, main_dish_ingredient
         sheet.add_label(label)
 
     if sheet.label_count > 0:
-        sheet.save(get_meals_label_filename(kcr_date))
+        file_path = get_meals_label_file_path(kcr_date)
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        sheet.save(str(file_path))
     return sheet.label_count
 
 
@@ -2095,11 +2106,11 @@ class MealLabels(LoginRequiredMixin, PermissionRequiredMixin, generic.View):
 
     def get(self, request, **kwargs):
         delivery_date = date.fromisoformat(request.GET["delivery_date"])
-        filename = get_meals_label_filename(delivery_date)
+        file_path = get_meals_label_file_path(delivery_date)
         try:
-            f = open(filename, "rb")  # noqa: SIM115
+            f = open(file_path, "rb")  # noqa: SIM115
         except Exception as e:
-            raise Http404(f"File {filename} does not exist.") from e
+            raise Http404(f"File {file_path} does not exist.") from e
         response = HttpResponse(content_type="application/pdf")
         response["Content-Disposition"] = 'attachment; filename="labels{}.pdf"'.format(
             delivery_date.strftime("%Y%m%d")
