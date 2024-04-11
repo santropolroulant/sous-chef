@@ -809,10 +809,9 @@ class ClientUpdatePaymentInformation(ClientUpdateInformation):
                 "city": None,
                 "apartment": None,
                 "postal_code": None,
-                "member": "[{}] {} {}".format(
-                    client.billing_member.id,
-                    client.billing_member.firstname,
-                    client.billing_member.lastname,
+                "member": (
+                    f"[{client.billing_member.id}] {client.billing_member.firstname} "
+                    f"{client.billing_member.lastname}"
                 ),
                 "same_as_client": client.member == client.billing_member,
                 "facturation": client.rate_type,
@@ -973,10 +972,9 @@ class ClientUpdateRelationshipsInformation(ClientUpdateInformation):
                 initial[i] = {
                     "firstname": None,
                     "lastname": None,
-                    "member": "[{}] {} {}".format(
-                        relationship.member.id,
-                        relationship.member.firstname,
-                        relationship.member.lastname,
+                    "member": (
+                        f"[{relationship.member.id}] {relationship.member.firstname} "
+                        f"{relationship.member.lastname}"
                     ),
                     "contact_type": contact_type,
                     "contact_value": contact_value,

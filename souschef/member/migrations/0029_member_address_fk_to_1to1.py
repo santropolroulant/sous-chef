@@ -20,10 +20,9 @@ def separate_shared_address_instances(apps, schema_editor):
             continue
         else:  # a.pk in address_ids
             print(
-                "Member #{} ({} {}) shares the Address #{}. I'm copying this "
-                "Address instance and relinking the member to it...".format(
-                    m.pk, m.firstname, m.lastname, a.pk
-                )
+                f"Member #{m.pk} ({m.firstname} {m.lastname}) shares the Address "
+                f"#{a.pk}. I'm copying this Address instance and relinking the member "
+                "to it..."
             )
             # Copy this object in DB
             a.pk = None

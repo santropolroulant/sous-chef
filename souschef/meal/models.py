@@ -132,8 +132,9 @@ class Component_ingredient(models.Model):
 
     def __str__(self):
         if self.date:
-            return "<{}> includes <{}> on <{}>".format(
-                self.component.name, self.ingredient.name, self.date
+            return (
+                f"<{self.component.name}> includes <{self.ingredient.name}> on "
+                f"<{self.date}>"
             )
         else:
             return f"<{self.component.name}> contains <{self.ingredient.name}>"

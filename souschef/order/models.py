@@ -496,19 +496,19 @@ class Order(models.Model):
             )
             if old_component:
                 # component group already exists in the order
-                kitchen_list[row.cid].meal_components[
-                    row.component_group
-                ] = old_component._replace(
-                    qty=old_component.qty + (row.total_quantity or 0)
+                kitchen_list[row.cid].meal_components[row.component_group] = (
+                    old_component._replace(
+                        qty=old_component.qty + (row.total_quantity or 0)
+                    )
                 )
             else:
                 # new component group for this order
-                kitchen_list[row.cid].meal_components[
-                    row.component_group
-                ] = MealComponent(
-                    id=row.component_id,
-                    name=row.component_name,
-                    qty=row.total_quantity or 0,
+                kitchen_list[row.cid].meal_components[row.component_group] = (
+                    MealComponent(
+                        id=row.component_id,
+                        name=row.component_name,
+                        qty=row.total_quantity or 0,
+                    )
                 )
             kitchen_list[row.cid] = kitchen_list[row.cid]._replace(
                 routename=row.routename
@@ -1238,11 +1238,10 @@ class OrderStatusChange(models.Model):
     change_time = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return "Order #{} status update: from {} to {}, on {}".format(
-            self.order.pk,
-            self.get_status_from_display(),
-            self.get_status_to_display(),
-            self.change_time,
+        return (
+            f"Order #{self.order.pk} status update: from "
+            f"{self.get_status_from_display()} to {self.get_status_to_display()}, on "
+            f"{self.change_time}"
         )
 
     def clean(self):
