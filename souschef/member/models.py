@@ -390,27 +390,17 @@ class ClientManager(models.Manager):
 
 class ActiveClientManager(ClientManager):
     def get_queryset(self):
-        return (
-            super().get_queryset().filter(status=Client.ACTIVE)
-        )
+        return super().get_queryset().filter(status=Client.ACTIVE)
 
 
 class OngoingClientManager(ClientManager):
     def get_queryset(self):
-        return (
-            super()
-            .get_queryset()
-            .filter(status=Client.ACTIVE, delivery_type="O")
-        )
+        return super().get_queryset().filter(status=Client.ACTIVE, delivery_type="O")
 
 
 class PendingClientManager(ClientManager):
     def get_queryset(self):
-        return (
-            super()
-            .get_queryset()
-            .filter(status=Client.PENDING)
-        )
+        return super().get_queryset().filter(status=Client.PENDING)
 
 
 class ContactClientManager(ClientManager):
@@ -782,11 +772,10 @@ class ClientScheduledStatus(models.Model):
         ordering = ["change_date"]
 
     def __str__(self):
-        return "Update {} status: from {} to {}, on {}".format(
-            self.client.member,
-            self.get_status_from_display(),
-            self.get_status_to_display(),
-            self.change_date,
+        return (
+            f"Update {self.client.member} status: from "
+            f"{self.get_status_from_display()} to {self.get_status_to_display()}, "
+            f"on {self.change_date}"
         )
 
     @property
@@ -895,12 +884,10 @@ class Relationship(models.Model):
     remark = models.TextField(blank=True)
 
     def __str__(self):
-        return "{} {} is {} member of {} {}".format(
-            self.member.firstname,
-            self.member.lastname,
-            self.get_type_display(),
-            self.client.member.firstname,
-            self.client.member.lastname,
+        return (
+            f"{self.member.firstname} {self.member.lastname} is "
+            f"{self.get_type_display()} member of {self.client.member.firstname} "
+            f"{self.client.member.lastname}"
         )
 
     def get_type_display(self):
@@ -961,8 +948,9 @@ class Client_option(models.Model):
     #    if option_group = other_order_item : No occurrence of Client_option
 
     def __str__(self):
-        return "{} {} <has> {}".format(
-            self.client.member.firstname, self.client.member.lastname, self.option.name
+        return (
+            f"{self.client.member.firstname} {self.client.member.lastname} <has> "
+            f"{self.option.name}"
         )
 
 
@@ -982,10 +970,9 @@ class Restriction(models.Model):
     )
 
     def __str__(self):
-        return "{} {} <restricts> {}".format(
-            self.client.member.firstname,
-            self.client.member.lastname,
-            self.restricted_item.name,
+        return (
+            f"{self.client.member.firstname} {self.client.member.lastname} "
+            f"<restricts> {self.restricted_item.name}"
         )
 
 
@@ -1005,10 +992,9 @@ class Client_avoid_ingredient(models.Model):
     )
 
     def __str__(self):
-        return "{} {} <has> {}".format(
-            self.client.member.firstname,
-            self.client.member.lastname,
-            self.ingredient.name,
+        return (
+            f"{self.client.member.firstname} {self.client.member.lastname} "
+            f"<has> {self.ingredient.name}"
         )
 
 
@@ -1028,8 +1014,7 @@ class Client_avoid_component(models.Model):
     )
 
     def __str__(self):
-        return "{} {} <has> {}".format(
-            self.client.member.firstname,
-            self.client.member.lastname,
-            self.component.name,
+        return (
+            f"{self.client.member.firstname} {self.client.member.lastname} "
+            f"<has> {self.component.name}"
         )

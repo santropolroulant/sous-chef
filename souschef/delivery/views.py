@@ -1073,35 +1073,34 @@ def get_kitchen_list(delivery_date):
     return kitchen_list
 
 
-def make_kitchen_count(kitchen_list, delivery_date):
-    component_lines = kcr_make_component_lines(kitchen_list, delivery_date)
-    meal_lines = kcr_make_meal_lines(kitchen_list)
+def make_kitchen_count(kitchen_list, component_lines, meal_lines, delivery_date):
+    if not component_lines:
+        # we have no orders on that date
+        return
     preperation_lines_with_incompatible_ingr = kcr_make_preparation_lines(
         kitchen_list, "only_clients_with_incompatible_ingredients"
     )
     preperation_lines_without_incompatible_ingr = kcr_make_preparation_lines(
         kitchen_list, "only_clients_without_incompatible_ingredients"
     )
-    if component_lines:
-        # we have orders on that date
-        return kcr_make_pages(  # kitchen count as PDF
-            delivery_date,
-            component_lines,
-            meal_lines,  # summary
-            preperation_lines_with_incompatible_ingr,
-            preperation_lines_without_incompatible_ingr,
-        )  # detail
+    return kcr_make_pages(  # kitchen count as PDF
+        delivery_date,
+        component_lines,
+        meal_lines,  # summary
+        preperation_lines_with_incompatible_ingr,
+        preperation_lines_without_incompatible_ingr,
+    )  # detail
 
 
-def make_labels(kitchen_list, delivery_date):
-    component_lines = kcr_make_component_lines(kitchen_list, delivery_date)
-    if component_lines:
-        return kcr_make_labels(  # meal labels as PDF
-            delivery_date,
-            kitchen_list,  # KitchenItems
-            component_lines[0].name,  # main dish name
-            component_lines[0].ingredients,
-        )  # main dish ingredients
+def make_labels(kitchen_list, component_lines, delivery_date):
+    if not component_lines:
+        return
+    return kcr_make_labels(  # meal labels as PDF
+        delivery_date,
+        kitchen_list,  # KitchenItems
+        component_lines[0].name,  # main dish name
+        component_lines[0].ingredients,
+    )  # main dish ingredients
 
 
 def download_pdf(file_path):
@@ -1136,11 +1135,16 @@ class KitchenCount(LoginRequiredMixin, PermissionRequiredMixin, generic.View):
                 + f"?delivery_date={request.GET['delivery_date']}"
             )
 
+        component_lines = kcr_make_component_lines(kitchen_list, delivery_date)
+        meal_lines = kcr_make_meal_lines(kitchen_list)
+
         file_path = None
         if download == "kitchen_count":
-            file_path = make_kitchen_count(kitchen_list, delivery_date)
+            file_path = make_kitchen_count(
+                kitchen_list, component_lines, meal_lines, delivery_date
+            )
         elif download == "labels":
-            file_path = make_labels(kitchen_list, delivery_date)
+            file_path = make_labels(kitchen_list, component_lines, delivery_date)
 
         if file_path:
             return download_pdf(file_path)
@@ -1148,7 +1152,12 @@ class KitchenCount(LoginRequiredMixin, PermissionRequiredMixin, generic.View):
         return render(
             request,
             "kitchen_count.html",
-            {"delivery_date": delivery_date, "has_data": bool(kitchen_list)},
+            {
+                "component_lines": component_lines,
+                "delivery_date": delivery_date,
+                "has_data": bool(kitchen_list),
+                "meal_lines": meal_lines,
+            },
         )
 
 

@@ -13,7 +13,7 @@ from django.urls import (
     reverse_lazy,
 )
 from django.utils import timezone as tz
-from django.utils.translation import ugettext
+from django.utils.translation import ugettext, ugettext_lazy
 from pypdf import PdfReader
 
 from souschef.meal.factories import (
@@ -149,7 +149,7 @@ class KitchenCountReportTestCase(SousChefTestMixin, TestCase):
             {"delivery_date": menu_day.isoformat()},
         )
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(b"There is no data to download." in response.content)
+        self.assertTrue(b"No kitchen count report available" in response.content)
 
     def test_pdf_kitchen_count_and_labels_reports(self):
         # generate orders today
@@ -1067,6 +1067,101 @@ class ExcludeMisconfiguredClientsTestCase(SousChefTestMixin, TestCase):
         self.assertEqual(
             response.content.count(b'<i class="warning sign red icon"></i>'), 3
         )
+
+    def test_step_3__component_table(self):
+        _ = self._refresh_orders()
+        response = self._today_meal()
+        self.assertRedirects(
+            response,
+            reverse("delivery:meal")
+            + f"?delivery_date={datetime.date.today().isoformat()}",
+        )
+        response = self.client.get(
+            reverse("delivery:kitchen_count"),
+            {"delivery_date": datetime.date.today().isoformat()},
+        )
+        component_lines = response.context["component_lines"]
+        main_dish_component_line = next(
+            cl
+            for cl in component_lines
+            if cl.component_group == ugettext_lazy("Main Dish")
+        )
+        self.assertEqual(main_dish_component_line.rqty, 0)
+        # only c_valid
+        self.assertEqual(main_dish_component_line.lqty, 1)
+
+    def test_step_3__clashing_ingredients_restrictions_table(self):
+        _ = self._refresh_orders()
+        response = self._today_meal()
+        self.assertRedirects(
+            response,
+            reverse("delivery:meal")
+            + f"?delivery_date={datetime.date.today().isoformat()}",
+        )
+        response = self.client.get(
+            reverse("delivery:kitchen_count"),
+            {"delivery_date": datetime.date.today().isoformat()},
+        )
+        meal_lines = response.context["meal_lines"]
+
+        # contains c_valid (10)
+        ml_valid_clash = next(
+            ml
+            for ml in meal_lines
+            if "chicken_10" in ml.ingr_clash and "wine_10" in ml.ingr_clash
+        )
+        self.assertEqual(ml_valid_clash.rqty, "0")
+        self.assertEqual(ml_valid_clash.lqty, "1")
+        ml_valid_restrict = next(ml for ml in meal_lines if "veggie_10" in ml.rest_item)
+        self.assertIn("Valid", ml_valid_restrict.client)
+
+        # doesn't contain c_nronly (20)
+        self.assertRaises(
+            StopIteration,
+            lambda: next(
+                ml
+                for ml in meal_lines
+                if "chicken_20" in ml.ingr_clash and "wine_20" in ml.ingr_clash
+            ),
+        )
+        self.assertRaises(
+            StopIteration,
+            lambda: next(ml for ml in meal_lines if "veggie_20" in ml.rest_item),
+        )
+
+        # doesn't contain c_ngonly (30)
+        self.assertRaises(
+            StopIteration,
+            lambda: next(
+                ml
+                for ml in meal_lines
+                if "chicken_30" in ml.ingr_clash and "wine_30" in ml.ingr_clash
+            ),
+        )
+        self.assertRaises(
+            StopIteration,
+            lambda: next(ml for ml in meal_lines if "veggie_30" in ml.rest_item),
+        )
+
+        # doesn't contain c_nrng (40)
+        self.assertRaises(
+            StopIteration,
+            lambda: next(
+                ml
+                for ml in meal_lines
+                if "chicken_40" in ml.ingr_clash and "wine_40" in ml.ingr_clash
+            ),
+        )
+        self.assertRaises(
+            StopIteration,
+            lambda: next(ml for ml in meal_lines if "veggie_40" in ml.rest_item),
+        )
+
+        # TOTAL SPECIALS
+        ml_last = meal_lines[-1]
+        self.assertEqual(ml_last.ingr_clash, "TOTAL SPECIALS")
+        self.assertEqual(ml_last.rqty, "0")
+        self.assertEqual(ml_last.lqty, "1")
 
     def test_step_3__labels(self):
         _ = self._refresh_orders()

@@ -101,7 +101,6 @@ def load_initial_data(client):
 
 
 class MemberContact(TestCase):
-
     """
     Contact information data should be attached to members.
     Three types of data: EMAIL, CELL and HOME.
@@ -743,9 +742,7 @@ class FormTestCase(TestCase):
             "wizard_goto_step": "",
         }
         for day in restriction_information_data["dietary_restriction-meals_schedule"]:
-            restriction_information_data[
-                f"dietary_restriction-size_{day}"
-            ] = "R"
+            restriction_information_data[f"dietary_restriction-size_{day}"] = "R"
             for component, _ in COMPONENT_GROUP_CHOICES:
                 name = f"dietary_restriction-{component}_{day}_quantity"
                 restriction_information_data[name] = 1
@@ -1405,9 +1402,7 @@ class FormTestCase(TestCase):
             "wizard_goto_step": "",
         }
         for day in [restriction_information_data["dietary_restriction-meals_schedule"]]:
-            restriction_information_data[
-                f"dietary_restriction-size_{day}"
-            ] = "R"
+            restriction_information_data[f"dietary_restriction-size_{day}"] = "R"
             for component, _ in COMPONENT_GROUP_CHOICES:
                 name = f"dietary_restriction-{component}_{day}_quantity"
                 restriction_information_data[name] = 1
@@ -1582,11 +1577,9 @@ class ClientStatusUpdateAndScheduleCase(SousChefTestMixin, TestCase):
         call_command("processscheduledstatuschange", stdout=out)
         with translation.override("en"):
             self.assertIn(
-                "client «{}» status updated from {} to {}".format(
-                    self.active_client.member,
-                    scheduled_change.get_status_from_display(),
-                    scheduled_change.get_status_to_display(),
-                ),
+                f"client «{self.active_client.member}» status updated from "
+                f"{scheduled_change.get_status_from_display()} to "
+                f"{scheduled_change.get_status_to_display()}",
                 out.getvalue(),
             )
         # Reload
@@ -2211,8 +2204,9 @@ class ClientUpdatePaymentInformationTestCase(ClientUpdateTestCase):
                 "city": None,
                 "apartment": None,
                 "postal_code": None,
-                "member": "[{}] {} {}".format(
-                    client.member.id, client.member.firstname, client.member.lastname
+                "member": (
+                    f"[{client.member.id}] {client.member.firstname} "
+                    f"{client.member.lastname}"
                 ),
                 "same_as_client": True,
                 "billing_payment_type": "eft",
@@ -2518,8 +2512,8 @@ class ClientUpdateRelationshipsTestCase(ClientUpdateTestCase):
                 "relationships-MAX_NUM_FORMS": "1000",
                 "relationships-0-firstname": None,
                 "relationships-0-lastname": None,
-                "relationships-0-member": "[{}] {} {}".format(
-                    member.id, member.firstname, member.lastname
+                "relationships-0-member": (
+                    f"[{member.id}] {member.firstname} {member.lastname}"
                 ),
                 "relationships-0-type": [],
                 "relationships-0-nature": "friend",
