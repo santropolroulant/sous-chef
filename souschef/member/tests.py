@@ -332,7 +332,7 @@ class ClientMealDefaultWeekTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.clientTest = ClientFactory(
-            delivery_type="O",
+            delivery_type=Client.ONGOING_DELIVERY,
             meal_default_week={
                 "main_dish_monday_quantity": 1,
                 "size_monday": "R",
@@ -729,7 +729,7 @@ class FormTestCase(TestCase):
         restriction_information_data = {
             "client_wizard-current_step": "dietary_restriction",
             "dietary_restriction-status": "on",
-            "dietary_restriction-delivery_type": "O",
+            "dietary_restriction-delivery_type": Client.ONGOING_DELIVERY,
             "dietary_restriction-meals_schedule": ["monday", "wednesday"],
             "dietary_restriction-meal_default": "1",
             "dietary_restriction-restrictions": [
@@ -822,7 +822,7 @@ class FormTestCase(TestCase):
         self.assertEqual(client.gender, "M")
 
         # test client delivery type
-        self.assertEqual(client.delivery_type, "O")
+        self.assertEqual(client.delivery_type, Client.ONGOING_DELIVERY)
 
         # test_relationship_name:
         self.assertEqual(
@@ -1396,7 +1396,7 @@ class FormTestCase(TestCase):
         restriction_information_data = {
             "client_wizard-current_step": "dietary_restriction",
             "dietary_restriction-status": "on",
-            "dietary_restriction-delivery_type": "O",
+            "dietary_restriction-delivery_type": Client.ONGOING_DELIVERY,
             "dietary_restriction-meals_schedule": "monday",
             "dietary_restriction-meal_default": "1",
             "wizard_goto_step": "",
@@ -2299,7 +2299,7 @@ class ClientUpdateDietaryRestrictionTestCase(ClientUpdateTestCase):
         data.update(
             {
                 "status": "A",
-                "delivery_type": "O",
+                "delivery_type": Client.ONGOING_DELIVERY,
                 "meals_schedule": ["monday"],
             }
         )
@@ -2325,7 +2325,7 @@ class ClientUpdateDietaryRestrictionTestCase(ClientUpdateTestCase):
         # Reload client data as it should have been changed in the database
         client = Client.objects.get(id=client.id)
         self.assertEqual(client.status, status)
-        self.assertEqual(client.delivery_type, "O")
+        self.assertEqual(client.delivery_type, Client.ONGOING_DELIVERY)
 
     def test_meal_default_should_be_set_for_scheduled_delivery_days(self):
         """
@@ -2340,7 +2340,7 @@ class ClientUpdateDietaryRestrictionTestCase(ClientUpdateTestCase):
         data.update(
             {
                 "status": client.status == Client.ACTIVE,
-                "delivery_type": "O",
+                "delivery_type": Client.ONGOING_DELIVERY,
                 "meals_schedule": ["monday"],
             }
         )
@@ -3027,6 +3027,127 @@ class ClientStatusSchedulerViewTestCase(SousChefTestMixin, TestCase):
         response = self.client.get(url)
         # Check
         self.assertEqual(response.status_code, 200)
+
+
+class ClientGetStatusPlannedAtDateTestCase(SousChefTestMixin, TestCase):
+    fixtures = ["routes.json"]
+    TODAY = date(2024, 4, 29)
+
+    def setUp(self):
+        self.client = ClientFactory()
+        self.client.status = Client.ACTIVE
+        # ensure client has no scheduled changes -- otherwise our tests won't work
+        self.assertFalse(self.client.scheduled_statuses.all())
+
+    def test_no_planned_changes__active_client(self):
+        planned_status = self.client.get_status_planned_at_date(
+            self.TODAY, today=self.TODAY
+        )
+        self.assertEqual(planned_status, Client.ACTIVE)
+
+    def test_no_planned_changes__paused_client(self):
+        self.client.status = Client.PAUSED
+        planned_status = self.client.get_status_planned_at_date(
+            self.TODAY, today=self.TODAY
+        )
+        self.assertEqual(planned_status, Client.PAUSED)
+
+    def test_planned_change_before_date(self):
+        change1 = ClientScheduledStatus.objects.create(
+            client=self.client,
+            status_from=Client.ACTIVE,
+            status_to=Client.PAUSED,
+            reason="test",
+            change_date=self.TODAY - timedelta(days=10),
+            change_state=ClientScheduledStatus.END,
+            operation_status=ClientScheduledStatus.TOBEPROCESSED,
+        )
+        ClientScheduledStatus.objects.create(
+            client=self.client,
+            status_from=Client.PAUSED,
+            status_to=Client.ACTIVE,
+            reason="test",
+            change_date=self.TODAY - timedelta(days=1),
+            change_state=ClientScheduledStatus.END,
+            operation_status=ClientScheduledStatus.TOBEPROCESSED,
+            pair=change1,
+        )
+        # Scheduled status is not considered because it is in the past
+        # (and was never processed)
+        planned_status = self.client.get_status_planned_at_date(
+            self.TODAY, today=self.TODAY
+        )
+        self.assertEqual(planned_status, Client.ACTIVE)
+
+    def test_planned_change_after_date(self):
+        change1 = ClientScheduledStatus.objects.create(
+            client=self.client,
+            status_from=Client.ACTIVE,
+            status_to=Client.PAUSED,
+            reason="test",
+            change_date=self.TODAY + timedelta(days=1),
+            change_state=ClientScheduledStatus.END,
+            operation_status=ClientScheduledStatus.TOBEPROCESSED,
+        )
+        ClientScheduledStatus.objects.create(
+            client=self.client,
+            status_from=Client.PAUSED,
+            status_to=Client.ACTIVE,
+            reason="test",
+            change_date=self.TODAY + timedelta(days=10),
+            change_state=ClientScheduledStatus.END,
+            operation_status=ClientScheduledStatus.TOBEPROCESSED,
+            pair=change1,
+        )
+        # Scheduled status is not considered because it is after the provided date
+        planned_status = self.client.get_status_planned_at_date(
+            self.TODAY, today=self.TODAY
+        )
+        self.assertEqual(planned_status, Client.ACTIVE)
+
+    def test_planned_change_in_range(self):
+        change1 = ClientScheduledStatus.objects.create(
+            client=self.client,
+            status_from=Client.ACTIVE,
+            status_to=Client.PAUSED,
+            reason="test",
+            change_date=self.TODAY + timedelta(days=1),
+            change_state=ClientScheduledStatus.END,
+            operation_status=ClientScheduledStatus.TOBEPROCESSED,
+        )
+        ClientScheduledStatus.objects.create(
+            client=self.client,
+            status_from=Client.PAUSED,
+            status_to=Client.STOPCONTACT,
+            reason="test",
+            change_date=self.TODAY + timedelta(days=10),
+            change_state=ClientScheduledStatus.END,
+            operation_status=ClientScheduledStatus.TOBEPROCESSED,
+            pair=change1,
+        )
+        # Scheduled status is considered because it is in the range scheduled changes
+        planned_status = self.client.get_status_planned_at_date(
+            self.TODAY + timedelta(days=1), today=self.TODAY
+        )
+        self.assertEqual(planned_status, Client.PAUSED)
+
+        # status is planned to go to STOPCONTACT on TODAY + 10 days
+        planned_status = self.client.get_status_planned_at_date(
+            self.TODAY + timedelta(days=10), today=self.TODAY
+        )
+        self.assertEqual(planned_status, Client.STOPCONTACT)
+
+        # status will be STOPCONTACT in 11 days
+        planned_status = self.client.get_status_planned_at_date(
+            self.TODAY + timedelta(days=11), today=self.TODAY
+        )
+        self.assertEqual(planned_status, Client.STOPCONTACT)
+
+        # As tested before, "today" the client is ACTIVE
+        planned_status = self.client.get_status_planned_at_date(
+            self.TODAY, today=self.TODAY
+        )
+        self.assertEqual(planned_status, Client.ACTIVE)
 
 
 class DeleteRestrictionViewTestCase(SousChefTestMixin, TestCase):

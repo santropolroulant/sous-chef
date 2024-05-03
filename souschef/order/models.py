@@ -169,8 +169,8 @@ class OrderManager(models.Manager):
         Order items will be created based on client's meals schedule.
 
         Parameters:
-          delivery_date : date on which orders are to be delivered
-          clients : a list of one or many client objects
+          delivery_date: date on which orders are to be delivered
+          clients: a list of one or many client objects
 
         Returns:
           Created orders.
@@ -667,6 +667,30 @@ class Order(models.Model):
         else:
             raise ValueError("Order.includes_a_bill only accepts " "boolean values.")
 
+    @property
+    def client_planned_status_at_delivery(self):
+        return self.client.get_status_planned_at_date(self.delivery_date)
+
+    @property
+    def client_planned_status_at_delivery_verbose(self):
+        return self.client.get_verbose_status(self.client_planned_status_at_delivery)
+
+    @property
+    def is_in_error_for_the_kitchen_count(self):
+        """Return True if the order is in error for the Kitchen Count
+        orders list page.
+
+        This is based on the client, which either:
+        - is not geolocalized;
+        - has no route;
+        - is not active at the delivery date.
+        """
+        return (
+            not self.client.is_geolocalized
+            or not self.client.route
+            or self.client_planned_status_at_delivery != "A"
+        )
+
 
 # Order.get_kitchen_items helper functions.
 
@@ -955,15 +979,15 @@ def day_delivery_items(delivery_date):
     FROM member_member
       JOIN member_client ON member_client.member_id = member_member.id
       JOIN member_route ON member_route.id = member_client.route_id
-      JOIN meal_menu ON meal_menu.date =                      %(delivery_date)s
+      JOIN meal_menu ON meal_menu.date = %(delivery_date)s
       JOIN order_order ON order_order.client_id = member_client.id
       JOIN order_order_item ON order_order_item.order_id = order_order.id
       JOIN meal_menu_component ON meal_menu_component.menu_id = meal_menu.id
       JOIN meal_component ON
         meal_component.id = meal_menu_component.component_id AND
-          meal_component.component_group = order_order_item.component_group
-    WHERE order_order.delivery_date =                     %(delivery_date)s AND
-      order_order.status !=                                 %(order_cancelled)s
+        meal_component.component_group = order_order_item.component_group
+    WHERE order_order.delivery_date = %(delivery_date)s AND
+      order_order.status != %(order_cancelled)s
     ORDER BY member_member.lastname, member_member.firstname
     """
     values = {

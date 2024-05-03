@@ -54,12 +54,12 @@ enableGeneratedOrdersCancelButton();
   </thead>
   <tbody>
     {% for order in orders %}
-      <tr {% if order.status == 'O' and order.client.status != 'A' %}class="error"{% endif %}>
+      <tr {% if order.status == 'O' and order.client_planned_status_at_delivery != 'A' %}class="error"{% endif %}>
         <td><strong><i class="hashtag icon"></i>{{order.id}}</strong></td>
         <td>
             <a href="{% url 'member:client_information' pk=order.client.id %}">{{order.client.member}}</a>
-            {% if order.client.status != 'A' %}
-            ({{ order.client.status_verbose }})
+            {% if order.client_planned_status_at_delivery != 'A' %}
+            ({{ order.client_planned_status_at_delivery_verbose }})
             {% endif %}
         </td>
         <td>{{order.delivery_date}}</td>

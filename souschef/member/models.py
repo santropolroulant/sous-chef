@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import datetime
 import json
 
@@ -430,6 +432,20 @@ class BirthdayContactClientManager(ClientManager):
         )
 
 
+def get_ongoing_clients_at_date(
+    the_date: datetime.date, today: datetime.date | None = None
+) -> list["Client"]:  # noqa: UP037
+    today = today or datetime.date.today()
+
+    # This way of doing things will not work with a very large client database.
+    # Hard-to-write optimized SQL queries would be required.
+    return [
+        client
+        for client in Client.objects.filter(delivery_type="O")
+        if client.get_status_planned_at_date(the_date, today) == Client.ACTIVE
+    ]
+
+
 class Client(models.Model):
     # Characters are used to keep a backward-compatibility
     # with the previous system.
@@ -439,6 +455,9 @@ class Client(models.Model):
     STOPNOCONTACT = "N"
     STOPCONTACT = "C"
     DECEASED = "I"
+
+    ONGOING_DELIVERY = "O"
+    EPISODIC_DELIVERY = "E"
 
     CLIENT_STATUS = (
         (PENDING, _("Pending")),
@@ -582,9 +601,13 @@ class Client(models.Model):
             age = today.year - self.birthdate.year - 1
         return age
 
+    @classmethod
+    def get_verbose_status(cls, status: str) -> str:
+        return dict(cls.CLIENT_STATUS).get(status, _("Unknown"))
+
     @property
     def status_verbose(self):
-        return dict(self.CLIENT_STATUS).get(self.status, _("Unknown"))
+        return self.get_verbose_status(self.status)
 
     @property
     def delivery_type_verbose(self):
@@ -684,25 +707,16 @@ class Client(models.Model):
         prefs = []
         simple_meals_schedule = self.simple_meals_schedule
 
-        if self.delivery_type == "E" or simple_meals_schedule is None:
+        if (
+            self.delivery_type == self.EPISODIC_DELIVERY
+            or simple_meals_schedule is None
+        ):
             return ()
         else:
             for day, meal_schedule in defaults:
                 if day in simple_meals_schedule:
                     prefs.append((day, meal_schedule))
             return prefs
-
-    @property
-    def is_in_error_for_the_kitchen_count(self):
-        """Return True if the client is in error for the Kitchen Count
-        orders list page.
-
-        The client is in error if either:
-        - is not not geolocalized;
-        - it has no route;
-        - it is not active.
-        """
-        return not self.is_geolocalized or not self.route or self.status != "A"
 
     def set_simple_meals_schedule(self, schedule):
         """
@@ -716,6 +730,37 @@ class Client(models.Model):
             option=meal_schedule_option,
             defaults={"value": json.dumps(schedule)},
         )
+
+    def get_status_planned_at_date(
+        self, the_date: datetime.date, today: datetime.date | None = None
+    ):
+        """
+        Get the planned `status` the client will have at date `the_date`.
+
+        Applies the latest scheduled `ClientScheduledStatus` and return the resulting
+        state.
+
+        `today` can be overriden for unit tests.
+        """
+        today = today or datetime.date.today()
+
+        planned_status = self.status
+
+        status_changes = (
+            self.scheduled_statuses.filter(
+                change_date__gte=today,
+                change_date__lte=the_date,
+                change_state=ClientScheduledStatus.END,
+                operation_status=ClientScheduledStatus.TOBEPROCESSED,
+            )
+            .order_by("-change_date")
+            .all()
+        )
+
+        if status_changes:
+            planned_status = status_changes[0].status_to
+
+        return planned_status
 
 
 class ClientScheduledStatus(models.Model):

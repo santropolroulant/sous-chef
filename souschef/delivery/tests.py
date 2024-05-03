@@ -865,7 +865,7 @@ class RefreshOrderViewTestCase(SousChefTestMixin, TestCase):
         ongoing_clients = ClientFactory.create_batch(
             10,
             status=Client.ACTIVE,
-            delivery_type="O",
+            delivery_type=Client.ONGOING_DELIVERY,
             meal_default_week=meals_default,
             route=RouteFactory(),
         )
@@ -937,7 +937,7 @@ class ExcludeMisconfiguredClientsTestCase(SousChefTestMixin, TestCase):
         cls.c_valid = ClientFactory(
             pk=10,
             status=Client.ACTIVE,
-            delivery_type="O",  # ongoing
+            delivery_type=Client.ONGOING_DELIVERY,  # ongoing
             route=cls.route1,
             meal_default_week=meal_default_week,
             member=MemberFactory(
@@ -947,7 +947,7 @@ class ExcludeMisconfiguredClientsTestCase(SousChefTestMixin, TestCase):
         cls.c_nr = ClientFactory(
             pk=20,
             status=Client.ACTIVE,
-            delivery_type="O",  # ongoing
+            delivery_type=Client.ONGOING_DELIVERY,  # ongoing
             route=None,
             meal_default_week=meal_default_week,
             member=MemberFactory(
@@ -957,7 +957,7 @@ class ExcludeMisconfiguredClientsTestCase(SousChefTestMixin, TestCase):
         cls.c_ng = ClientFactory(
             pk=30,
             status=Client.ACTIVE,
-            delivery_type="O",  # ongoing
+            delivery_type=Client.ONGOING_DELIVERY,  # ongoing
             route=cls.route2,
             meal_default_week=meal_default_week,
             member=MemberFactory(
@@ -969,7 +969,7 @@ class ExcludeMisconfiguredClientsTestCase(SousChefTestMixin, TestCase):
         cls.c_nrng = ClientFactory(
             pk=40,
             status=Client.ACTIVE,
-            delivery_type="O",  # ongoing
+            delivery_type=Client.ONGOING_DELIVERY,  # ongoing
             route=None,
             meal_default_week=meal_default_week,
             member=MemberFactory(

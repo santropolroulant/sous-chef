@@ -242,7 +242,7 @@ class ClientRestrictionsInformation(forms.Form):
         """
         super().clean()
 
-        if self.cleaned_data.get("delivery_type") == "O":
+        if self.cleaned_data.get("delivery_type") == Client.ONGOING_DELIVERY:
             # Ongoing
             meals_schedule = self.cleaned_data.get("meals_schedule")
             if meals_schedule is None:
@@ -279,9 +279,7 @@ class ClientRestrictionsInformation(forms.Form):
 
         for day, _day_display in DAYS_OF_WEEK:
             # If the main dish is set, size should also be set.
-            main_dish_quantity = self.cleaned_data.get(
-                f"main_dish_{day}_quantity"
-            )
+            main_dish_quantity = self.cleaned_data.get(f"main_dish_{day}_quantity")
             fieldname_size = f"size_{day}"
             if main_dish_quantity and not self.cleaned_data.get(fieldname_size):
                 self.add_error(
