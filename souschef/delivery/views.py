@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import collections
 import json
 import os
@@ -6,7 +8,6 @@ from copy import deepcopy
 from dataclasses import dataclass
 from datetime import date, datetime
 from pathlib import Path
-from typing import List
 
 import labels  # package pylabels
 from django.conf import settings
@@ -62,6 +63,7 @@ from souschef.member.models import (
     Client,
     DeliveryHistory,
     Route,
+    get_ongoing_clients_at_date,
 )
 from souschef.order.models import (
     ORDER_STATUS_CANCELLED,
@@ -131,7 +133,7 @@ def get_has_orders_in_status(orders, status):
     return get_number_of_orders_in_status(orders, status) > 0
 
 
-def get_kitchen_count_context(delivery_date):
+def get_kitchen_count_context(delivery_date: date):
     orders = get_orders_for_kitchen_count(
         delivery_date=delivery_date,
         order_statuses=(ORDER_STATUS_ORDERED, ORDER_STATUS_CANCELLED),
@@ -1414,7 +1416,7 @@ def format_client_name(firstname, lastname):
 class PreparationLine:
     preparation_method: str
     quantity: int
-    client_names: List[str]
+    client_names: list[str]
 
 
 def kcr_make_preparation_lines(kitchen_list, client_filter):
@@ -2246,7 +2248,7 @@ class RefreshOrderView(LoginRequiredMixin, PermissionRequiredMixin, generic.View
     def post(self, request):
         delivery_date = to_delivery_date(request.POST["generateOrderDate"])
         if delivery_date and delivery_date >= datetime.now().date():
-            clients = Client.ongoing.all()
+            clients = get_ongoing_clients_at_date(delivery_date)
             Order.objects.auto_create_orders(delivery_date, clients)
         else:
             print(f"RefreshOrderView: Invalid date provided: {delivery_date}")

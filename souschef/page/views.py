@@ -91,7 +91,7 @@ class HomeView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
                     if day in meals_schedule:
                         schedules[day] += meals_schedule[day].get("main_dish") or 0
 
-                if client.delivery_type == "E":  # Episodic
+                if client.delivery_type == Client.EPISODIC_DELIVERY:
                     meals_default = dict(client.meals_default)
                     for day, _ in DAYS_OF_WEEK:
                         episodic_defaults[day] += (

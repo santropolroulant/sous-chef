@@ -138,7 +138,7 @@ class HomeViewTestCase(TestCase):
                 },
             )
 
-            if delivery_type == "O":
+            if delivery_type == Client.ONGOING_DELIVERY:
                 # Ongoing: only two delivery days!
                 Client_option.objects.create(
                     client=client_factory,

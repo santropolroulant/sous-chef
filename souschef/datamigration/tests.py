@@ -42,7 +42,7 @@ class ImportMemberTestCase(TestCase):
         )
         self.assertEqual(dorothy.gender, "F")
         self.assertEqual(dorothy.language, "EN")
-        self.assertEqual(dorothy.delivery_type, "O")
+        self.assertEqual(dorothy.delivery_type, Client.ONGOING_DELIVERY)
         self.assertEqual(dorothy.route.name, "McGill")
         self.assertEqual(dorothy.delivery_note, "Code entree: 17")
         self.assertEqual(dorothy.alert, "communicate with her sister")
