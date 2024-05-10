@@ -20,6 +20,10 @@ class ComponentsInline(admin.TabularInline):
 
 class ComponentIngredientInline(admin.TabularInline):
     model = Component_ingredient
+    fields = ("ingredient",)
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(date=None)
 
 
 class IncompatibilityInline(admin.TabularInline):
