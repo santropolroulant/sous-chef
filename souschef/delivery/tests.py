@@ -1110,8 +1110,8 @@ class ExcludeMisconfiguredClientsTestCase(SousChefTestMixin, TestCase):
             for ml in meal_lines
             if "chicken_10" in ml.ingr_clash and "wine_10" in ml.ingr_clash
         )
-        self.assertEqual(ml_valid_clash.rqty, "0")
-        self.assertEqual(ml_valid_clash.lqty, "1")
+        self.assertEqual(ml_valid_clash.rqty, 0)
+        self.assertEqual(ml_valid_clash.lqty, 1)
         ml_valid_restrict = next(ml for ml in meal_lines if "veggie_10" in ml.rest_item)
         self.assertIn("Valid", ml_valid_restrict.client)
 
@@ -1160,8 +1160,8 @@ class ExcludeMisconfiguredClientsTestCase(SousChefTestMixin, TestCase):
         # TOTAL SPECIALS
         ml_last = meal_lines[-1]
         self.assertEqual(ml_last.ingr_clash, "TOTAL SPECIALS")
-        self.assertEqual(ml_last.rqty, "0")
-        self.assertEqual(ml_last.lqty, "1")
+        self.assertEqual(ml_last.rqty, 0)
+        self.assertEqual(ml_last.lqty, 1)
 
     def test_step_3__labels(self):
         _ = self._refresh_orders()

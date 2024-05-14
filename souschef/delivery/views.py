@@ -1222,8 +1222,8 @@ def meal_line(kititm):
     """
     return MealLine(
         client=format_client_name(kititm.firstname, kititm.lastname),
-        rqty=(str(kititm.meal_qty) if kititm.meal_size == SIZE_CHOICES_REGULAR else ""),
-        lqty=(str(kititm.meal_qty) if kititm.meal_size == SIZE_CHOICES_LARGE else ""),
+        rqty=(kititm.meal_qty if kititm.meal_size == SIZE_CHOICES_REGULAR else 0),
+        lqty=(kititm.meal_qty if kititm.meal_size == SIZE_CHOICES_LARGE else 0),
         ingr_clash="",
         rest_ingr=", ".join(
             sorted(
@@ -1297,8 +1297,8 @@ def kcr_make_meal_lines(kitchen_list):
             # ingredients
             meal_lines[line_start] = meal_lines[line_start]._replace(
                 client="SUBTOTAL",
-                rqty=str(rsubtotal),
-                lqty=str(lsubtotal),
+                rqty=rsubtotal,
+                lqty=lsubtotal,
                 ingr_clash=", ".join(ingredients_clashing),
                 span=str(line_end - line_start),
             )
@@ -1315,7 +1315,7 @@ def kcr_make_meal_lines(kitchen_list):
 
     meal_lines.append(
         MealLine(*meal_line_fields[1::2])._replace(
-            rqty=str(rtotal), lqty=str(ltotal), ingr_clash="TOTAL SPECIALS"
+            rqty=rtotal, lqty=ltotal, ingr_clash="TOTAL SPECIALS"
         )
     )
 
@@ -1417,6 +1417,20 @@ class PreparationLine:
     preparation_method: str
     quantity: int
     client_names: list[str]
+
+
+def get_portions(regular_qty, large_qty):
+    # A large portion is worth 1.5 regular portions.
+    portions = regular_qty + large_qty * 1.5
+    # Remove '.0' (keep number as integer if there is no decimal part)
+    if portions == int(portions):
+        portions = int(portions)
+    return portions
+
+
+def qty_paragraph(qty: int | float, style):
+    # 0 will not be displayed
+    return RLParagraph(str(qty or ""), style)
 
 
 def kcr_make_preparation_lines(kitchen_list, client_filter):
@@ -1540,6 +1554,57 @@ def kcr_make_pages(
         drawHeader(canvas, doc)
         canvas.restoreState()
 
+    def get_component_table():
+        small_left = deepcopy(styles["SmallRight"])
+        small_left.alignment = 0
+
+        rows = []
+        rows.append(
+            [
+                RLParagraph("Component", styles["NormalLeft"]),
+                RLParagraph("Total", styles["NormalLeft"]),
+                "",
+                "",
+                RLParagraph("Ingredients", styles["NormalLeft"]),
+            ]
+        )
+        rows.append(
+            [
+                "",
+                RLParagraph("Regular", styles["SmallRight"]),
+                RLParagraph("Large", styles["SmallRight"]),
+                RLParagraph("Portions", styles["SmallRight"]),
+                "",
+            ]
+        )
+        for cl in component_lines:
+            portions = get_portions(cl.rqty, cl.lqty)
+            rows.append(
+                [
+                    cl.component_group,
+                    qty_paragraph(cl.rqty, styles["NormalRight"]),
+                    qty_paragraph(cl.lqty, styles["NormalRight"]),
+                    # To make reading the table easier, do not display the portions if
+                    # there are no large quantity, as then the number of portions would
+                    # be the same as the regular quantity.
+                    qty_paragraph(portions, styles["NormalRight"]) if cl.lqty else "",
+                    RLParagraph(cl.ingredients, styles["NormalLeft"]),
+                ]
+            )
+        return RLTable(
+            rows,
+            colWidths=(100, 40, 40, 40, 300),
+            style=[
+                # style, start cell, end cell, params
+                ("VALIGN", (0, 2), (-1, -1), "TOP"),
+                ("LINEABOVE", (0, 0), (-1, 0), 1, rl_colors.black),
+                ("LINEBELOW", (0, 0), (-1, 0), 1, rl_colors.black),
+                ("LINEBEFORE", (0, 0), (0, 0), 1, rl_colors.black),
+                ("LINEAFTER", (-1, 0), (-1, 0), 1, rl_colors.black),
+                ("SPAN", (1, 0), (2, 0)),
+            ],
+        )
+
     def get_food_preperation_table(preperation_lines, heading_suffix):
         rows = []
         line = 0
@@ -1589,7 +1654,6 @@ def kcr_make_pages(
         story = []
 
         # begin Summary section
-        rows = []
 
         # Menu name
         menu = component_lines[0].name if component_lines else ""
@@ -1600,48 +1664,7 @@ def kcr_make_pages(
         story.append(RLParagraph(menu, title_style))
         story.append(RLSpacer(1, 0.5 * rl_inch))
 
-        # Component table
-        small_left = deepcopy(styles["SmallRight"])
-        small_left.alignment = 0
-
-        rows.append(
-            [
-                RLParagraph("Component", styles["NormalLeft"]),
-                RLParagraph("Total", styles["NormalLeft"]),
-                "",
-                RLParagraph("Ingredients", styles["NormalLeft"]),
-            ]
-        )
-        rows.append(
-            [
-                "",
-                RLParagraph("Regular", small_left),
-                RLParagraph("Large", small_left),
-                "",
-            ]
-        )
-        for cl in component_lines:
-            rows.append(
-                [
-                    cl.component_group,
-                    cl.rqty,
-                    cl.lqty,
-                    RLParagraph(cl.ingredients, styles["NormalLeft"]),
-                ]
-            )
-        tab = RLTable(
-            rows,
-            colWidths=(100, 40, 40, 340),
-            style=[
-                # style, start cell, end cell, params
-                ("VALIGN", (0, 2), (-1, -1), "TOP"),
-                ("LINEABOVE", (0, 0), (-1, 0), 1, rl_colors.black),
-                ("LINEBELOW", (0, 0), (-1, 0), 1, rl_colors.black),
-                ("LINEBEFORE", (0, 0), (0, 0), 1, rl_colors.black),
-                ("LINEAFTER", (-1, 0), (-1, 0), 1, rl_colors.black),
-                ("SPAN", (1, 0), (2, 0)),
-            ],
-        )
+        tab = get_component_table()
         story.append(tab)
         story.append(RLSpacer(1, 0.25 * rl_inch))
         # end Summary section
@@ -1655,6 +1678,7 @@ def kcr_make_pages(
                 RLParagraph("Clashing ingredients", styles["NormalLeft"]),
                 RLParagraph("Regular", styles["NormalRight"]),
                 RLParagraph("Large", styles["NormalRight"]),
+                RLParagraph("Portions", styles["NormalRight"]),
                 "",
                 RLParagraph("Client & Food Prep", styles["NormalLeft"]),
                 RLParagraph("Other restrictions", styles["NormalLeft"]),
@@ -1670,9 +1694,11 @@ def kcr_make_pages(
                 rows.append(
                     [
                         RLParagraph(ml.ingr_clash or "∅", styles["NormalLeftBold"]),
-                        RLParagraph(ml.rqty, styles["NormalRightBold"]),
-                        RLParagraph(ml.lqty, styles["NormalRightBold"]),
-                        "",
+                        qty_paragraph(ml.rqty, styles["NormalRightBold"]),
+                        qty_paragraph(ml.lqty, styles["NormalRightBold"]),
+                        qty_paragraph(
+                            get_portions(ml.rqty, ml.lqty), styles["NormalRightBold"]
+                        ),
                         "",
                         "",
                     ]
@@ -1714,8 +1740,12 @@ def kcr_make_pages(
                 rows.append(
                     [
                         value,
-                        RLParagraph(ml.rqty, styles[qty_style]),
-                        RLParagraph(ml.lqty, styles[qty_style]),
+                        RLParagraph(str(ml.rqty or ""), styles[qty_style]),
+                        RLParagraph(str(ml.lqty or ""), styles[qty_style]),
+                        RLParagraph(
+                            str(get_portions(ml.rqty, ml.lqty) or ""),
+                            styles[qty_style],
+                        ),
                         "",
                         [
                             RLParagraph(client, styles["NormalLeft"]),
@@ -1735,7 +1765,7 @@ def kcr_make_pages(
                 line += 1
             # END IF
         # END FOR
-        tab = RLTable(rows, colWidths=(150, 50, 50, 20, 100, 150), repeatRows=1)
+        tab = RLTable(rows, colWidths=(130, 50, 50, 50, 20, 100, 120), repeatRows=1)
         tab.setStyle(tab_style)
         story.append(tab)
         story.append(RLSpacer(1, 1 * rl_inch))
