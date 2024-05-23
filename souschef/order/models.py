@@ -443,12 +443,11 @@ class Order(models.Model):
                 # found new avoid ingredient clash in sides
                 kitchen_list[row.cid].sides_clashes.append(row.ingredient)
 
-                # This might be reactivated shortly:
-                # # we also add side clash ingredients into main ingredient clashes
-                # # so they can be grouped and displayed together
-                # kitchen_list[row.cid].incompatible_ingredients.append(
-                #     f"{row.ingredient} (sides)"
-                # )
+                # we also add side clash ingredients into main ingredient clashes
+                # so they can be grouped and displayed together
+                kitchen_list[row.cid].incompatible_ingredients.append(
+                    f"{row.ingredient} (sides)"
+                )
             if row.ingredient not in kitchen_list[row.cid].avoid_ingredients:
                 # remember ingredient to avoid
                 kitchen_list[row.cid].avoid_ingredients.append(row.ingredient)
@@ -472,6 +471,13 @@ class Order(models.Model):
             ):
                 # found new restriction clash in sides
                 kitchen_list[row.cid].sides_clashes.append(row.restricted_item)
+
+                # we also add side clash ingredients into main ingredient clashes
+                # so they can be grouped and displayed together
+                kitchen_list[row.cid].incompatible_ingredients.append(
+                    f"{row.ingredient} (sides)"
+                )
+
             if row.restricted_item not in kitchen_list[row.cid].restricted_items:
                 # remember restricted_item
                 kitchen_list[row.cid].restricted_items.append(row.restricted_item)
@@ -491,25 +497,23 @@ class Order(models.Model):
                     meal_qty=(kitchen_list[row.cid].meal_qty + row.total_quantity),
                     meal_size=row.size,
                 )
+            component = None
             old_component = kitchen_list[row.cid].meal_components.get(
                 row.component_group
             )
             if old_component:
                 # component group already exists in the order
-                kitchen_list[row.cid].meal_components[row.component_group] = (
-                    old_component._replace(
-                        qty=old_component.qty + (row.total_quantity or 0)
-                    )
+                component = old_component._replace(
+                    qty=old_component.qty + (row.total_quantity or 0)
                 )
             else:
                 # new component group for this order
-                kitchen_list[row.cid].meal_components[row.component_group] = (
-                    MealComponent(
-                        id=row.component_id,
-                        name=row.component_name,
-                        qty=row.total_quantity or 0,
-                    )
+                component = MealComponent(
+                    id=row.component_id,
+                    name=row.component_name,
+                    qty=row.total_quantity or 0,
                 )
+            kitchen_list[row.cid].meal_components[row.component_group] = component
             kitchen_list[row.cid] = kitchen_list[row.cid]._replace(
                 routename=row.routename
             )
