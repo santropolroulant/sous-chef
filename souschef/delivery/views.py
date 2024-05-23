@@ -1238,32 +1238,15 @@ def meal_line(kititm):
     )
 
 
-def kcr_cumulate(regular, large, meal):
-    """Count cumulative meal quantities by size.
-
-    Based on the size and on the number of servings of the 'meal',
-    calculate the new cumulative quantities by size.
-
-    Args:
-        regular : carried over quantity of regular size main dishes.
-        large : carried over quantity of large size main dishes.
-        meal : MealLine object
-
-    Returns:
-        A tuple of the new cumulative quantities : (regular, large)
-    """
-    if meal.meal_size == SIZE_CHOICES_REGULAR:
-        regular = regular + meal.meal_qty
-    else:
-        large = large + meal.meal_qty
-    return (regular, large)
-
-
 def kcr_make_meal_lines(kitchen_list):
     meal_lines = []
-    rtotal, ltotal = (0, 0)
+    specials_regular_total_qty = 0
+    specials_large_total_qty = 0
+    side_clashes_regular_total_qty = 0
+    side_clashes_large_total_qty = 0
     # Ingredients clashes (and other columns)
-    rsubtotal, lsubtotal = (0, 0)
+    regular_subtotal = 0
+    large_subtotal = 0
     clients = iter(
         sorted(
             [
@@ -1277,15 +1260,27 @@ def kcr_make_meal_lines(kitchen_list):
 
     # first line of a combination of ingredients
     line_start = 0
-    rsubtotal, lsubtotal = (0, 0)
+    regular_subtotal = 0
+    large_subtotal = 0
     client_id, kitchen_item = next(clients, (0, 0))  # has end sentinel
     while client_id > 0:
-        if rsubtotal == 0 and lsubtotal == 0:
+        if regular_subtotal == 0 and large_subtotal == 0:
             # add line for subtotal at top of combination
             meal_lines.append(MealLine(*meal_line_fields[1::2]))
         ingredients_clashing = kitchen_item.incompatible_ingredients
         meal_lines.append(meal_line(kitchen_item))
-        rsubtotal, lsubtotal = kcr_cumulate(rsubtotal, lsubtotal, kitchen_item)
+
+        if kitchen_item.meal_size == SIZE_CHOICES_REGULAR:
+            regular_subtotal += kitchen_item.meal_qty
+        else:
+            large_subtotal += kitchen_item.meal_qty
+
+        if kitchen_item.sides_clashes:
+            if kitchen_item.meal_size == SIZE_CHOICES_REGULAR:
+                side_clashes_regular_total_qty += kitchen_item.meal_qty
+            else:
+                side_clashes_large_total_qty += kitchen_item.meal_qty
+
         client_id, kitchen_item = next(clients, (0, 0))
         if (
             client_id == 0
@@ -1297,13 +1292,16 @@ def kcr_make_meal_lines(kitchen_list):
             # ingredients
             meal_lines[line_start] = meal_lines[line_start]._replace(
                 client="SUBTOTAL",
-                rqty=rsubtotal,
-                lqty=lsubtotal,
+                rqty=regular_subtotal,
+                lqty=large_subtotal,
                 ingr_clash=", ".join(ingredients_clashing),
                 span=str(line_end - line_start),
             )
-            rtotal, ltotal = (rtotal + rsubtotal, ltotal + lsubtotal)
-            rsubtotal, lsubtotal = (0, 0)
+            specials_regular_total_qty, specials_large_total_qty = (
+                specials_regular_total_qty + regular_subtotal,
+                specials_large_total_qty + large_subtotal,
+            )
+            regular_subtotal, large_subtotal = (0, 0)
             # hide ingredients for lines following the first
             for j in range(line_start + 1, line_end):
                 meal_lines[j] = meal_lines[j]._replace(span="-1")
@@ -1315,7 +1313,16 @@ def kcr_make_meal_lines(kitchen_list):
 
     meal_lines.append(
         MealLine(*meal_line_fields[1::2])._replace(
-            rqty=rtotal, lqty=ltotal, ingr_clash="TOTAL SPECIALS"
+            rqty=specials_regular_total_qty,
+            lqty=specials_large_total_qty,
+            ingr_clash="TOTAL SPECIALS",
+        )
+    )
+    meal_lines.append(
+        MealLine(*meal_line_fields[1::2])._replace(
+            rqty=side_clashes_regular_total_qty,
+            lqty=side_clashes_large_total_qty,
+            ingr_clash="TOTAL SIDE CLASHES",
         )
     )
 
@@ -1361,7 +1368,7 @@ def kcr_make_component_lines(kitchen_list, kcr_date):
                 component_group == COMPONENT_GROUP_CHOICES_MAIN_DISH
                 and component_lines[component_group].name == ""
             ):
-                # not yet got main dish name and ingredients, do it
+                # For the main dish we need to get the ingredients.
                 component_lines[component_group] = component_lines[
                     component_group
                 ]._replace(
@@ -1403,7 +1410,25 @@ def kcr_make_component_lines(kitchen_list, kcr_date):
             )
         )
     else:
-        component_lines_sorted = []
+        return []
+
+    # Add sides as the second line
+    sides_component = Component.objects.get(
+        component_group=COMPONENT_GROUP_CHOICES_SIDES
+    )
+    sides_line = ComponentLine(
+        component_group=sides_component.name,
+        rqty=0,
+        lqty=0,
+        name=sides_component.name,
+        ingredients=", ".join(
+            [
+                ing.name
+                for ing in Component.get_day_ingredients(sides_component.id, kcr_date)
+            ]
+        ),
+    )
+    component_lines_sorted.insert(1, sides_line)
 
     return component_lines_sorted
 

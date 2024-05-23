@@ -1158,8 +1158,14 @@ class ExcludeMisconfiguredClientsTestCase(SousChefTestMixin, TestCase):
         )
 
         # TOTAL SPECIALS
-        ml_last = meal_lines[-1]
+        ml_last = meal_lines[-2]
         self.assertEqual(ml_last.ingr_clash, "TOTAL SPECIALS")
+        self.assertEqual(ml_last.rqty, 0)
+        self.assertEqual(ml_last.lqty, 1)
+
+        # TOTAL SIDE CLASHES
+        ml_last = meal_lines[-1]
+        self.assertEqual(ml_last.ingr_clash, "TOTAL SIDE CLASHES")
         self.assertEqual(ml_last.rqty, 0)
         self.assertEqual(ml_last.lqty, 1)
 
