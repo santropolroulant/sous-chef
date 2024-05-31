@@ -1,6 +1,6 @@
 # Installing Sous-Chef
 
-These instructions document how to install Sous-Chef on Debian 10.
+These instructions document how to install Sous-Chef on Ubuntu 22.04.
 
 To update an existing installation, see [UPDATE.md](UPDATE.md).
 
@@ -9,17 +9,30 @@ To update an existing installation, see [UPDATE.md](UPDATE.md).
 Become root, then install the dependencies.
 
 ```
-apt install mariadb-server nginx libnginx-mod-http-fancyindex gdal-bin python3 \
-    python3-pip libmariadb-dev-compat
+sudo su -
+apt install --no-install-recommends mariadb-server nginx libnginx-mod-http-fancyindex gdal-bin python3 \
+    python3-pip libmariadb-dev-compat build-essential
+
+# Install python 3.7 (old version)
+add-apt-repository ppa:deadsnakes/ppa -y
+apt update
+apt install --no-install-recommends python3.7 python3.7-distutils python3.7-dev
+wget https://bootstrap.pypa.io/get-pip.py
+python3.7 get-pip.py
+
 # Invoke pip with 'python3 -m pip' to avoid a warning about a wrapper script
-python3 -m pip install -U pip certifi
-python3 -m pip install gunicorn
-python3 -m pip install souschef
+python3.7 -m pip install -U pip certifi
+python3.7 -m pip install gunicorn
+python3.7 -m pip install souschef
+
+# PLEASE TEMPORARY USE THIS SPECIFIC VERSION
+# todo: we need to update or create a pip-freeze
+python3.7 -m pip install pytz==2022.7.1
 ```
 
 To install a development version of Sous-Chef from the PyPI test index, run:
 ```
-python3 -m pip install --extra-index-url https://test.pypi.org/simple/ souschef==1.3.0.dev2
+python3.7 -m pip install --extra-index-url https://test.pypi.org/simple/ souschef==1.3.0.dev2
 ```
 
 2. Configure the database
@@ -30,11 +43,12 @@ Secure mariadb:
 mysql_secure_installation
 # When prompted for the current password for root, press the enter key (since no password is defined).
 # Then answer yes to all questions (and provide asked information):
-# -> Set root password
-# -> Remove anonymous users
-# -> Disallow root login remotely
-# -> Remove test database and access to it
-# -> Reload privilege tables now
+# -> Switch to unix_socket authentication -> Yes
+# -> Change root password -> Yes
+# -> Remove anonymous users -> Yes
+# -> Disallow root login remotely -> Yes
+# -> Remove test database and access to it -> Yes
+# -> Reload privilege tables now -> Yes
 ```
 
 Create the database and the souschef user.
@@ -43,7 +57,7 @@ Create the database and the souschef user.
 mariadb -u root -p
 MariaDB [(none)]> CREATE DATABASE souschefdb CHARACTER SET utf8;
 MariaDB [(none)]> CREATE USER souschefuser@localhost IDENTIFIED BY '...strong password here...';
-MariaDB [(none)]> GRANT SELECT, INSERT, UPDATE, DELETE ON souschefdb.* TO souschefuser@localhost;
+MariaDB [(none)]> GRANT ALL ON souschefdb.* TO souschefuser@localhost;
 MariaDB [(none)]> FLUSH PRIVILEGES;
 MariaDB [(none)]> quit
 ```
@@ -91,16 +105,14 @@ for line in `cat /etc/souschef.conf`; do export $line; done
 
 # Collect the static files. To be done after installation and after each
 # version upgrade.
-python3 manage.py collectstatic --noinput
-
-# Create the tables. When run after a version upgade it ensures the database
-# schema is up to date.
-# Database migration needs to run as the root user and not as souschefdb.
-SOUSCHEF_DJANGO_DB_USER=root SOUSCHEF_DJANGO_DB_PASSWORD=...password... python3 manage.py migrate
+python3.7 manage.py collectstatic --noinput
 
 # Create a user with administrator privileges.
 # To be done once only.
-python3 manage.py createsuperuser
+python3.7 manage.py createsuperuser
+
+# You will be asked to set a default git user, set your
+# personal info or the one of your organization
 ```
 
 4. Configure the nginx server
