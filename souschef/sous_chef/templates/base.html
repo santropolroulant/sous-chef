@@ -20,7 +20,7 @@
 
 <body>
     <!-- Responsive sidebar menu -->
-    <div class="ui inverted vertical menu left sidebar">
+    <div class="ui inverted vertical menu {% if SC_ENVIRONMENT_NAME == 'STAGING' %}staging-color{% endif %} left sidebar">
         {% include "system/menu.html" %}
     </div>
     <!-- Main content grid -->
