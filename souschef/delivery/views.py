@@ -36,13 +36,11 @@ from django.utils.translation import ugettext
 from django.utils.translation import ugettext_lazy as _
 from django.views import generic
 from django_filters.views import FilterView
-from reportlab.graphics import shapes as rl_shapes
 from reportlab.lib import colors as rl_colors
 from reportlab.lib import enums as rl_enums
 from reportlab.lib.styles import ParagraphStyle as RLParagraphStyle
 from reportlab.lib.styles import getSampleStyleSheet as rl_getSampleStyleSheet
 from reportlab.lib.units import inch as rl_inch
-from reportlab.pdfbase import pdfmetrics as rl_pdfmetrics
 from reportlab.platypus import PageBreak as RLPageBreak
 from reportlab.platypus import Paragraph as RLParagraph
 from reportlab.platypus import SimpleDocTemplate as RLSimpleDocTemplate
@@ -50,6 +48,7 @@ from reportlab.platypus import Spacer as RLSpacer
 from reportlab.platypus import Table as RLTable
 from reportlab.platypus import TableStyle as RLTableStyle
 
+from souschef.delivery.meal_labels import draw_label
 from souschef.meal.models import (
     COMPONENT_GROUP_CHOICES,
     COMPONENT_GROUP_CHOICES_MAIN_DISH,
@@ -1849,165 +1848,6 @@ meal_label_fields = [  # Contents for Meal Labels.
     [],
 ]  # List of strings
 MealLabel = collections.namedtuple("MealLabel", meal_label_fields[0::2])
-
-
-def draw_label(label, width, height, data):
-    """Draw a single Meal Label on the sheet.
-
-    Callback function that is used by the labels generator.
-
-    Args:
-        label : Object passed by pylabels.
-        width : Single label width in font points.
-        height : Single label height in font points.
-        data : A MealLabel namedtuple.
-    """
-    # dimensions are in font points (72 points = 1 inch)
-    # Line 1
-    vertic_pos = height * 0.85
-    # Leave a margin on top of the label to make it easier to read in actual usage,
-    # as the top of the label can be hidden by the rim of the container.
-    vertic_pos -= 25
-    horiz_margin = 9  # distance from edge of label 9/72 = 1/8 inch
-    if data.name:
-        label.add(
-            rl_shapes.String(
-                horiz_margin,
-                vertic_pos,
-                data.name,
-                fontName="Helvetica-Bold",
-                fontSize=12,
-            )
-        )
-    if data.route:
-        label.add(
-            rl_shapes.String(
-                width / 2.0,
-                vertic_pos,
-                data.route,
-                fontName="Helvetica-Oblique",
-                fontSize=10,
-                textAnchor="middle",
-            )
-        )
-    if data.date:
-        label.add(
-            rl_shapes.String(
-                width - horiz_margin,
-                vertic_pos,
-                data.date,
-                fontName="Helvetica",
-                fontSize=10,
-                textAnchor="end",
-            )
-        )
-    # Line 2
-    vertic_pos -= 14
-    if data.main_dish_name:
-        label.add(
-            rl_shapes.String(
-                horiz_margin,
-                vertic_pos,
-                data.main_dish_name,
-                fontName="Helvetica-Bold",
-                fontSize=10,
-            )
-        )
-    if data.size:
-        label.add(
-            rl_shapes.String(
-                width - horiz_margin,
-                vertic_pos,
-                data.size,
-                fontName="Helvetica-Bold",
-                fontSize=10,
-                textAnchor="end",
-            )
-        )
-    # Line(s) 3
-    vertic_pos -= 12
-    if data.dish_clashes:
-        for line in data.dish_clashes:
-            label.add(
-                rl_shapes.String(
-                    horiz_margin, vertic_pos, line, fontName="Helvetica", fontSize=9
-                )
-            )
-            vertic_pos -= 10
-    # Line(s) 4
-    if data.preparations:
-        # draw prefix
-        label.add(
-            rl_shapes.String(
-                horiz_margin,
-                vertic_pos,
-                data.preparations[0],
-                fontName="Helvetica",
-                fontSize=9,
-            )
-        )
-        # measure prefix length to offset first line
-        offset = rl_pdfmetrics.stringWidth(
-            data.preparations[0], fontName="Helvetica", fontSize=9
-        )
-        for line in data.preparations[1:]:
-            label.add(
-                rl_shapes.String(
-                    horiz_margin + offset,
-                    vertic_pos,
-                    line,
-                    fontName="Helvetica-Bold",
-                    fontSize=9,
-                )
-            )
-            offset = 0.0  # Only first line is offset at right of prefix
-            vertic_pos -= 10
-    # Line(s) 5
-    if data.sides_clashes:
-        # draw prefix
-        label.add(
-            rl_shapes.String(
-                horiz_margin,
-                vertic_pos,
-                data.sides_clashes[0],
-                fontName="Helvetica",
-                fontSize=9,
-            )
-        )
-        # measure prefix length to offset first line
-        offset = rl_pdfmetrics.stringWidth(
-            data.sides_clashes[0], fontName="Helvetica", fontSize=9
-        )
-        for line in data.sides_clashes[1:]:
-            label.add(
-                rl_shapes.String(
-                    horiz_margin + offset,
-                    vertic_pos,
-                    line,
-                    fontName="Helvetica-Bold",
-                    fontSize=9,
-                )
-            )
-            offset = 0.0  # Only first line is offset at right of prefix
-            vertic_pos -= 10
-    # Line(s) 6
-    if data.other_restrictions:
-        for line in data.other_restrictions:
-            label.add(
-                rl_shapes.String(
-                    horiz_margin, vertic_pos, line, fontName="Helvetica", fontSize=9
-                )
-            )
-            vertic_pos -= 10
-    # Line(s) 7
-    if data.ingredients:
-        for line in data.ingredients:
-            label.add(
-                rl_shapes.String(
-                    horiz_margin, vertic_pos, line, fontName="Helvetica", fontSize=8
-                )
-            )
-            vertic_pos -= 9
 
 
 def kcr_make_labels(kcr_date, kitchen_list, main_dish_name, main_dish_ingredients):
