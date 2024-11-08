@@ -13,11 +13,11 @@ We recommend using Docker for developing Sous-Chef as it simplifies the setup, a
 Install the following dependencies:
 
 1. **docker-engine**: https://docs.docker.com/engine/install/
-2. **docker-compose**: https://docs.docker.com/compose/install/
+2. **docker compose**: https://docs.docker.com/compose/install/
 
 On Debian systems, the following commands can be used to install Docker:
 
-    sudo apt install docker-compose
+    sudo apt install docker compose
 
 ### OS X
 
@@ -61,8 +61,8 @@ We specifically use it to compile SCSS to CSS, JavasSript to minified JavaScript
 Running these commands will build the Docker image and start Sous-Chef:
 
 ```
-docker-compose build
-docker-compose up
+docker compose build
+docker compose up
 ```
 
 Sous-Chef will then be accessible at [http://localhost:8000](http://localhost:8000). If this is the first time you run Sous-Chef, keep-on reading, as there are a few more steps required.
@@ -70,13 +70,13 @@ Sous-Chef will then be accessible at [http://localhost:8000](http://localhost:80
 ## Django initialization
 
 Unfortunately, the bulk of the Django configuration cannot happen until the containers are already built
-and running, because it needs to talk to the database which is in a different container, managed by docker-compose.
+and running, because it needs to talk to the database which is in a different container, managed by Docker compose.
 So after you do the first build, you need to manually do some more steps.
 
 In your console:
 
 ```
-docker-compose run web bash
+docker compose run web bash
 ```
 
 Then you should be inside a container as you can see, e.g., `root@d157a3f57426:/code#`. Then run:
@@ -99,7 +99,7 @@ python3 manage.py loaddata sample_data
 To run the project's unit test suite:
 
 ```
-docker-compose run web python3 /code/souschef/manage.py test
+docker compose run web python3 /code/souschef/manage.py test
 ```
 
 ## How to change the JavaScript code
@@ -115,7 +115,7 @@ So the proper and formal way to change the JavaScript code is the following:
 
 3. Copy the assets to Django's static directory by running:
 
-   `docker-compose run web python3 /code/souschef/manage.py collectstatic --noinput`
+   `docker compose run web python3 /code/souschef/manage.py collectstatic --noinput`
 
 4. Refresh your page. The new JavaScript files should be downloaded and executed by the browser. You might need to force the page refresh (pressing shift when reloading) to clear the caches for the new code to be loaded.
 
@@ -126,14 +126,14 @@ So the proper and formal way to change the JavaScript code is the following:
 In case of persistent issues with starting Sous-Chef, try removing the Docker volume (which holds the database):
 
 ```
-docker-compose down
+docker compose down
 docker volume rm sous-chef_souschef_data
-docker-compose up --build
+docker compose up --build
 ```
 
 Then, redo the "Django initialization" step above.
 
-Note: it happens that Sous-Chef cannot connect to the database, especially the first time you launch it. Simply stop the Docker processes with CTRL-C and relaunch `docker-compose up` to fix the issue.
+Note: it happens that Sous-Chef cannot connect to the database, especially the first time you launch it. Simply stop the Docker processes with CTRL-C and relaunch `docker compose up` to fix the issue.
 
 ### JavaScript served as minified file when developping
 
@@ -150,7 +150,7 @@ class HomeView:
         print(f"REMOTE_ADDR is: {self.request.META.get('REMOTE_ADDR')}")
 ```
 
-Then, refresh Sous-Chef's home page. In the logs (in the terminal where you started `docker-compose up`), you should see a message like this:
+Then, refresh Sous-Chef's home page. In the logs (in the terminal where you started `docker compose up`), you should see a message like this:
 
 ```
 web_1  | REMOTE_ADDR is: 172.22.0.1
@@ -199,4 +199,4 @@ Refs: https://docs.docker.com/engine/tutorials/dockervolumes/#backup-restore-or-
 1. `TERM environment not set`: https://github.com/dockerfile/mariadb/issues/3
 2. `listen tcp 0.0.0.0:8000: bind: address already in use`: another application already uses the 8000 port. Vagrant applications often use the same port for instance. Locate the application and shut it down, or select an other port.
 3. `Web server is up and running, but no answer after Django initialization`: restart your container.
-4. `Static files fails to load when using Nginx server in development mode (docker-compose up)`: run `docker-compose exec web python3 souschef/manage.py collectstatic`
+4. `Static files fails to load when using Nginx server in development mode (docker compose up)`: run `docker compose exec web python3 souschef/manage.py collectstatic`

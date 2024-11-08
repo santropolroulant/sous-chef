@@ -1914,23 +1914,34 @@ def kcr_make_labels(kcr_date, kitchen_list, main_dish_name, main_dish_ingredient
                 main_dish_name="_______________________________________",
                 dish_clashes=textwrap.wrap(
                     ugettext("Restrictions")
-                    + " : {}".format(" , ".join(kititm.incompatible_ingredients)),
+                    + ": {}.".format(", ".join(kititm.incompatible_ingredients)),
                     width=65,
                     break_long_words=False,
                     break_on_hyphens=False,
-                ),
+                )
+                if kititm.incompatible_ingredients
+                else "",
+                other_restrictions=textwrap.wrap(
+                    ugettext("Other restr.")
+                    + ": {}.".format(", ".join(kititm.avoid_ingredients)),
+                    width=65,
+                    break_long_words=False,
+                    break_on_hyphens=False,
+                )
+                if kititm.avoid_ingredients
+                else "",
             )
         elif not kititm.sides_clashes:
             meal_label = meal_label._replace(
                 ingredients=textwrap.wrap(
-                    ugettext("Ingredients") + f" : {main_dish_ingredients}",
+                    ugettext("Ingredients") + f": {main_dish_ingredients}",
                     width=74,
                     break_long_words=False,
                     break_on_hyphens=False,
                 )
             )
         if kititm.preparation:
-            prefix = ugettext("Preparation") + " : "
+            prefix = ugettext("Preparation") + ": "
             # wrap all text including prefix
             preparation_list = textwrap.wrap(
                 prefix + " , ".join(kititm.preparation),
@@ -1942,7 +1953,7 @@ def kcr_make_labels(kcr_date, kitchen_list, main_dish_name, main_dish_ingredient
             preparation_list[0] = preparation_list[0][len(prefix) :]
             meal_label = meal_label._replace(preparations=[prefix] + preparation_list)
         if kititm.sides_clashes:
-            prefix = ugettext("Sides clashes") + " : "
+            prefix = ugettext("Sides clashes") + ": "
             # wrap all text including prefix
             sides_clashes_list = textwrap.wrap(
                 prefix + " , ".join(kititm.sides_clashes),
