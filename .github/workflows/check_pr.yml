@@ -10,10 +10,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Build docker-compose
-        run: docker-compose build
+        run: docker compose build
       - name: Compile assets
         run: bash ./tools/compile_assets.sh
       - name: Run ruff
-        run: docker-compose run --rm web ruff check /code
+        run: docker compose run --rm web ruff check /code
       - name: Check tests
-        run: docker-compose run -e CI=1 --rm web /code/wait-for-it.sh db:3306 --strict -- python3 /code/souschef/manage.py test
+        run: docker compose run -e CI=1 --rm web /code/wait-for-it.sh db:3306 --strict -- python3 /code/souschef/manage.py test

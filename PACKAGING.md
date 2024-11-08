@@ -15,7 +15,7 @@
 2. Stop your local development server:
 
     ```
-    docker-compose down
+    docker compose down
     ```
 
 3. Remove the `build` directory to ensure a clean build (this is especially important when you made changes to setup.py or setup.cfg). Also remove previous builds from `dist`:
@@ -34,8 +34,8 @@
 5. Then, use Docker to create the source package and the wheel archive:
 
     ```
-    docker-compose run web python3 setup.py sdist
-    docker-compose run web python3 setup.py bdist_wheel
+    docker compose run web python3 setup.py sdist
+    docker compose run web python3 setup.py bdist_wheel
     ```
 
 6. If you have a development version, upload it to test PyPI:
