@@ -1850,6 +1850,18 @@ meal_label_fields = [  # Contents for Meal Labels.
 MealLabel = collections.namedtuple("MealLabel", meal_label_fields[0::2])
 
 
+def get_other_restrictions_for_meal_labels(kitchen_item):
+    side_clashes = set(kitchen_item.sides_clashes)
+    restr = set(kitchen_item.restricted_items)
+    avoid = set(kitchen_item.avoid_ingredients)
+    incompatible = set(
+        ingr.replace(" (sides)", "") for ingr in kitchen_item.incompatible_ingredients
+    )
+    # Side clashes and incompatible ingredients were already displayed as
+    # "Restrictions", we do not want to display them twice.
+    return sorted((restr | avoid) - incompatible - side_clashes)
+
+
 def kcr_make_labels(kcr_date, kitchen_list, main_dish_name, main_dish_ingredients):
     """Generate Meal Labels sheets as a PDF file.
 
@@ -1910,6 +1922,7 @@ def kcr_make_labels(kcr_date, kitchen_list, main_dish_name, main_dish_ingredient
         if kititm.meal_size == SIZE_CHOICES_LARGE:
             meal_label = meal_label._replace(size=ugettext("LARGE"))
         if kititm.incompatible_ingredients:
+            other_restr = get_other_restrictions_for_meal_labels(kititm)
             meal_label = meal_label._replace(
                 main_dish_name="_______________________________________",
                 dish_clashes=textwrap.wrap(
@@ -1922,13 +1935,12 @@ def kcr_make_labels(kcr_date, kitchen_list, main_dish_name, main_dish_ingredient
                 if kititm.incompatible_ingredients
                 else "",
                 other_restrictions=textwrap.wrap(
-                    ugettext("Other restr.")
-                    + ": {}.".format(", ".join(kititm.avoid_ingredients)),
+                    ugettext("Other restr.") + ": {}.".format(", ".join(other_restr)),
                     width=65,
                     break_long_words=False,
                     break_on_hyphens=False,
                 )
-                if kititm.avoid_ingredients
+                if other_restr
                 else "",
             )
         elif not kititm.sides_clashes:
