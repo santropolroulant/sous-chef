@@ -38,9 +38,11 @@ from django.views import generic
 from django_filters.views import FilterView
 from reportlab.lib import colors as rl_colors
 from reportlab.lib import enums as rl_enums
+from reportlab.lib import pagesizes
 from reportlab.lib.styles import ParagraphStyle as RLParagraphStyle
 from reportlab.lib.styles import getSampleStyleSheet as rl_getSampleStyleSheet
 from reportlab.lib.units import inch as rl_inch
+from reportlab.pdfgen.canvas import Canvas
 from reportlab.platypus import PageBreak as RLPageBreak
 from reportlab.platypus import Paragraph as RLParagraph
 from reportlab.platypus import SimpleDocTemplate as RLSimpleDocTemplate
@@ -1522,7 +1524,7 @@ def kcr_make_pages(
     Returns:
         An integer : The number of pages generated.
     """
-    PAGE_HEIGHT = 11.0 * rl_inch
+    PAGE_HEIGHT = 14.0 * rl_inch
     PAGE_WIDTH = 8.5 * rl_inch
 
     styles = rl_getSampleStyleSheet()
@@ -1536,20 +1538,21 @@ def kcr_make_pages(
             doc : A reportlab.platypus.SimpleDocTemplate object.
         """
         canvas.setFont("Helvetica", 14)
-        canvas.drawString(x=1.9 * rl_inch, y=PAGE_HEIGHT, text="Kitchen count report")
+        y = PAGE_HEIGHT - 0.3 * rl_inch
+        canvas.drawString(x=1.9 * rl_inch, y=y, text="Kitchen count report")
         canvas.setFont("Helvetica", 9)
         canvas.drawRightString(
             x=6.0 * rl_inch,
-            y=PAGE_HEIGHT,
+            y=y,
             text="{}".format(kcr_date.strftime("%a., %d %B %Y")),
         )
         canvas.drawRightString(
             x=PAGE_WIDTH - 0.75 * rl_inch,
-            y=PAGE_HEIGHT,
+            y=y,
             text=f"Page {doc.page:d}",
         )
 
-    def myFirstPage(canvas, doc):
+    def myFirstPage(canvas: Canvas, doc):
         """Draw the complete header for the first page.
 
         Args:
@@ -1563,11 +1566,11 @@ def kcr_make_pages(
             0.75 * rl_inch,
             PAGE_HEIGHT - 1.0 * rl_inch,
             width=1.0 * rl_inch,
-            height=1.0 * rl_inch,
+            height=0.85 * rl_inch,
         )
         canvas.restoreState()
 
-    def myLaterPages(canvas, doc):
+    def myLaterPages(canvas: Canvas, doc):
         """Draw the complete header for all pages except the first one.
 
         Args:
@@ -1674,7 +1677,7 @@ def kcr_make_pages(
         """
         file_path = get_kitchen_count_file_path(kcr_date)
         file_path.parent.mkdir(parents=True, exist_ok=True)
-        doc = RLSimpleDocTemplate(str(file_path))
+        doc = RLSimpleDocTemplate(str(file_path), pagesize=pagesizes.legal)
         story = []
 
         # begin Summary section
@@ -1700,8 +1703,8 @@ def kcr_make_pages(
         rows.append(
             [
                 RLParagraph("Clashing ingredients", styles["NormalLeft"]),
-                RLParagraph("Regular", styles["NormalRight"]),
-                RLParagraph("Large", styles["NormalRight"]),
+                RLParagraph("Reg", styles["NormalRight"]),
+                RLParagraph("Lrg", styles["NormalRight"]),
                 RLParagraph("Portions", styles["NormalRight"]),
                 "",
                 RLParagraph("Client & Food Prep", styles["NormalLeft"]),
@@ -1789,7 +1792,7 @@ def kcr_make_pages(
                 line += 1
             # END IF
         # END FOR
-        tab = RLTable(rows, colWidths=(130, 50, 50, 50, 20, 100, 120), repeatRows=1)
+        tab = RLTable(rows, colWidths=(130, 35, 35, 50, 20, 100, 160), repeatRows=1)
         tab.setStyle(tab_style)
         story.append(tab)
         story.append(RLSpacer(1, 1 * rl_inch))
