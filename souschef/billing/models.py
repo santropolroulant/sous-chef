@@ -127,18 +127,18 @@ class Billing(models.Model):  # noqa: DJ008
                 for o_item in o.orders.all():
                     if o_item.component_group == "main_dish":
                         if o_item.size == "R":
-                            result[client]["total_main_dishes"][
-                                "R"
-                            ] += o_item.total_quantity
+                            result[client]["total_main_dishes"]["R"] += (
+                                o_item.total_quantity
+                            )
                         elif o_item.size == "L":
-                            result[client]["total_main_dishes"][
-                                "L"
-                            ] += o_item.total_quantity
+                            result[client]["total_main_dishes"]["L"] += (
+                                o_item.total_quantity
+                            )
                     else:
                         if o_item.billable_flag is True:
-                            result[client][
-                                "total_billable_sides"
-                            ] += o_item.total_quantity
+                            result[client]["total_billable_sides"] += (
+                                o_item.total_quantity
+                            )
         return result
 
 

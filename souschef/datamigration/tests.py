@@ -13,7 +13,6 @@ from souschef.order.models import Order
 
 
 class ImportMemberTestCase(TestCase):
-
     """
     Test data importation.
     """
@@ -68,7 +67,6 @@ class ImportMemberTestCase(TestCase):
 
 
 class ImportMemberAddressesTestCase(TestCase):
-
     """
     Test data importation.
     """
@@ -102,7 +100,6 @@ class ImportMemberAddressesTestCase(TestCase):
 
 
 class ImportMemberRelationshipsTestCase(TestCase):
-
     """
     Test data importation.
     """
@@ -163,7 +160,6 @@ class ImportMemberRelationshipsTestCase(TestCase):
 
 
 class ImportMemberOrdersTestCase(TestCase):
-
     """
     Test data importation.
     """

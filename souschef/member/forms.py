@@ -496,14 +496,10 @@ class ClientRelationshipInformation(MemberForm):
                 self.add_error("member", msg)
         else:
             if not self.cleaned_data.get("firstname"):
-                msg = _(
-                    "This field is required unless " "you chose an existing member."
-                )
+                msg = _("This field is required unless you chose an existing member.")
                 self.add_error("firstname", msg)
             if not self.cleaned_data.get("firstname"):
-                msg = _(
-                    "This field is required unless " "you chose an existing member."
-                )
+                msg = _("This field is required unless you chose an existing member.")
                 self.add_error("lastname", msg)
             if not (
                 self.cleaned_data.get("email")
@@ -604,5 +600,5 @@ class ClientScheduledStatusForm(forms.ModelForm):
                 callback_add_message(_("The client status has been changed."))
             else:
                 callback_add_message(
-                    _("The end date of this status change " "has been scheduled.")
+                    _("The end date of this status change has been scheduled.")
                 )

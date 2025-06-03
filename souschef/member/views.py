@@ -422,21 +422,16 @@ class ClientWizard(
         p_firstname = payment_information.cleaned_data.get("firstname")
         p_lastname = payment_information.cleaned_data.get("lastname")
 
-        if b_firstname == p_firstname and b_lastname == p_lastname:
-            return True
-        return False
+        return bool(b_firstname == p_firstname and b_lastname == p_lastname)
 
     def billing_member_is_relationship(self, relationship, billing_member):
         r_firstname = relationship.cleaned_data.get("firstname")
         r_lastname = relationship.cleaned_data.get("lastname")
 
-        if (
+        return bool(
             r_firstname == billing_member.firstname
             and r_lastname == billing_member.lastname
-        ):
-            return True
-
-        return False
+        )
 
 
 class ClientList(LoginRequiredMixin, PermissionRequiredMixin, generic.ListView):
@@ -732,7 +727,7 @@ class ClientUpdateBasicInformation(ClientUpdateInformation):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({"pk": self.kwargs["pk"], "current_step": "basic_information"})
-        context["step_template"] = "client/partials/forms/" "basic_information.html"
+        context["step_template"] = "client/partials/forms/basic_information.html"
         return context
 
     def save(self, form, client):
@@ -764,7 +759,7 @@ class ClientUpdateAddressInformation(ClientUpdateInformation):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({"current_step": "address_information", "pk": self.kwargs["pk"]})
-        context["step_template"] = "client/partials/forms/" "address_information.html"
+        context["step_template"] = "client/partials/forms/address_information.html"
         return context
 
     def save(self, form, client):
@@ -795,7 +790,7 @@ class ClientUpdatePaymentInformation(ClientUpdateInformation):
                 "pk": self.kwargs["pk"],
             }
         )
-        context["step_template"] = "client/partials/forms/" "payment_information.html"
+        context["step_template"] = "client/partials/forms/payment_information.html"
         return context
 
     def get_initial(self):
@@ -873,7 +868,7 @@ class ClientUpdateDietaryRestriction(ClientUpdateInformation):
                 COMPONENT_GROUP_CHOICES,
             )
         )
-        context["step_template"] = "client/partials/forms/" "dietary_restriction.html"
+        context["step_template"] = "client/partials/forms/dietary_restriction.html"
         return context
 
     def get_initial(self):
@@ -952,7 +947,7 @@ class ClientUpdateRelationshipsInformation(ClientUpdateInformation):
         context = super().get_context_data(**kwargs)
         context.update({"current_step": "relationships"})
         context.update({"pk": self.kwargs["pk"]})
-        context["step_template"] = "client/partials/forms/" "relationships.html"
+        context["step_template"] = "client/partials/forms/relationships.html"
         return context
 
     def get_initial(self):

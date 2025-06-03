@@ -1174,7 +1174,7 @@ component_line_fields = [  # Component summary Line on Kitchen Count.
     0,  # Quantity of large size main dishes
     "name",
     "",  # String: component name
-    "ingredients" "",  # String: ingredients in main dish
+    "ingredients",  # String: ingredients in main dish
 ]
 ComponentLine = collections.namedtuple("ComponentLine", component_line_fields[0::2])
 

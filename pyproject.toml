@@ -15,4 +15,4 @@ select = [
     # isort
     "I",
 ]
-ignore = ["DJ001", "DJ012"]
+ignore = ["DJ001", "DJ012", "UP031"]

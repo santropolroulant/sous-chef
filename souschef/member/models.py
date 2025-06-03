@@ -570,12 +570,10 @@ class Client(models.Model):
         """
         Returns if the client's address is properly geolocalized.
         """
-        if (
+        return not (
             self.member.address.latitude is None
             or self.member.address.longitude is None
-        ):
-            return False
-        return True
+        )
 
     @property
     def age(self):

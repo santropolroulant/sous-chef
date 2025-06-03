@@ -20,9 +20,7 @@ def migrate_relationships(apps, schema_editor):
     from souschef.member.models import Relationship as _ref_Relationship  # noqa
 
     for ref in Referencing.objects.all().order_by("pk"):
-        print(
-            f"Converting member.Referencing #{ref.pk} to member.Relationship..."
-        )
+        print(f"Converting member.Referencing #{ref.pk} to member.Relationship...")
         # Attention: the Rel object may exist because a member can be both Ref and Emgc
         try:
             rel = Relationship.objects.get(member=ref.referent, client=ref.client)
@@ -72,9 +70,7 @@ def reverse_migrate_relationships(apps, schema_editor):
 
     for rel in Relationship.objects.all().order_by("pk"):
         if _ref_Relationship.REFERENT in rel.type:
-            print(
-                f"Reversing member.Relationship #{rel.pk} to member.Referencing..."
-            )
+            print(f"Reversing member.Relationship #{rel.pk} to member.Referencing...")
             try:
                 ref = Referencing.objects.get(referent=rel.member, client=rel.client)
             except Referencing.DoesNotExist:
@@ -94,8 +90,7 @@ def reverse_migrate_relationships(apps, schema_editor):
 
         if _ref_Relationship.EMERGENCY in rel.type:
             print(
-                f"Reversing member.Relationship #{rel.pk} to "
-                "member.EmergencyContact..."
+                f"Reversing member.Relationship #{rel.pk} to member.EmergencyContact..."
             )
             try:
                 emgc = EmergencyContact.objects.get(

@@ -40,9 +40,7 @@ class CreateOrdersBatchForm(forms.Form):
                     widget=forms.Select(attrs={"class": ""}),
                     required=True,
                 )
-                self.fields[f"delivery_{d}"] = forms.BooleanField(
-                    required=False
-                )
+                self.fields[f"delivery_{d}"] = forms.BooleanField(required=False)
                 self.fields[f"pickup_{d}"] = forms.BooleanField(required=False)
                 self.fields[f"visit_{d}"] = forms.BooleanField(required=False)
 

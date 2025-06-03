@@ -191,12 +191,12 @@ class BillingSummaryView(
         )
         for client, client_summary in billing.summary.items():
             t = client.billing_payment_type
-            summary["payment_types_dict"][t]["total_main_dishes"][
-                "R"
-            ] += client_summary["total_main_dishes"]["R"]
-            summary["payment_types_dict"][t]["total_main_dishes"][
-                "L"
-            ] += client_summary["total_main_dishes"]["L"]
+            summary["payment_types_dict"][t]["total_main_dishes"]["R"] += (
+                client_summary["total_main_dishes"]["R"]
+            )
+            summary["payment_types_dict"][t]["total_main_dishes"]["L"] += (
+                client_summary["total_main_dishes"]["L"]
+            )
             summary["payment_types_dict"][t]["total_billable_sides"] += client_summary[
                 "total_billable_sides"
             ]

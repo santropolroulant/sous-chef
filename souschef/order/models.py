@@ -669,7 +669,7 @@ class Order(models.Model):
                     if item.is_a_client_bill:
                         item.delete()
         else:
-            raise ValueError("Order.includes_a_bill only accepts " "boolean values.")
+            raise ValueError("Order.includes_a_bill only accepts boolean values.")
 
     @property
     def client_planned_status_at_delivery(self):

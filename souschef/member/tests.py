@@ -965,19 +965,19 @@ class FormTestCase(TestCase):
             error_response,
             "form",
             "email",
-            ugettext("At least one contact information " "is required."),
+            ugettext("At least one contact information is required."),
         )
         self.assertFormError(
             error_response,
             "form",
             "home_phone",
-            ugettext("At least one contact information " "is required."),
+            ugettext("At least one contact information is required."),
         )
         self.assertFormError(
             error_response,
             "form",
             "cell_phone",
-            ugettext("At least one contact information " "is required."),
+            ugettext("At least one contact information is required."),
         )
 
     def _test_basic_information_without_errors(self):
@@ -1121,63 +1121,63 @@ class FormTestCase(TestCase):
             "form",
             0,
             "cell_phone",
-            ugettext("At least one contact " "is required."),
+            ugettext("At least one contact is required."),
         )
         self.assertFormsetError(
             response_error,
             "form",
             0,
             "work_phone",
-            ugettext("At least one contact " "is required."),
+            ugettext("At least one contact is required."),
         )
         self.assertFormsetError(
             response_error,
             "form",
             0,
             "email",
-            ugettext("At least one contact " "is required."),
+            ugettext("At least one contact is required."),
         )
         self.assertFormsetError(
             response_error,
             "form",
             0,
             "lastname",
-            ugettext("This field is required unless " "you chose an existing member."),
+            ugettext("This field is required unless you chose an existing member."),
         )
         self.assertFormsetError(
             response_error,
             "form",
             0,
             "firstname",
-            ugettext("This field is required unless " "you chose an existing member."),
+            ugettext("This field is required unless you chose an existing member."),
         )
         self.assertFormsetError(
             response_error,
             "form",
             0,
             "firstname",
-            ugettext("This field is required unless " "you chose an existing member."),
+            ugettext("This field is required unless you chose an existing member."),
         )
         self.assertFormsetError(
             response_error,
             "form",
             0,
             "work_information",
-            ugettext("This field is required " "for a referent relationship."),
+            ugettext("This field is required for a referent relationship."),
         )
         self.assertFormsetError(
             response_error,
             "form",
             0,
             "referral_date",
-            ugettext("This field is required " "for a referent relationship."),
+            ugettext("This field is required for a referent relationship."),
         )
         self.assertFormsetError(
             response_error,
             "form",
             0,
             "referral_reason",
-            ugettext("This field is required " "for a referent relationship."),
+            ugettext("This field is required for a referent relationship."),
         )
 
     def _test_step_relationships_without_errors(self):
@@ -1258,9 +1258,7 @@ class FormTestCase(TestCase):
             "form",
             "billing_payment_type",
             ugettext(
-                "Select a valid choice. %(value)s is "
-                "not one of the available "
-                "choices."
+                "Select a valid choice. %(value)s is not one of the available choices."
             )
             % {"value": "INVALID"},
         )
@@ -1384,9 +1382,7 @@ class FormTestCase(TestCase):
             "form",
             "meals_schedule",
             ugettext(
-                "Select a valid choice. %(value)s is "
-                "not one of the available "
-                "choices."
+                "Select a valid choice. %(value)s is not one of the available choices."
             )
             % {"value": ""},
         )
@@ -4005,7 +4001,7 @@ class TestMigrationApply0032(TestMigrations):
             for num_e in range(4):
                 for num_re in range(4):
                     name_main = f"{num_r}{num_e}{num_re}"
-                    fail_msg = f"while testing: client{name_main} " "(see docstring)"
+                    fail_msg = f"while testing: client{name_main} (see docstring)"
                     client_main = Client.objects.get(
                         member__firstname=name_main, member__lastname="main"
                     )
@@ -4227,7 +4223,7 @@ class TestMigrationUnapply0032(TestMigrations):
             for num_e in range(4):
                 for num_re in range(4):
                     name_main = f"{num_r}{num_e}{num_re}"
-                    fail_msg = f"while testing: client{name_main} " "(see docstring)"
+                    fail_msg = f"while testing: client{name_main} (see docstring)"
                     client_main = Client.objects.get(
                         member__firstname=name_main, member__lastname="main"
                     )

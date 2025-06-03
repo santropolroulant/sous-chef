@@ -287,10 +287,7 @@ class CreateOrdersBatch(LoginRequiredMixin, PermissionRequiredMixin, generic.For
                 self.request,
                 messages.SUCCESS,
                 (
-                    _(
-                        "%(n)s order(s) successfully placed "
-                        "for %(client)s on %(dates)s."
-                    )
+                    _("%(n)s order(s) successfully placed for %(client)s on %(dates)s.")
                     % {
                         "n": len(created_dates),
                         "client": client,
@@ -303,7 +300,7 @@ class CreateOrdersBatch(LoginRequiredMixin, PermissionRequiredMixin, generic.For
                 self.request,
                 messages.WARNING,
                 (
-                    _("%(n)s existing order(s) skipped " "for %(client)s on %(dates)s.")
+                    _("%(n)s existing order(s) skipped for %(client)s on %(dates)s.")
                     % {
                         "n": len(uncreated_dates),
                         "client": client,
