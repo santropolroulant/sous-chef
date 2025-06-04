@@ -1,9 +1,11 @@
 import collections
 import re
+from dataclasses import dataclass
 from datetime import (
     date,
     datetime,
 )
+from typing import Dict, List, Optional
 
 from django.core.exceptions import ValidationError
 from django.db import (
@@ -404,7 +406,7 @@ class Order(models.Model):
         return f"client={self.client}, delivery_date={self.delivery_date}"
 
     @staticmethod
-    def get_kitchen_items(delivery_date):
+    def get_kitchen_items(delivery_date) -> Dict[int, "KitchenItem"]:
         """Get all client meal order specifics for delivery date.
 
         For each client that has ordered a meal for 'delivery_date',
@@ -420,7 +422,7 @@ class Order(models.Model):
             A dictionary where the key is an Integer 'client id' and
             the value is a KitchenItem named tuple.
         """
-        kitchen_list = {}
+        kitchen_list: Dict[int, KitchenItem] = {}
 
         # Day's avoid ingredients clashes.
         for row in day_avoid_ingredient(delivery_date):
@@ -493,19 +495,18 @@ class Order(models.Model):
         for row in day_delivery_items(delivery_date):
             check_for_new_client(kitchen_list, row)
             if row.component_group == COMPONENT_GROUP_CHOICES_MAIN_DISH:
-                kitchen_list[row.cid] = kitchen_list[row.cid]._replace(
-                    meal_qty=(kitchen_list[row.cid].meal_qty + row.total_quantity),
-                    meal_size=row.size,
+                kitchen_list[row.cid].meal_qty = (
+                    kitchen_list[row.cid].meal_qty + row.total_quantity
                 )
+                kitchen_list[row.cid].meal_size = row.size
             component = None
             old_component = kitchen_list[row.cid].meal_components.get(
                 row.component_group
             )
             if old_component:
                 # component group already exists in the order
-                component = old_component._replace(
-                    qty=old_component.qty + (row.total_quantity or 0)
-                )
+                component = old_component
+                component.qty += row.total_quantity or 0
             else:
                 # new component group for this order
                 component = MealComponent(
@@ -514,9 +515,7 @@ class Order(models.Model):
                     qty=row.total_quantity or 0,
                 )
             kitchen_list[row.cid].meal_components[row.component_group] = component
-            kitchen_list[row.cid] = kitchen_list[row.cid]._replace(
-                routename=row.routename
-            )
+            kitchen_list[row.cid].routename = row.routename
 
         # Sort requirements list in each value.
         for value in kitchen_list.values():
@@ -527,7 +526,7 @@ class Order(models.Model):
         return kitchen_list
 
     @staticmethod
-    def get_delivery_list(delivery_date, route_id):
+    def get_delivery_list(delivery_date: date, route_id) -> Dict[int, "DeliveryClient"]:
         """
         Get all delivery order specifics for delivery date and route.
         Exclude non-geolocalized clients.
@@ -559,7 +558,7 @@ class Order(models.Model):
             .order_by("order__client_id")
         )
 
-        route_list = {}
+        route_list: Dict[int, DeliveryClient] = {}
         for oi in orditms:
             if oi.order.client.is_geolocalized is False:
                 # exclude non-geolocalized client
@@ -814,14 +813,14 @@ def day_avoid_ingredient(delivery_date):
     FROM member_member
       JOIN member_client ON member_client.member_id = member_member.id
       JOIN order_order ON order_order.client_id = member_client.id
-      JOIN meal_menu ON meal_menu.date =                      %(delivery_date)s
+      JOIN meal_menu ON meal_menu.date = %(delivery_date)s
       JOIN member_client_avoid_ingredient ON
         member_client_avoid_ingredient.client_id = member_client.id
       JOIN meal_ingredient ON
         meal_ingredient.id = member_client_avoid_ingredient.ingredient_id
       LEFT OUTER JOIN meal_component_ingredient ON
         meal_component_ingredient.ingredient_id = meal_ingredient.id AND
-          meal_component_ingredient.date =                    %(delivery_date)s
+          meal_component_ingredient.date = %(delivery_date)s
       LEFT OUTER JOIN meal_component ON
         meal_component.id = meal_component_ingredient.component_id
       LEFT OUTER JOIN order_order_item ON
@@ -832,8 +831,8 @@ def day_avoid_ingredient(delivery_date):
       LEFT OUTER JOIN meal_menu_component ON
         meal_menu_component.component_id = meal_component.id AND
           meal_menu_component.menu_id = meal_menu.id
-    WHERE order_order.delivery_date =                     %(delivery_date)s AND
-      order_order.status !=                                 %(order_cancelled)s
+    WHERE order_order.delivery_date = %(delivery_date)s AND
+      order_order.status != %(order_cancelled)s
     ORDER BY member_client.id
     """
     values = {
@@ -863,7 +862,8 @@ def day_restrictions(delivery_date):
     """
     query = """
     SELECT member_client.id AS cid,
-      member_member.firstname, member_member.lastname,
+      member_member.firstname,
+      member_member.lastname,
       order_order.id AS oid,
       order_order.delivery_date,
       meal_menu.id AS menuid,
@@ -877,7 +877,7 @@ def day_restrictions(delivery_date):
     FROM member_member
       JOIN member_client ON member_client.member_id = member_member.id
       JOIN order_order ON order_order.client_id = member_client.id
-      JOIN meal_menu ON meal_menu.date =                      %(delivery_date)s
+      JOIN meal_menu ON meal_menu.date = %(delivery_date)s
       JOIN member_restriction ON
         member_restriction.client_id = member_client.id
       JOIN meal_restricted_item ON
@@ -889,7 +889,7 @@ def day_restrictions(delivery_date):
         meal_incompatibility.ingredient_id = meal_ingredient.id
       LEFT OUTER JOIN meal_component_ingredient ON
         meal_component_ingredient.ingredient_id = meal_ingredient.id AND
-          meal_component_ingredient.date =                    %(delivery_date)s
+          meal_component_ingredient.date = %(delivery_date)s
       LEFT OUTER JOIN meal_component ON
         meal_component_ingredient.component_id = meal_component.id
       LEFT OUTER JOIN order_order_item ON
@@ -900,8 +900,8 @@ def day_restrictions(delivery_date):
       LEFT OUTER JOIN meal_menu_component ON
         meal_menu_component.component_id = meal_component.id AND
           meal_menu_component.menu_id = meal_menu.id
-    WHERE order_order.delivery_date =                     %(delivery_date)s AND
-      order_order.status !=                                 %(order_cancelled)s
+    WHERE order_order.delivery_date = %(delivery_date)s AND
+      order_order.status != %(order_cancelled)s
     ORDER BY member_client.id
     """
     values = {
@@ -917,7 +917,7 @@ def day_preparations(delivery_date):
     """Get day's preparations.
 
     For each client that has ordered a meal for 'delivery_date', find all
-    the food preparations that he specified.
+    the food preparations that they specified.
 
     Args:
         delivery_date: A datetime.date object, the date on which the meals will
@@ -940,11 +940,11 @@ def day_preparations(delivery_date):
       JOIN member_option ON member_option.id = member_client_option.option_id
       JOIN order_order ON order_order.client_id = member_client.id
       JOIN order_order_item ON
-        order_order_item.component_group =           %(comp_grp_main_dish)s AND
+        order_order_item.component_group = %(comp_grp_main_dish)s AND
           order_order_item.order_id = order_order.id
-    WHERE order_order.delivery_date =                     %(delivery_date)s AND
-      order_order.status !=                             %(order_cancelled)s AND
-      member_option.option_group =                             %(option_group)s
+    WHERE order_order.delivery_date = %(delivery_date)s AND
+      order_order.status != %(order_cancelled)s AND
+      member_option.option_group = %(option_group)s
     ORDER BY member_member.lastname, member_member.firstname
     """
     values = {
@@ -1001,28 +1001,26 @@ def day_delivery_items(delivery_date):
     return sql_exec(query, values, "****** Delivery List ******")
 
 
-KitchenItem = collections.namedtuple(  # Meal specifics for an order.
-    "KitchenItem",
-    [
-        "lastname",  # Client's lastname
-        "firstname",  # Client's firstname
-        "routename",  # Name of Client's route (ex. 'Mile-end')
-        "meal_qty",  # Quantity of main dish servings
-        "meal_size",  # Size of main dish
-        "incompatible_ingredients",  # Ingredients in main dish that clash
-        "sides_clashes",  # Specified restrictions clashes in sides
-        "avoid_ingredients",  # All ingredients to avoid for the client
-        "restricted_items",  # All restricted items for the client
-        "preparation",  # All food preparations for the client
-        "meal_components",
-    ],
-)  # List of MealComponents objects
+@dataclass
+class MealComponent:
+    id: int
+    name: str
+    qty: int
 
 
-MealComponent = collections.namedtuple(  # Component specifics for a meal.
-    "MealComponent",
-    ["id", "name", "qty"],  # Component id  # Component name (ex. 'Rice pudding')
-)  # Quantity of this component in the order
+@dataclass
+class KitchenItem:
+    lastname: str  # Client's lastname
+    firstname: str  # Client's firstname
+    routename: Optional[str]  # Name of Client's route (ex. 'Mile-end')
+    meal_qty: int  # Quantity of main dish servings
+    meal_size: str  # Size of main dish
+    incompatible_ingredients: List[str]  # Ingredients in main dish that clash
+    sides_clashes: List[str]  # Specified restrictions clashes in sides
+    avoid_ingredients: List[str]  # All ingredients to avoid for the client
+    restricted_items: List[str]  # All restricted items for the client
+    preparation: List[str]  # All food preparations for the client
+    meal_components: Dict[str, MealComponent]
 
 
 def check_for_new_client(kitchen_list, row):

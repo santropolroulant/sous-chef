@@ -8,6 +8,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from datetime import date, datetime
 from pathlib import Path
+from typing import Dict, List
 
 import labels  # package pylabels
 from django.conf import settings
@@ -73,6 +74,8 @@ from souschef.order.models import (
     SIZE_CHOICES_REGULAR,
     Order,
     component_group_sorting,
+    DeliveryClient,
+    KitchenItem,
 )
 
 from . import tsp
@@ -86,7 +89,7 @@ LOGO_IMAGE = os.path.join(
 DELIVERY_STARTING_POINT_LAT_LONG = (45.516564, -73.575145)  # Santropol Roulant
 
 
-def _get_pdf_file_path(filename, delivery_date):
+def _get_pdf_file_path(filename, delivery_date) -> Path:
     delivery = delivery_date.strftime("%Y-%m-%d")
     today = datetime.now().replace(microsecond=0).isoformat()
     filepath = Path(filename)
@@ -1033,7 +1036,7 @@ class IngredientsMissingError(Exception):
     pass
 
 
-def get_kitchen_list(delivery_date):
+def get_kitchen_list(delivery_date: date) -> Dict[int, KitchenItem]:
     # Display kitchen count report for given delivery date
     # and generate meal labels.
     #  get sides component
@@ -1060,7 +1063,7 @@ def get_kitchen_list(delivery_date):
     kitchen_list_unfiltered = Order.get_kitchen_items(delivery_date)
 
     # filter out route=None clients and not geolocalized clients
-    kitchen_list = {}
+    kitchen_list: Dict[int, KitchenItem] = {}
     geolocalized_client_ids = list(
         Client.objects.filter(
             pk__in=kitchen_list_unfiltered.keys(),
@@ -1076,7 +1079,12 @@ def get_kitchen_list(delivery_date):
     return kitchen_list
 
 
-def make_kitchen_count(kitchen_list, component_lines, meal_lines, delivery_date):
+def make_kitchen_count(
+    kitchen_list: Dict[int, KitchenItem],
+    component_lines: List[ComponentLine],
+    meal_lines: List[MealLine],
+    delivery_date: date,
+) -> Path | None:
     if not component_lines:
         # we have no orders on that date
         return
@@ -1095,7 +1103,11 @@ def make_kitchen_count(kitchen_list, component_lines, meal_lines, delivery_date)
     )  # detail
 
 
-def make_labels(kitchen_list, component_lines, delivery_date):
+def make_labels(
+    kitchen_list: Dict[int, KitchenItem],
+    component_lines: List[ComponentLine],
+    delivery_date: date,
+) -> Path | None:
     if not component_lines:
         return
     return kcr_make_labels(  # meal labels as PDF
@@ -1106,7 +1118,7 @@ def make_labels(kitchen_list, component_lines, delivery_date):
     )  # main dish ingredients
 
 
-def download_pdf(file_path):
+def download_pdf(file_path: Path):
     with open(file_path, "rb") as f:
         response = HttpResponse(content_type="application/pdf")
         response["Content-Disposition"] = f'attachment; filename="{file_path.name}"'
@@ -1164,19 +1176,18 @@ class KitchenCount(LoginRequiredMixin, PermissionRequiredMixin, generic.View):
         )
 
 
-component_line_fields = [  # Component summary Line on Kitchen Count.
-    # field name       default value
-    "component_group",
-    "",  # ex. main dish, dessert etc
-    "rqty",
-    0,  # Quantity of regular size main dishes
-    "lqty",
-    0,  # Quantity of large size main dishes
-    "name",
-    "",  # String: component name
-    "ingredients",  # String: ingredients in main dish
-]
-ComponentLine = collections.namedtuple("ComponentLine", component_line_fields[0::2])
+@dataclass
+class ComponentLine:
+    # ex. main dish, dessert etc
+    component_group: str
+    # component name
+    name: str
+    # ingredients in main dish
+    ingredients: str
+    # Quantity of regular size main dishes
+    rqty: int = 0
+    # Quantity of large size main dishes
+    lqty: int = 0
 
 
 # Special Meal Line on Kitchen Count.
@@ -1239,8 +1250,8 @@ def meal_line(kititm):
     )
 
 
-def kcr_make_meal_lines(kitchen_list):
-    meal_lines = []
+def kcr_make_meal_lines(kitchen_list: Dict[int, KitchenItem]) -> List[MealLine]:
+    meal_lines: List[MealLine] = []
     specials_regular_total_qty = 0
     specials_large_total_qty = 0
     side_clashes_regular_total_qty = 0
@@ -1330,7 +1341,9 @@ def kcr_make_meal_lines(kitchen_list):
     return meal_lines
 
 
-def kcr_make_component_lines(kitchen_list, kcr_date):
+def kcr_make_component_lines(
+    kitchen_list: Dict[int, KitchenItem], kcr_date
+) -> List[ComponentLine]:
     """Generate the sections and lines for the kitchen count report.
 
     Count all the dishes that have to be prepared and identify all the
@@ -1349,7 +1362,7 @@ def kcr_make_component_lines(kitchen_list, kcr_date):
         Component (dishes) summary lines.
     """
     # Build component summary
-    component_lines = {}
+    component_lines: Dict[str, ComponentLine] = {}
     for _k, item in kitchen_list.items():
         for component_group, meal_component in item.meal_components.items():
             component_lines.setdefault(
@@ -1359,8 +1372,6 @@ def kcr_make_component_lines(kitchen_list, kcr_date):
                     component_group=next(
                         cg for cg in COMPONENT_GROUP_CHOICES if cg[0] == component_group
                     )[1],
-                    rqty=0,
-                    lqty=0,
                     name="",
                     ingredients="",
                 ),
@@ -1370,33 +1381,25 @@ def kcr_make_component_lines(kitchen_list, kcr_date):
                 and component_lines[component_group].name == ""
             ):
                 # For the main dish we need to get the ingredients.
-                component_lines[component_group] = component_lines[
-                    component_group
-                ]._replace(
-                    name=meal_component.name,
-                    ingredients=", ".join(
-                        [
-                            ing.name
-                            for ing in Component.get_day_ingredients(
-                                meal_component.id, kcr_date
-                            )
-                        ]
-                    ),
+                component_lines[component_group].name = meal_component.name
+                component_lines[component_group].ingredients = ", ".join(
+                    [
+                        ing.name
+                        for ing in Component.get_day_ingredients(
+                            meal_component.id, kcr_date
+                        )
+                    ]
                 )
             if (
                 component_group == COMPONENT_GROUP_CHOICES_MAIN_DISH
                 and item.meal_size == SIZE_CHOICES_LARGE
             ):
-                component_lines[component_group] = component_lines[
-                    component_group
-                ]._replace(
-                    lqty=(component_lines[component_group].lqty + meal_component.qty)
+                component_lines[component_group].lqty = (
+                    component_lines[component_group].lqty + meal_component.qty
                 )
             else:
-                component_lines[component_group] = component_lines[
-                    component_group
-                ]._replace(
-                    rqty=(component_lines[component_group].rqty + meal_component.qty)
+                component_lines[component_group].rqty = (
+                    component_lines[component_group].rqty + meal_component.qty
                 )
         # END FOR
     # END FOR
@@ -1419,8 +1422,6 @@ def kcr_make_component_lines(kitchen_list, kcr_date):
     )
     sides_line = ComponentLine(
         component_group=sides_component.name,
-        rqty=0,
-        lqty=0,
         name=sides_component.name,
         ingredients=", ".join(
             [
@@ -1442,7 +1443,7 @@ def format_client_name(firstname, lastname):
 class PreparationLine:
     preparation_method: str
     quantity: int
-    client_names: list[str]
+    client_names: List[str]
 
 
 def get_portions(regular_qty, large_qty):
@@ -1459,7 +1460,9 @@ def qty_paragraph(qty: int | float, style):
     return RLParagraph(str(qty or ""), style)
 
 
-def kcr_make_preparation_lines(kitchen_list, client_filter):
+def kcr_make_preparation_lines(
+    kitchen_list: Dict[int, KitchenItem], client_filter
+) -> List[PreparationLine]:
     """Get food preparation method for clients not having clashing (incompatible)
     ingredients."""
     if client_filter == "only_clients_with_incompatible_ingredients":
@@ -1503,10 +1506,10 @@ def kcr_make_preparation_lines(kitchen_list, client_filter):
 
 def kcr_make_pages(
     kcr_date,
-    component_lines,
-    meal_lines,
-    preperation_lines_with_incompatible_ingr,
-    preperation_lines_without_incompatible_ingr,
+    component_lines: List[ComponentLine],
+    meal_lines: List[MealLine],
+    preperation_lines_with_incompatible_ingr: List[PreparationLine],
+    preperation_lines_without_incompatible_ingr: List[PreparationLine],
 ):
     """Generate the kitchen count report pages as a PDF file.
 
@@ -1518,8 +1521,8 @@ def kcr_make_pages(
             component quantities and sizes for the date's meal.
         meal_lines: A list of MealLine objects, the details of the clients
             for the date that have ingredients clashing with those in main dish.
-        preperation_lines_with_incompatible_ingr: list[PreperationLine]
-        preperation_lines_without_incompatible_ingr: list[PreperationLine]
+        preperation_lines_with_incompatible_ingr: List[PreperationLine]
+        preperation_lines_without_incompatible_ingr: List[PreperationLine]
 
     Returns:
         An integer : The number of pages generated.
@@ -1847,9 +1850,11 @@ meal_label_fields = [  # Contents for Meal Labels.
     [],  # List of strings
     "other_restrictions",
     [],  # List of strings
+    "sides",
+    [],  # List of strings
     "ingredients",
-    [],
-]  # List of strings
+    [],  # List of strings
+]
 MealLabel = collections.namedtuple("MealLabel", meal_label_fields[0::2])
 
 
@@ -1865,7 +1870,12 @@ def get_other_restrictions_for_meal_labels(kitchen_item):
     return sorted((restr | avoid) - incompatible - side_clashes)
 
 
-def kcr_make_labels(kcr_date, kitchen_list, main_dish_name, main_dish_ingredients):
+def kcr_make_labels(
+    kcr_date,
+    kitchen_list: Dict[int, KitchenItem],
+    main_dish_name,
+    main_dish_ingredients,
+):
     """Generate Meal Labels sheets as a PDF file.
 
     Generate a label for each main dish serving to be delivered. The
@@ -2048,15 +2058,18 @@ class DeliveryRouteSheet(LoginRequiredMixin, PermissionRequiredMixin, generic.Vi
         )
 
 
-RouteSummaryLine = collections.namedtuple(
-    "RouteSummaryLine", ["component_group", "component_group_trans", "rqty", "lqty"]
-)
+@dataclass
+class RouteSummaryLine:
+    component_group: str
+    component_group_trans: str
+    rqty: int
+    lqty: int
 
 
-def drs_make_lines(route_list):
+def drs_make_lines(route_list: Dict[int, DeliveryClient]):
     # generate all the lines for the delivery route sheet
 
-    summary_lines = {}
+    summary_lines: Dict[str, RouteSummaryLine] = {}
     for _k, item in route_list.items():
         for delivery_item in item.delivery_items:
             component_group = delivery_item.component_group
@@ -2079,13 +2092,9 @@ def drs_make_lines(route_list):
                     component_group == COMPONENT_GROUP_CHOICES_MAIN_DISH
                     and delivery_item.size == SIZE_CHOICES_LARGE
                 ):
-                    summary_lines[component_group] = line._replace(
-                        lqty=line.lqty + delivery_item.total_quantity
-                    )
+                    line.lqty = line.lqty + delivery_item.total_quantity
                 elif component_group != "":
-                    summary_lines[component_group] = line._replace(
-                        rqty=line.rqty + delivery_item.total_quantity
-                    )
+                    line.rqty = line.rqty + delivery_item.total_quantity
 
     summary_lines_sorted = sorted(summary_lines.values(), key=component_group_sorting)
     return summary_lines_sorted, list(route_list.values())

@@ -436,7 +436,7 @@ class BirthdayContactClientManager(ClientManager):
 
 def get_ongoing_clients_at_date(
     the_date: datetime.date, today: datetime.date | None = None
-) -> list["Client"]:  # noqa: UP037
+) -> List["Client"]:  # noqa: UP037
     today = today or datetime.date.today()
 
     # This way of doing things will not work with a very large client database.
