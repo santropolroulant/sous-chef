@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import datetime
 import json
+from typing import List
 
 from annoying.fields import JSONField
 from django.db import models

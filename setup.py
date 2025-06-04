@@ -5,7 +5,7 @@ with open("README.md") as fh:
 
 setuptools.setup(
     name="souschef",
-    version="1.4.13",
+    version="1.4.14",
     license="AGPL-3.0",
     author="Santropol Roulant and Savoir Faire Linux",
     author_email="info@santropolroulant.org",
@@ -16,7 +16,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     include_package_data=True,
     classifiers=[
-        "Development Status :: 4 - Beta ",
+        "Development Status :: 4 - Beta",
         "Environment :: Web Environment",
         "Framework :: Django",
         "Intended Audience :: End Users/Desktop",

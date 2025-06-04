@@ -51,7 +51,7 @@ from reportlab.platypus import Spacer as RLSpacer
 from reportlab.platypus import Table as RLTable
 from reportlab.platypus import TableStyle as RLTableStyle
 
-from souschef.delivery.meal_labels import draw_label
+from souschef.delivery.meal_labels import MealLabel, draw_label, meal_label_fields
 from souschef.meal.models import (
     COMPONENT_GROUP_CHOICES,
     COMPONENT_GROUP_CHOICES_MAIN_DISH,
@@ -72,10 +72,10 @@ from souschef.order.models import (
     ORDER_STATUS_ORDERED,
     SIZE_CHOICES_LARGE,
     SIZE_CHOICES_REGULAR,
-    Order,
-    component_group_sorting,
     DeliveryClient,
     KitchenItem,
+    Order,
+    component_group_sorting,
 )
 
 from . import tsp
@@ -1112,10 +1112,14 @@ def make_labels(
         return
     return kcr_make_labels(  # meal labels as PDF
         delivery_date,
-        kitchen_list,  # KitchenItems
-        component_lines[0].name,  # main dish name
+        kitchen_list,
+        # main dish name
+        component_lines[0].name,
+        # main dish ingredients
         component_lines[0].ingredients,
-    )  # main dish ingredients
+        # sides ingredients
+        component_lines[1].ingredients,
+    )
 
 
 def download_pdf(file_path: Path):
@@ -1826,38 +1830,6 @@ def kcr_make_pages(
 # END Kitchen count report view, helper classes and functions
 
 
-# Meal labels generation data structures and functions.
-
-meal_label_fields = [  # Contents for Meal Labels.
-    # field name, default value
-    "sortkey",
-    "",  # key for sorting
-    "route",
-    "",  # String : Route name
-    "name",
-    "",  # String : Last + First abbreviated
-    "date",
-    "",  # String : Delivery date
-    "size",
-    "",  # String : Regular or Large
-    "main_dish_name",
-    "",  # String
-    "dish_clashes",
-    [],  # List of strings
-    "preparations",
-    [],  # List of strings
-    "sides_clashes",
-    [],  # List of strings
-    "other_restrictions",
-    [],  # List of strings
-    "sides",
-    [],  # List of strings
-    "ingredients",
-    [],  # List of strings
-]
-MealLabel = collections.namedtuple("MealLabel", meal_label_fields[0::2])
-
-
 def get_other_restrictions_for_meal_labels(kitchen_item):
     side_clashes = set(kitchen_item.sides_clashes)
     restr = set(kitchen_item.restricted_items)
@@ -1873,8 +1845,9 @@ def get_other_restrictions_for_meal_labels(kitchen_item):
 def kcr_make_labels(
     kcr_date,
     kitchen_list: Dict[int, KitchenItem],
-    main_dish_name,
-    main_dish_ingredients,
+    main_dish_name: str,
+    main_dish_ingredients: str,
+    sides_ingredients: str,
 ):
     """Generate Meal Labels sheets as a PDF file.
 
@@ -1923,7 +1896,7 @@ def kcr_make_labels(
 
     sheet = labels.Sheet(specs, draw_label, border=False)
 
-    meal_labels = []
+    meal_labels: list[MealLabel] = []
     for kititm in kitchen_list.values():
         meal_label = MealLabel(*meal_label_fields[1::2])
         meal_label = meal_label._replace(
@@ -1963,7 +1936,7 @@ def kcr_make_labels(
                     width=74,
                     break_long_words=False,
                     break_on_hyphens=False,
-                )
+                ),
             )
         if kititm.preparation:
             prefix = ugettext("Preparation") + ": "
@@ -1978,7 +1951,9 @@ def kcr_make_labels(
             preparation_list[0] = preparation_list[0][len(prefix) :]
             meal_label = meal_label._replace(preparations=[prefix] + preparation_list)
         if kititm.sides_clashes:
-            prefix = ugettext("Sides clashes") + ": "
+            prefix = (
+                f"{ugettext('Sides')}: _______________________ {ugettext('Clashes')}: "
+            )
             # wrap all text including prefix
             sides_clashes_list = textwrap.wrap(
                 prefix + " , ".join(kititm.sides_clashes),
@@ -1991,6 +1966,16 @@ def kcr_make_labels(
             meal_label = meal_label._replace(
                 sides_clashes=[prefix] + sides_clashes_list
             )
+        else:
+            meal_label = meal_label._replace(
+                sides=textwrap.wrap(
+                    ugettext("Sides") + f": {sides_ingredients}",
+                    width=74,
+                    break_long_words=False,
+                    break_on_hyphens=False,
+                ),
+            )
+
         for _j in range(1, kititm.meal_qty + 1):
             meal_labels.append(meal_label)
 
