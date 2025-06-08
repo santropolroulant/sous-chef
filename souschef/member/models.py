@@ -65,6 +65,12 @@ PAYMENT_TYPE = (
     ("etransfert", "Interac"),
 )
 
+MAILING_TYPE = (
+    (" ", _("----")),
+    ("email", "Email"),
+    ("paper", "Paper"),
+)
+
 DELIVERY_TYPE = (
     ("O", _("Ongoing")),
     ("E", _("Episodic")),
@@ -495,6 +501,14 @@ class Client(models.Model):
         null=True,
         blank=True,
         choices=PAYMENT_TYPE,
+    )
+
+    billing_mailing_type = models.CharField(
+        verbose_name=_("Mailing Type"),
+        max_length=10,
+        null=True,
+        blank=True,
+        choices=MAILING_TYPE,
     )
 
     rate_type = models.CharField(

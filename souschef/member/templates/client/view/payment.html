@@ -38,6 +38,9 @@
             <div class="header">{% trans 'Payment method' %}</div>{{client.get_billing_payment_type_display}}
         </div>
         <div class="item">
+            <div class="header">{% trans 'Mailing type' %}</div>{{client.get_billing_mailing_type_display}}
+        </div>
+        <div class="item">
             <div class="header">{% trans 'Rate type' %}</div>{{client.get_rate_type_display}}
         </div>
         <div class="item">

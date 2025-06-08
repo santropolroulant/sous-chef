@@ -1,5 +1,6 @@
 import collections
 import copy
+from typing import cast
 
 from django.contrib import messages
 from django.contrib.auth.mixins import (
@@ -175,7 +176,7 @@ class BillingSummaryView(
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        billing = self.object
+        billing = cast(Billing, self.object)
 
         # generate a summary
         zero_statistics = {
