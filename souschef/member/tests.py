@@ -96,6 +96,7 @@ def load_initial_data(client):
         "same_as_client": True,
         "facturation": "",
         "billing_payment_type": "",
+        "billing_mailing_type": "",
     }
     return initial
 

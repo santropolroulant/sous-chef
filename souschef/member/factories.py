@@ -7,6 +7,7 @@ from souschef.member.models import (
     DAYS_OF_WEEK,
     DELIVERY_TYPE,
     GENDER_CHOICES,
+    MAILING_TYPE,
     PAYMENT_TYPE,
     RATE_TYPE,
     Address,
@@ -73,6 +74,9 @@ class ClientFactory(factory.DjangoModelFactory):
     billing_member = member
     billing_payment_type = factory.LazyAttribute(
         lambda x: random.choice(PAYMENT_TYPE)[0]
+    )
+    billing_mailing_type = factory.LazyAttribute(
+        lambda x: random.choice(MAILING_TYPE)[0]
     )
     rate_type = factory.LazyAttribute(lambda x: random.choice(RATE_TYPE)[0])
     member = member

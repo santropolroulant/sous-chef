@@ -3,6 +3,7 @@ from datetime import (
     date,
     datetime,
 )
+from typing import Dict, List
 
 from annoying.fields import JSONField
 from django.db import models
@@ -15,7 +16,9 @@ from django_filters import (
     CharFilter,
     FilterSet,
 )
+from typing_extensions import TypedDict
 
+from souschef.member.models import Client
 from souschef.order.models import (
     Order,
     Order_item,
@@ -75,6 +78,18 @@ class BillingManager(models.Manager):
             return billing
 
 
+class RegularLargeDict(TypedDict):
+    R: int
+    L: int
+
+
+class OrderSummaryDict(TypedDict):
+    total_orders: int
+    total_main_dishes: RegularLargeDict
+    total_billable_sides: int
+    total_amount: int
+
+
 class Billing(models.Model):  # noqa: DJ008
     class Meta:
         ordering = ["-billing_year", "-billing_month"]
@@ -105,17 +120,17 @@ class Billing(models.Model):  # noqa: DJ008
         return period
 
     @property
-    def summary(self):
+    def summary(self) -> Dict[Client, OrderSummaryDict]:
         """
         Return a summary of every client.
         Format: dictionary {client: info}
         """
         # collect orders by clients
         kvpairs = map(lambda o: (o.client, o), self.orders.all())
-        d = collections.defaultdict(list)
+        d: collections.defaultdict[Client, List[Order]] = collections.defaultdict(list)
         for k, v in kvpairs:
             d[k].append(v)
-        result = {}
+        result: Dict[Client, OrderSummaryDict] = {}
         for client, orders in d.items():
             result[client] = {
                 "total_orders": len(orders),
