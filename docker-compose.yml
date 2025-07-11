@@ -16,6 +16,8 @@ services:
     build: .
     volumes:
       - ./:/code
+      # in order to debug django you may mount your site-packages directory
+      # - ./env/lib/python3.9/site-packages/django://usr/local/lib/python3.7/site-packages/django
     ports:
       - "8000:8000"
     depends_on:
