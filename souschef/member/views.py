@@ -215,6 +215,7 @@ class ClientWizard(
             "facturation": "",
             "billing_payment_type": "",
             "billing_mailing_type": "",
+            "billing_email": "",
         }
         return initial
 
@@ -286,6 +287,7 @@ class ClientWizard(
                 "rate_type": payment_information.get("facturation"),
                 "billing_payment_type": payment_information.get("billing_payment_type"),
                 "billing_mailing_type": payment_information.get("billing_mailing_type"),
+                "billing_email": payment_information.get("billing_email"),
                 "billing_member": billing_member,
                 "delivery_type": dietary_restriction.get("delivery_type"),
                 "meal_default_week": self.save_json(dietary_restriction),
@@ -511,6 +513,7 @@ def _get_csv_header():
         "Client Route",
         "Client Billing Type",
         "Client Mailing Type",
+        "Client Billing Email",
         "Billing Member",
         "Relationships",
         "Meal Default",
@@ -544,6 +547,7 @@ def _get_csv_row(obj: Client, route):
         route,
         obj.billing_payment_type,
         obj.billing_mailing_type,
+        obj.billing_email,
         obj.billing_member,
         ", ".join(str(c) for c in obj.relationship_set.all()),
         mealdefweek,
@@ -816,6 +820,7 @@ class ClientUpdatePaymentInformation(ClientUpdateInformation):
                 "facturation": client.rate_type,
                 "billing_payment_type": client.billing_payment_type,
                 "billing_mailing_type": client.billing_mailing_type,
+                "billing_email": client.billing_email,
             }
         )
 
@@ -857,6 +862,7 @@ class ClientUpdatePaymentInformation(ClientUpdateInformation):
         client.rate_type = payment_information.get("facturation")
         client.billing_payment_type = payment_information.get("billing_payment_type")
         client.billing_mailing_type = payment_information.get("billing_mailing_type")
+        client.billing_email = payment_information.get("billing_email")
         client.save()
 
 

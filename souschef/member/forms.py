@@ -393,6 +393,12 @@ class ClientPaymentInformation(MemberForm):
         required=False,
     )
 
+    billing_email = forms.CharField(
+        label=_("Billing Email"),
+        max_length=320,
+        required=False,
+    )
+
     number = forms.IntegerField(label=_("Street Number"), required=False)
 
     apartment = forms.CharField(

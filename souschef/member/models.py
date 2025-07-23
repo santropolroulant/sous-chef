@@ -511,6 +511,13 @@ class Client(models.Model):
         choices=MAILING_TYPE,
     )
 
+    billing_email = models.CharField(
+        verbose_name=_("Billing Email"),
+        max_length=320,
+        null=True,
+        blank=True,
+    )
+
     rate_type = models.CharField(
         verbose_name=_("rate type"), max_length=10, choices=RATE_TYPE, default="default"
     )
