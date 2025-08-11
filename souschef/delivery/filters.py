@@ -2,7 +2,7 @@ from functools import reduce
 
 import django_filters
 from django.db.models import Q
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from souschef.order.models import Order
 
@@ -16,7 +16,7 @@ class KitchenCountOrderFilter(django_filters.FilterSet):
 
     class Meta:
         model = Order
-        fields = "__all__"
+        fields = ["creation_date", "delivery_date", "status", "client"]
 
     def filter_client(self, queryset, field_name, value):
         """Filters the orders using client names."""

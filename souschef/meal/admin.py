@@ -1,10 +1,12 @@
 from django.contrib import admin
 from django.db.models.functions import Lower
 
-from souschef.meal.models import (
+from souschef.meal.constants import (
     COMPONENT_GROUP_CHOICES,
     INGREDIENT_GROUP_CHOICES,
     RESTRICTED_ITEM_GROUP_CHOICES,
+)
+from souschef.meal.models import (
     Component,
     Component_ingredient,
     Incompatibility,

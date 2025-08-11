@@ -1,7 +1,7 @@
-from django.conf.urls import url
-from django.utils.translation import string_concat
-from django.utils.translation import ugettext_lazy as _
+from django.urls import path
+from django.utils.translation import gettext_lazy as _
 
+from souschef.djangocompat import string_concat
 from souschef.member.forms import (
     ClientAddressInformation,
     ClientBasicInformation,
@@ -85,98 +85,103 @@ member_wizard = ClientWizard.as_view(
 
 
 urlpatterns = [
-    url(_(r"^create/$"), member_wizard, name="member_step"),
-    url(_(r"^create/(?P<step>.+)/$"), member_wizard, name="member_step"),
-    url(_(r"^list/$"), ClientList.as_view(), name="list"),
-    url(_(r"^search/$"), SearchMembers.as_view(), name="search"),
-    url(_(r"^view/(?P<pk>\d+)/orders$"), ClientOrderList.as_view(), name="list_orders"),
-    url(
-        _(r"^view/(?P<pk>\d+)/information$"),
+    path(_("create/"), member_wizard, name="member_step"),
+    path(_("create/<str:step>/"), member_wizard, name="member_step"),
+    path(_("list/"), ClientList.as_view(), name="list"),
+    path(_("search/"), SearchMembers.as_view(), name="search"),
+    path(_("view/<int:pk>/orders"), ClientOrderList.as_view(), name="list_orders"),
+    path(
+        _("view/<int:pk>/information"),
         ClientInfoView.as_view(),
         name="client_information",
     ),
-    url(
-        _(r"^view/(?P<pk>\d+)/billing$"),
+    path(
+        _("view/<int:pk>/billing"),
         ClientPaymentView.as_view(),
         name="client_payment",
     ),
-    url(
-        _(r"^view/(?P<pk>\d+)/preferences$"),
+    path(
+        _("view/<int:pk>/preferences"),
         ClientAllergiesView.as_view(),
         name="client_allergies",
     ),
-    url(_(r"^view/(?P<pk>\d+)/notes$"), ClientNoteList.as_view(), name="client_notes"),
-    url(
-        _(r"^view/(?P<pk>\d+)/notes/add$"),
+    path(_("view/<int:pk>/notes"), ClientNoteList.as_view(), name="client_notes"),
+    path(
+        _("view/<int:pk>/notes/add"),
         ClientNoteListAdd.as_view(),
         name="client_notes_add",
     ),
-    url(_(r"^geolocateAddress/$"), geolocateAddress, name="geolocateAddress"),
-    url(
-        _(r"^view/(?P<pk>\d+)/status$"),
+    path(_("geolocateAddress/"), geolocateAddress, name="geolocateAddress"),
+    path(
+        _("view/<int:pk>/status"),
         ClientStatusView.as_view(),
         name="client_status",
     ),
-    url(
-        _(r"^client/(?P<pk>\d+)/status/scheduler$"),
+    path(
+        _("client/<int:pk>/status/scheduler"),
         ClientStatusScheduler.as_view(),
         name="clientStatusScheduler",
     ),
-    url(
+    path(
+        _("client/<int:pk>/status/scheduler/reschedule/<int:scheduled_status_1_pk>/"),
+        ClientStatusSchedulerReschedule.as_view(),
+        name="clientStatusSchedulerRescheduleOneStatus",
+    ),
+    path(
         _(
-            r"^client/(?P<pk>\d+)/status/scheduler/reschedule/"
-            r"(?P<scheduled_status_1_pk>\d+)"
-            r",(?P<scheduled_status_2_pk>\d+)?"
-            r"/$"
+            "client/<int:pk>/status/scheduler/reschedule/"
+            "<int:scheduled_status_1_pk>"
+            "/<int:scheduled_status_2_pk>/"
         ),
         ClientStatusSchedulerReschedule.as_view(),
-        name="clientStatusSchedulerReschedule",
+        name="clientStatusSchedulerRescheduleTwoStatus",
     ),
-    url(
-        r"^status/(?P<pk>\d+)/delete$",
+    path(
+        "status/<int:pk>/delete",
         ClientStatusSchedulerDeleteView.as_view(),
         name="delete_status",
     ),
-    url(
-        _(r"^restriction/(?P<pk>\d+)/delete/$"),
+    path(
+        _("restriction/<int:pk>/delete/"),
         DeleteRestriction.as_view(),
         name="restriction_delete",
     ),
-    url(
-        _(r"^client_option/(?P<pk>\d+)/delete/$"),
+    path(
+        _("client_option/<int:pk>/delete/"),
         DeleteClientOption.as_view(),
         name="client_option_delete",
     ),
-    url(
-        _(r"^ingredient_to_avoid/(?P<pk>\d+)/delete/$"),
+    path(
+        _("ingredient_to_avoid/<int:pk>/delete/"),
         DeleteIngredientToAvoid.as_view(),
         name="ingredient_to_avoid_delete",
     ),
-    url(
-        _(r"^component_to_avoid/(?P<pk>\d+)/delete/$"),
+    path(
+        _("component_to_avoid/<int:pk>/delete/"),
         DeleteComponentToAvoid.as_view(),
         name="component_to_avoid_delete",
     ),
-    url(_(r"^routes/$"), RouteListView.as_view(), name="route_list"),
-    url(_(r"^route/(?P<pk>\d+)/$"), RouteDetailView.as_view(), name="route_detail"),
-    url(_(r"^route/(?P<pk>\d+)/edit/$"), RouteEditView.as_view(), name="route_edit"),
-    url(
-        _(r"^route/(?P<pk>\d+)/optimised_sequence/$"),
+    path(_("routes/"), RouteListView.as_view(), name="route_list"),
+    path(_("route/<int:pk>/"), RouteDetailView.as_view(), name="route_detail"),
+    path(_("route/<int:pk>/edit/"), RouteEditView.as_view(), name="route_edit"),
+    path(
+        _("route/<int:pk>/optimised_sequence/"),
         get_minimised_euclidean_distances_route_sequence,
         name="route_get_optimised_sequence",
     ),
-    url(
-        _(r"^route/(?P<route_pk>\d+)/(?P<date>\d{4}-\d{2}-\d{2})/$"),
+    path(
+        _("route/<int:route_pk>/<str:date>/"),
         DeliveryHistoryDetailView.as_view(),
         name="delivery_history_detail",
     ),
 ]
 
+
 # Handle client update forms URL
 for d in member_forms:
     urlpatterns.append(
-        url(
-            string_concat(_(r"^(?P<pk>\d+)/update/"), d["step_url"], "/$"),
+        path(
+            string_concat(_("<int:pk>/update/"), d["step_url"], "/"),
             d["update_form"].as_view(),
             name="member_update_" + d["name"],
         )

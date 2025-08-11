@@ -3,19 +3,13 @@ from datetime import (
     date,
     datetime,
 )
-from typing import Dict, List
 
 from annoying.fields import JSONField
 from django.db import models
 from django.db.models import (
     Prefetch,
-    Q,
 )
-from django.utils.translation import ugettext_lazy as _
-from django_filters import (
-    CharFilter,
-    FilterSet,
-)
+from django.utils.translation import gettext_lazy as _
 from typing_extensions import TypedDict
 
 from souschef.member.models import Client
@@ -120,17 +114,17 @@ class Billing(models.Model):  # noqa: DJ008
         return period
 
     @property
-    def summary(self) -> Dict[Client, OrderSummaryDict]:
+    def summary(self) -> dict[Client, OrderSummaryDict]:
         """
         Return a summary of every client.
         Format: dictionary {client: info}
         """
         # collect orders by clients
         kvpairs = map(lambda o: (o.client, o), self.orders.all())
-        d: collections.defaultdict[Client, List[Order]] = collections.defaultdict(list)
+        d: collections.defaultdict[Client, list[Order]] = collections.defaultdict(list)
         for k, v in kvpairs:
             d[k].append(v)
-        result: Dict[Client, OrderSummaryDict] = {}
+        result: dict[Client, OrderSummaryDict] = {}
         for client, orders in d.items():
             result[client] = {
                 "total_orders": len(orders),
@@ -155,39 +149,6 @@ class Billing(models.Model):  # noqa: DJ008
                                 o_item.total_quantity
                             )
         return result
-
-
-class BillingFilter(FilterSet):
-    name = CharFilter(method="filter_search", label=_("Search by name"))
-
-    date = CharFilter(method="filter_period")
-
-    class Meta:
-        model = Billing
-        fields = "__all__"
-
-    def filter_search(self, queryset, field_name, value):
-        if not value:
-            return queryset
-
-        name_contains = Q()
-        names = value.split(" ")
-
-        for name in names:
-            firstname_contains = Q(client__member__firstname__icontains=name)
-
-            lastname_contains = Q(client__member__lastname__icontains=name)
-
-            name_contains |= firstname_contains | lastname_contains
-
-        return queryset.filter(name_contains)
-
-    def filter_period(self, queryset, field_name, value):
-        if not value:
-            return queryset
-
-        year, month = value.split("-")
-        return queryset.filter(billing_year=year, billing_month=month)
 
 
 # get the total amount from a list of orders

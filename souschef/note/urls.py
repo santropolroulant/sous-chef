@@ -1,5 +1,4 @@
-from django.conf.urls import url
-from django.utils.translation import ugettext_lazy as _
+from django.urls import path
 
 from souschef.note.views import (
     NoteAdd,
@@ -14,14 +13,14 @@ from souschef.note.views import (
 app_name = "note"
 
 urlpatterns = [
-    url(_(r"^$"), NoteList.as_view(), name="note_list"),
-    url(_(r"^read/(?P<id>\d+)/$"), mark_as_read, name="read"),
-    url(_(r"^unread/(?P<id>\d+)/$"), mark_as_unread, name="unread"),
-    url(_(r"^add/$"), NoteAdd.as_view(), name="note_add"),
-    url(_(r"^batch_toggle/$"), NoteBatchToggle.as_view(), name="batch_toggle"),
-    url(_(r"^edit/(?P<pk>\d+)/$"), NoteEditView.as_view(), name="edit"),
-    url(
-        _(r"^delete/(?P<pk>\d+)/$"),
+    path("", NoteList.as_view(), name="note_list"),
+    path("read/<int:id>/", mark_as_read, name="read"),
+    path("unread/<int:id>/", mark_as_unread, name="unread"),
+    path("add/", NoteAdd.as_view(), name="note_add"),
+    path("batch_toggle/", NoteBatchToggle.as_view(), name="batch_toggle"),
+    path("edit/<int:pk>/", NoteEditView.as_view(), name="edit"),
+    path(
+        "delete/<int:pk>/",
         NoteDeleteView.as_view(),
         name="note_delete",
     ),

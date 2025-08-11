@@ -67,7 +67,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # Third party apps
     "annoying",
-    "avatar",
     "django_crontab",
     "django_filters",
     "formtools",
@@ -92,7 +91,6 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.contrib.auth.middleware.SessionAuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django.middleware.locale.LocaleMiddleware",
@@ -227,12 +225,6 @@ else:
     MEDIA_ROOT = os.path.join(STATIC_ROOT, "media")
     MEDIA_URL = "/static/media/"
 
-# Avatar files
-AVATAR_PROVIDERS = (
-    "avatar.providers.PrimaryAvatarProvider",
-    "avatar.providers.GravatarAvatarProvider",
-    "avatar.providers.DefaultAvatarProvider",
-)
 
 MEAL_LABELS_FILE = os.path.join(GENERATED_DOCS_DIR, "meal_labels.pdf")
 KITCHEN_COUNT_FILE = os.path.join(GENERATED_DOCS_DIR, "kitchen_count.pdf")

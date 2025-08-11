@@ -83,7 +83,7 @@ chown www-data:www-data /var/local/souschef
 3. Initialize Sous-Chef
 
 ```bash
-cd /usr/local/lib/python3.7/dist-packages/souschef
+cd /usr/local/lib/python3.9/dist-packages/souschef
 
 # Export the Sous-Chef configuration variables, so Django's
 # manage.py may work.
@@ -110,7 +110,7 @@ This server will serve the static files and redirect all other requests to the g
 Copy the content of [`souschef/configsamples/nginx.conf`](souschef/configsamples/nginx.conf) to `/etc/nginx/sites-available/souschef` and activate nginx:
 
 ```bash
-cp /usr/local/lib/python3.7/dist-packages/souschef/configsamples/nginx.conf /etc/nginx/sites-available/souschef
+cp /usr/local/lib/python3.9/dist-packages/souschef/configsamples/nginx.conf /etc/nginx/sites-available/souschef
 
 # Remove the default site configuration, which is a symbolic link to `/etc/nginx/sites-available/default`
 rm /etc/nginx/sites-enabled/default
@@ -125,7 +125,7 @@ systemctl restart nginx
 Put the content of [`souschef/configsamples/souschef.service`](souschef/configsamples/souschef.service) to `/lib/systemd/system/souschef.service`, then ask systemctl to read the new configuration:
 
 ```
-cp /usr/local/lib/python3.7/dist-packages/souschef/configsamples/souschef.service /lib/systemd/system/souschef.service
+cp /usr/local/lib/python3.9/dist-packages/souschef/configsamples/souschef.service /lib/systemd/system/souschef.service
 systemctl daemon-reload
 ```
 
@@ -155,7 +155,7 @@ Sous-Chef needs a cron job to be executed daily in order to correcly process ord
 
 ```
 cd /etc/cron.daily
-ln -s /usr/local/lib/python3.7/dist-packages/souschef/cronscripts/souschef_daily.sh souschef_daily
+ln -s /usr/local/lib/python3.9/dist-packages/souschef/cronscripts/souschef_daily.sh souschef_daily
 ```
 
 7. Managing souschef crons

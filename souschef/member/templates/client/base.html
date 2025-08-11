@@ -61,7 +61,7 @@
                 {% trans 'Cancel this upcoming change' %}
                 <form style="display:none" action="{% url 'member:delete_status' sc0.id %}" method="post">{% csrf_token %}</form>
               </div>
-              <div class="item member-reschedule-this-upcoming-change" data-url="{% if sc1.get_pair != sc0 %}{% url 'member:clientStatusSchedulerReschedule' client.id sc0.pk %}{% else %}{% url 'member:clientStatusSchedulerReschedule' client.id sc0.pk sc1.pk %}{% endif %}" data-modal-target=".ui.modal.status">{% trans 'Reschedule this upcoming change' %}</div>
+              <div class="item member-reschedule-this-upcoming-change" data-url="{% if sc1.get_pair != sc0 %}{% url 'member:clientStatusSchedulerRescheduleOneStatus' client.id sc0.pk %}{% else %}{% url 'member:clientStatusSchedulerRescheduleTwoStatus' client.id sc0.pk sc1.pk %}{% endif %}" data-modal-target=".ui.modal.status">{% trans 'Reschedule this upcoming change' %}</div>
               {% endif %}
             {% endif %}
           </div>

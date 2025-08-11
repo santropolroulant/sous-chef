@@ -1,9 +1,9 @@
 from django import forms
 from django.db.models.functions import Lower
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
+from souschef.meal.constants import COMPONENT_GROUP_CHOICES_MAIN_DISH
 from souschef.meal.models import (
-    COMPONENT_GROUP_CHOICES_MAIN_DISH,
     Component,
     Ingredient,
 )

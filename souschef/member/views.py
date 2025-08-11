@@ -29,15 +29,23 @@ from django.urls import (
 from django.utils.decorators import classonlymethod
 from django.utils.encoding import force_text
 from django.utils.safestring import mark_safe
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django.views import generic
 from formtools.wizard.views import NamedUrlSessionWizardView
 
 from souschef.delivery.views import calculateRoutePointsEuclidean
-from souschef.meal.models import (
+from souschef.meal.constants import (
     COMPONENT_GROUP_CHOICES,
     COMPONENT_GROUP_CHOICES_SIDES,
 )
+from souschef.member.constants import (
+    CELL,
+    DAYS_OF_WEEK,
+    EMAIL,
+    HOME,
+    WORK,
+)
+from souschef.member.filters import ClientFilter, ClientScheduledStatusFilter
 from souschef.member.forms import (
     ClientAddressInformation,
     ClientBasicInformation,
@@ -50,19 +58,12 @@ from souschef.member.formsets import (
     UpdateRelationshipFormset,
 )
 from souschef.member.models import (
-    CELL,
-    DAYS_OF_WEEK,
-    EMAIL,
-    HOME,
-    WORK,
     Address,
     Client,
     Client_avoid_component,
     Client_avoid_ingredient,
     Client_option,
-    ClientFilter,
     ClientScheduledStatus,
-    ClientScheduledStatusFilter,
     Contact,
     DeliveryHistory,
     Member,
@@ -70,9 +71,9 @@ from souschef.member.models import (
     Restriction,
     Route,
 )
+from souschef.order.constants import SIZE_CHOICES
 from souschef.order.mixins import FormValidAjaxableResponseMixin
 from souschef.order.models import (
-    SIZE_CHOICES,
     Order,
 )
 

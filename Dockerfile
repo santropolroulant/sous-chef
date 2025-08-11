@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 python:3.7
+FROM --platform=linux/amd64 python:3.9
 ENV PYTHONUNBUFFERED 1
 
 # Install underlying Debian dependencies

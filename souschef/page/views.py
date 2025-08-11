@@ -5,14 +5,13 @@ from django.contrib.auth.mixins import (
     LoginRequiredMixin,
     PermissionRequiredMixin,
 )
-from django.contrib.auth.views import login
+from django.contrib.auth.views import LoginView
 from django.db.models import Prefetch
-from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView
 
+from souschef.member.constants import DAYS_OF_WEEK
 from souschef.member.models import (
-    DAYS_OF_WEEK,
     Client,
     Client_option,
     Route,
@@ -121,9 +120,9 @@ class HomeView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
         return total_episodic_by_day
 
 
-def custom_login(request):
-    if request.user.is_authenticated:
-        # Redirect to home if already logged in.
-        return HttpResponseRedirect(reverse_lazy("page:home"))
-    else:
-        return login(request)
+class CustomLoginView(LoginView):
+    """Custom login view that extends Django's LoginView."""
+
+    template_name = "registration/login.html"
+    redirect_authenticated_user = True
+    next_page = reverse_lazy("page:home")
