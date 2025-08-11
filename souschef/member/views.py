@@ -27,7 +27,7 @@ from django.urls import (
     reverse_lazy,
 )
 from django.utils.decorators import classonlymethod
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
@@ -92,9 +92,7 @@ class NamedUrlSessionWizardView_i18nURL(NamedUrlSessionWizardView):
             i18n_step = kwargs.pop("step")
             try:
                 matched_tup = next(
-                    tup
-                    for tup in self.i18n_url_names
-                    if force_text(tup[1]) == i18n_step
+                    tup for tup in self.i18n_url_names if force_str(tup[1]) == i18n_step
                 )
                 non_i18n_step = matched_tup[0]
             except StopIteration:
@@ -111,9 +109,7 @@ class NamedUrlSessionWizardView_i18nURL(NamedUrlSessionWizardView):
         non_i18n_step = step
         try:
             matched_tup = next(
-                tup
-                for tup in self.i18n_url_names
-                if force_text(tup[0]) == non_i18n_step
+                tup for tup in self.i18n_url_names if force_str(tup[0]) == non_i18n_step
             )
             i18n_step = matched_tup[1]
         except StopIteration:
@@ -1095,7 +1091,7 @@ class SearchMembers(LoginRequiredMixin, PermissionRequiredMixin, generic.View):
             )
 
     def get(self, request):
-        if request.is_ajax():
+        if self.request.headers.get("X-Requested-With") == "XMLHttpRequest":
             q = request.GET.get("name", "")
             members = Member.objects.filter(self._get_query_args(q))[:20]
             results = []

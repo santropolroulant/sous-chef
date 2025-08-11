@@ -8,7 +8,7 @@ class FormInvalidAjaxableResponseMixin:
 
     def form_invalid(self, form):
         response = super().form_invalid(form)
-        if self.request.is_ajax():
+        if self.request.headers.get("X-Requested-With") == "XMLHttpRequest":
             return JsonResponse(form.errors, status=400)
         else:
             return response
@@ -24,7 +24,7 @@ class FormValidAjaxableResponseMixin:
         # it might do some processing (in the case of CreateView, it will
         # call form.save() for example).
         response = super().form_valid(form)
-        if self.request.is_ajax():
+        if self.request.headers.get("X-Requested-With") == "XMLHttpRequest":
             data = {
                 "pk": self.object.pk,
             }

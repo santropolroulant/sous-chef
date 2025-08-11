@@ -4,7 +4,7 @@ from django import forms
 from django.core.validators import EMPTY_VALUES
 from django.forms import ValidationError
 from django.forms.fields import Field
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from django.utils.translation import gettext_lazy as _
 
 phone_digits_re = re.compile(r"^(?:1-?)?(\d{3})[-\.]?(\d{3})[-\.]?(\d{4})$")
@@ -26,7 +26,7 @@ class CAPhoneNumberField(Field):
         if value in EMPTY_VALUES:
             return ""
 
-        value = re.sub(r"(\(|\)|\s+)", "", force_text(value))
+        value = re.sub(r"(\(|\)|\s+)", "", force_str(value))
 
         m = phone_digits_re.search(value)
 
@@ -52,7 +52,7 @@ class CAPhoneNumberExtField(CAPhoneNumberField):
         try:
             return super().clean(value)
         except forms.ValidationError as error:
-            value = re.sub(r"(\(|\)|\s+)", "", force_text(value))
+            value = re.sub(r"(\(|\)|\s+)", "", force_str(value))
             m = self.phone_digits_with_ext.search(value)
             if m:
                 return f"{m.group(1)}-{m.group(2)}-{m.group(3)} #{m.group(4)}"
