@@ -8,7 +8,7 @@ from django.contrib.admin.models import (
     LogEntry,
 )
 from django.core.management.base import BaseCommand
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from souschef.member.models import Client
 from souschef.order.models import Order

@@ -1,15 +1,18 @@
 import random
 
 import factory
+from factory.django import DjangoModelFactory
 
-from souschef.meal.models import COMPONENT_GROUP_CHOICES
-from souschef.member.models import (
+from souschef.meal.constants import COMPONENT_GROUP_CHOICES
+from souschef.member.constants import (
     DAYS_OF_WEEK,
     DELIVERY_TYPE,
     GENDER_CHOICES,
     MAILING_TYPE,
     PAYMENT_TYPE,
     RATE_TYPE,
+)
+from souschef.member.models import (
     Address,
     Client,
     ClientScheduledStatus,
@@ -21,7 +24,7 @@ from souschef.member.models import (
 )
 
 
-class AddressFactory(factory.DjangoModelFactory):
+class AddressFactory(DjangoModelFactory):
     class Meta:
         model = Address
 
@@ -33,7 +36,7 @@ class AddressFactory(factory.DjangoModelFactory):
     longitude = factory.LazyAttribute(lambda x: random.choice(["40.2", "40.1", "40.0"]))
 
 
-class MemberFactory(factory.DjangoModelFactory):
+class MemberFactory(DjangoModelFactory):
     class Meta:
         model = Member
 
@@ -45,14 +48,14 @@ class MemberFactory(factory.DjangoModelFactory):
     contact = factory.RelatedFactory("member.factories.ContactFactory", "member")
 
 
-class RouteFactory(factory.DjangoModelFactory):
+class RouteFactory(DjangoModelFactory):
     class Meta:
         model = Route
 
     name = factory.Faker("name")
 
 
-class DeliveryHistoryFactory(factory.DjangoModelFactory):
+class DeliveryHistoryFactory(DjangoModelFactory):
     class Meta:
         model = DeliveryHistory
 
@@ -66,7 +69,7 @@ def generate_json():
     return json
 
 
-class ClientFactory(factory.DjangoModelFactory):
+class ClientFactory(DjangoModelFactory):
     class Meta:
         model = Client
 
@@ -104,7 +107,7 @@ def random_combination(iterable, r):
     return tuple(pool[i] for i in indices)
 
 
-class RelationshipFactory(factory.DjangoModelFactory):
+class RelationshipFactory(DjangoModelFactory):
     class Meta:
         model = Relationship
 
@@ -125,7 +128,7 @@ class RelationshipFactory(factory.DjangoModelFactory):
     remark = factory.Faker("sentence")
 
 
-class ContactFactory(factory.DjangoModelFactory):
+class ContactFactory(DjangoModelFactory):
     class Meta:
         model = Contact
 
@@ -134,7 +137,7 @@ class ContactFactory(factory.DjangoModelFactory):
     member = factory.SubFactory(MemberFactory)
 
 
-class ClientScheduledStatusFactory(factory.DjangoModelFactory):
+class ClientScheduledStatusFactory(DjangoModelFactory):
     class Meta:
         model = ClientScheduledStatus
 

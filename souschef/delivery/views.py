@@ -8,7 +8,6 @@ from copy import deepcopy
 from dataclasses import dataclass
 from datetime import date, datetime
 from pathlib import Path
-from typing import Dict, List
 
 import labels  # package pylabels
 from django.conf import settings
@@ -33,8 +32,8 @@ from django.urls import (
     reverse,
     reverse_lazy,
 )
-from django.utils.translation import ugettext
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext
+from django.utils.translation import gettext_lazy as _
 from django.views import generic
 from django_filters.views import FilterView
 from reportlab.lib import colors as rl_colors
@@ -52,10 +51,12 @@ from reportlab.platypus import Table as RLTable
 from reportlab.platypus import TableStyle as RLTableStyle
 
 from souschef.delivery.meal_labels import MealLabel, draw_label, meal_label_fields
-from souschef.meal.models import (
+from souschef.meal.constants import (
     COMPONENT_GROUP_CHOICES,
     COMPONENT_GROUP_CHOICES_MAIN_DISH,
     COMPONENT_GROUP_CHOICES_SIDES,
+)
+from souschef.meal.models import (
     Component,
     Component_ingredient,
     Menu,
@@ -67,11 +68,13 @@ from souschef.member.models import (
     Route,
     get_ongoing_clients_at_date,
 )
-from souschef.order.models import (
+from souschef.order.constants import (
     ORDER_STATUS_CANCELLED,
     ORDER_STATUS_ORDERED,
     SIZE_CHOICES_LARGE,
     SIZE_CHOICES_REGULAR,
+)
+from souschef.order.models import (
     DeliveryClient,
     KitchenItem,
     Order,
@@ -1036,7 +1039,7 @@ class IngredientsMissingError(Exception):
     pass
 
 
-def get_kitchen_list(delivery_date: date) -> Dict[int, KitchenItem]:
+def get_kitchen_list(delivery_date: date) -> dict[int, KitchenItem]:
     # Display kitchen count report for given delivery date
     # and generate meal labels.
     #  get sides component
@@ -1063,7 +1066,7 @@ def get_kitchen_list(delivery_date: date) -> Dict[int, KitchenItem]:
     kitchen_list_unfiltered = Order.get_kitchen_items(delivery_date)
 
     # filter out route=None clients and not geolocalized clients
-    kitchen_list: Dict[int, KitchenItem] = {}
+    kitchen_list: dict[int, KitchenItem] = {}
     geolocalized_client_ids = list(
         Client.objects.filter(
             pk__in=kitchen_list_unfiltered.keys(),
@@ -1080,9 +1083,9 @@ def get_kitchen_list(delivery_date: date) -> Dict[int, KitchenItem]:
 
 
 def make_kitchen_count(
-    kitchen_list: Dict[int, KitchenItem],
-    component_lines: List[ComponentLine],
-    meal_lines: List[MealLine],
+    kitchen_list: dict[int, KitchenItem],
+    component_lines: list[ComponentLine],
+    meal_lines: list[MealLine],
     delivery_date: date,
 ) -> Path | None:
     if not component_lines:
@@ -1104,8 +1107,8 @@ def make_kitchen_count(
 
 
 def make_labels(
-    kitchen_list: Dict[int, KitchenItem],
-    component_lines: List[ComponentLine],
+    kitchen_list: dict[int, KitchenItem],
+    component_lines: list[ComponentLine],
     delivery_date: date,
 ) -> Path | None:
     if not component_lines:
@@ -1254,8 +1257,8 @@ def meal_line(kititm):
     )
 
 
-def kcr_make_meal_lines(kitchen_list: Dict[int, KitchenItem]) -> List[MealLine]:
-    meal_lines: List[MealLine] = []
+def kcr_make_meal_lines(kitchen_list: dict[int, KitchenItem]) -> list[MealLine]:
+    meal_lines: list[MealLine] = []
     specials_regular_total_qty = 0
     specials_large_total_qty = 0
     side_clashes_regular_total_qty = 0
@@ -1346,8 +1349,8 @@ def kcr_make_meal_lines(kitchen_list: Dict[int, KitchenItem]) -> List[MealLine]:
 
 
 def kcr_make_component_lines(
-    kitchen_list: Dict[int, KitchenItem], kcr_date
-) -> List[ComponentLine]:
+    kitchen_list: dict[int, KitchenItem], kcr_date
+) -> list[ComponentLine]:
     """Generate the sections and lines for the kitchen count report.
 
     Count all the dishes that have to be prepared and identify all the
@@ -1366,7 +1369,7 @@ def kcr_make_component_lines(
         Component (dishes) summary lines.
     """
     # Build component summary
-    component_lines: Dict[str, ComponentLine] = {}
+    component_lines: dict[str, ComponentLine] = {}
     for _k, item in kitchen_list.items():
         for component_group, meal_component in item.meal_components.items():
             component_lines.setdefault(
@@ -1447,7 +1450,7 @@ def format_client_name(firstname, lastname):
 class PreparationLine:
     preparation_method: str
     quantity: int
-    client_names: List[str]
+    client_names: list[str]
 
 
 def get_portions(regular_qty, large_qty):
@@ -1465,8 +1468,8 @@ def qty_paragraph(qty: int | float, style):
 
 
 def kcr_make_preparation_lines(
-    kitchen_list: Dict[int, KitchenItem], client_filter
-) -> List[PreparationLine]:
+    kitchen_list: dict[int, KitchenItem], client_filter
+) -> list[PreparationLine]:
     """Get food preparation method for clients not having clashing (incompatible)
     ingredients."""
     if client_filter == "only_clients_with_incompatible_ingredients":
@@ -1510,10 +1513,10 @@ def kcr_make_preparation_lines(
 
 def kcr_make_pages(
     kcr_date,
-    component_lines: List[ComponentLine],
-    meal_lines: List[MealLine],
-    preperation_lines_with_incompatible_ingr: List[PreparationLine],
-    preperation_lines_without_incompatible_ingr: List[PreparationLine],
+    component_lines: list[ComponentLine],
+    meal_lines: list[MealLine],
+    preperation_lines_with_incompatible_ingr: list[PreparationLine],
+    preperation_lines_without_incompatible_ingr: list[PreparationLine],
 ):
     """Generate the kitchen count report pages as a PDF file.
 
@@ -1525,8 +1528,8 @@ def kcr_make_pages(
             component quantities and sizes for the date's meal.
         meal_lines: A list of MealLine objects, the details of the clients
             for the date that have ingredients clashing with those in main dish.
-        preperation_lines_with_incompatible_ingr: List[PreperationLine]
-        preperation_lines_without_incompatible_ingr: List[PreperationLine]
+        preperation_lines_with_incompatible_ingr: list[PreperationLine]
+        preperation_lines_without_incompatible_ingr: list[PreperationLine]
 
     Returns:
         An integer : The number of pages generated.
@@ -1844,7 +1847,7 @@ def get_other_restrictions_for_meal_labels(kitchen_item):
 
 def kcr_make_labels(
     kcr_date,
-    kitchen_list: Dict[int, KitchenItem],
+    kitchen_list: dict[int, KitchenItem],
     main_dish_name: str,
     main_dish_ingredients: str,
     sides_ingredients: str,
@@ -1906,13 +1909,13 @@ def kcr_make_labels(
             name=kititm.lastname + ", " + kititm.firstname[0:2] + ".",
         )
         if kititm.meal_size == SIZE_CHOICES_LARGE:
-            meal_label = meal_label._replace(size=ugettext("LARGE"))
+            meal_label = meal_label._replace(size=gettext("LARGE"))
         if kititm.incompatible_ingredients:
             other_restr = get_other_restrictions_for_meal_labels(kititm)
             meal_label = meal_label._replace(
                 main_dish_name="_______________________________________",
                 dish_clashes=textwrap.wrap(
-                    ugettext("Restrictions")
+                    gettext("Restrictions")
                     + ": {}.".format(", ".join(kititm.incompatible_ingredients)),
                     width=65,
                     break_long_words=False,
@@ -1921,7 +1924,7 @@ def kcr_make_labels(
                 if kititm.incompatible_ingredients
                 else "",
                 other_restrictions=textwrap.wrap(
-                    ugettext("Other restr.") + ": {}.".format(", ".join(other_restr)),
+                    gettext("Other restr.") + ": {}.".format(", ".join(other_restr)),
                     width=65,
                     break_long_words=False,
                     break_on_hyphens=False,
@@ -1932,14 +1935,14 @@ def kcr_make_labels(
         elif not kititm.sides_clashes:
             meal_label = meal_label._replace(
                 ingredients=textwrap.wrap(
-                    ugettext("Ingredients") + f": {main_dish_ingredients}",
+                    gettext("Ingredients") + f": {main_dish_ingredients}",
                     width=74,
                     break_long_words=False,
                     break_on_hyphens=False,
                 ),
             )
         if kititm.preparation:
-            prefix = ugettext("Preparation") + ": "
+            prefix = gettext("Preparation") + ": "
             # wrap all text including prefix
             preparation_list = textwrap.wrap(
                 prefix + " , ".join(kititm.preparation),
@@ -1952,7 +1955,7 @@ def kcr_make_labels(
             meal_label = meal_label._replace(preparations=[prefix] + preparation_list)
         if kititm.sides_clashes:
             prefix = (
-                f"{ugettext('Sides')}: _______________________ {ugettext('Clashes')}: "
+                f"{gettext('Sides')}: _______________________ {gettext('Clashes')}: "
             )
             # wrap all text including prefix
             sides_clashes_list = textwrap.wrap(
@@ -1969,7 +1972,7 @@ def kcr_make_labels(
         else:
             meal_label = meal_label._replace(
                 sides=textwrap.wrap(
-                    ugettext("Sides") + f": {sides_ingredients}",
+                    gettext("Sides") + f": {sides_ingredients}",
                     width=74,
                     break_long_words=False,
                     break_on_hyphens=False,
@@ -2051,10 +2054,10 @@ class RouteSummaryLine:
     lqty: int
 
 
-def drs_make_lines(route_list: Dict[int, DeliveryClient]):
+def drs_make_lines(route_list: dict[int, DeliveryClient]):
     # generate all the lines for the delivery route sheet
 
-    summary_lines: Dict[str, RouteSummaryLine] = {}
+    summary_lines: dict[str, RouteSummaryLine] = {}
     for _k, item in route_list.items():
         for delivery_item in item.delivery_items:
             component_group = delivery_item.component_group

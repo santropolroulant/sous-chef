@@ -12,20 +12,20 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django.views import (
     View,
     generic,
 )
 
 from souschef.member.models import Client
+from souschef.note.filters import NoteFilter
 from souschef.note.forms import (
     NoteEditForm,
     NoteForm,
 )
 from souschef.note.models import (
     Note,
-    NoteFilter,
 )
 
 # Create your views here.

@@ -5,7 +5,7 @@ from datetime import (
     date,
     datetime,
 )
-from typing import Dict, List, Optional
+from typing import Optional
 
 from django.core.exceptions import ValidationError
 from django.db import (
@@ -13,64 +13,34 @@ from django.db import (
     models,
     transaction,
 )
-from django.db.models import Q
 from django.urls import reverse
-from django.utils.translation import ugettext_lazy as _
-from django_filters import (
-    CharFilter,
-    ChoiceFilter,
-    FilterSet,
-)
+from django.utils.translation import gettext_lazy as _
 
-from souschef.meal.models import (
+from souschef.meal.constants import (
     COMPONENT_GROUP_CHOICES,
     COMPONENT_GROUP_CHOICES_MAIN_DISH,
     COMPONENT_GROUP_CHOICES_SIDES,
 )
-from souschef.member.models import (
+from souschef.member.constants import (
     DAYS_OF_WEEK,
     OPTION_GROUP_CHOICES_PREPARATION,
     RATE_TYPE_LOW_INCOME,
     RATE_TYPE_SOLIDARY,
 )
-
-ORDER_STATUS = (
-    ("O", _("Ordered")),
-    ("D", _("Delivered")),
-    ("N", _("No Charge")),
-    ("C", _("Cancelled")),
-    ("B", _("Billed")),
-    ("P", _("Paid")),
+from souschef.order.constants import (
+    MAIN_PRICE_DEFAULT,
+    MAIN_PRICE_LOW_INCOME,
+    MAIN_PRICE_SOLIDARY,
+    ORDER_ITEM_TYPE_CHOICES,
+    ORDER_ITEM_TYPE_CHOICES_COMPONENT,
+    ORDER_STATUS,
+    ORDER_STATUS_CANCELLED,
+    ORDER_STATUS_ORDERED,
+    SIDE_PRICE_DEFAULT,
+    SIDE_PRICE_LOW_INCOME,
+    SIDE_PRICE_SOLIDARY,
+    SIZE_CHOICES,
 )
-
-ORDER_STATUS_ORDERED = ORDER_STATUS[0][0]
-ORDER_STATUS_DELIVERED = ORDER_STATUS[1][0]
-ORDER_STATUS_CANCELLED = ORDER_STATUS[3][0]
-
-SIZE_CHOICES = (
-    ("", ""),
-    ("R", _("Regular")),
-    ("L", _("Large")),
-)
-
-SIZE_CHOICES_REGULAR = SIZE_CHOICES[1][0]
-SIZE_CHOICES_LARGE = SIZE_CHOICES[2][0]
-
-ORDER_ITEM_TYPE_CHOICES = (
-    ("meal_component", _("Meal component (main dish, vegetable, side dish, seasonal)")),
-    ("delivery", _("Delivery (general store item, invitation, ...)")),
-    ("pickup", _("Pickup (payment)")),
-    ("visit", _("Visit")),
-)
-
-ORDER_ITEM_TYPE_CHOICES_COMPONENT = ORDER_ITEM_TYPE_CHOICES[0][0]
-
-MAIN_PRICE_DEFAULT = 6.00  # TODO use decimal ?
-SIDE_PRICE_DEFAULT = 1.00
-MAIN_PRICE_LOW_INCOME = 4.50
-SIDE_PRICE_LOW_INCOME = 0.75
-MAIN_PRICE_SOLIDARY = 3.50
-SIDE_PRICE_SOLIDARY = 0.50
 
 
 class OrderManager(models.Manager):
@@ -406,7 +376,7 @@ class Order(models.Model):
         return f"client={self.client}, delivery_date={self.delivery_date}"
 
     @staticmethod
-    def get_kitchen_items(delivery_date) -> Dict[int, "KitchenItem"]:
+    def get_kitchen_items(delivery_date) -> dict[int, "KitchenItem"]:
         """Get all client meal order specifics for delivery date.
 
         For each client that has ordered a meal for 'delivery_date',
@@ -422,7 +392,7 @@ class Order(models.Model):
             A dictionary where the key is an Integer 'client id' and
             the value is a KitchenItem named tuple.
         """
-        kitchen_list: Dict[int, KitchenItem] = {}
+        kitchen_list: dict[int, KitchenItem] = {}
 
         # Day's avoid ingredients clashes.
         for row in day_avoid_ingredient(delivery_date):
@@ -526,7 +496,7 @@ class Order(models.Model):
         return kitchen_list
 
     @staticmethod
-    def get_delivery_list(delivery_date: date, route_id) -> Dict[int, "DeliveryClient"]:
+    def get_delivery_list(delivery_date: date, route_id) -> dict[int, "DeliveryClient"]:
         """
         Get all delivery order specifics for delivery date and route.
         Exclude non-geolocalized clients.
@@ -558,7 +528,7 @@ class Order(models.Model):
             .order_by("order__client_id")
         )
 
-        route_list: Dict[int, DeliveryClient] = {}
+        route_list: dict[int, DeliveryClient] = {}
         for oi in orditms:
             if oi.order.client.is_geolocalized is False:
                 # exclude non-geolocalized client
@@ -1015,12 +985,12 @@ class KitchenItem:
     routename: Optional[str]  # Name of Client's route (ex. 'Mile-end')
     meal_qty: int  # Quantity of main dish servings
     meal_size: str  # Size of main dish
-    incompatible_ingredients: List[str]  # Ingredients in main dish that clash
-    sides_clashes: List[str]  # Specified restrictions clashes in sides
-    avoid_ingredients: List[str]  # All ingredients to avoid for the client
-    restricted_items: List[str]  # All restricted items for the client
-    preparation: List[str]  # All food preparations for the client
-    meal_components: Dict[str, MealComponent]
+    incompatible_ingredients: list[str]  # Ingredients in main dish that clash
+    sides_clashes: list[str]  # Specified restrictions clashes in sides
+    avoid_ingredients: list[str]  # All ingredients to avoid for the client
+    restricted_items: list[str]  # All restricted items for the client
+    preparation: list[str]  # All food preparations for the client
+    meal_components: dict[str, MealComponent]
 
 
 def check_for_new_client(kitchen_list, row):
@@ -1110,53 +1080,6 @@ def component_group_sorting(component):
 
 
 # End Order.get_delivery_list helpers
-
-
-class OrderFilter(FilterSet):
-    name = CharFilter(method="filter_search", label=_("Search by name"))
-
-    status = ChoiceFilter(choices=(("", ""),) + ORDER_STATUS)
-
-    class Meta:
-        model = Order
-        fields = ["status", "delivery_date"]
-
-    def filter_search(self, queryset, field_name, value):
-        if not value:
-            return queryset
-
-        names = value.split(" ")
-
-        name_contains = Q()
-
-        for name in names:
-            firstname_contains = Q(client__member__firstname__icontains=name)
-
-            name_contains |= firstname_contains
-
-            lastname_contains = Q(client__member__lastname__icontains=name)
-            name_contains |= lastname_contains
-
-        return queryset.filter(name_contains)
-
-
-class DeliveredOrdersByMonth(FilterSet):
-    delivery_date = CharFilter(method="filter_period")
-
-    class Meta:
-        model = Order
-        fields = "__all__"
-
-    def filter_period(self, queryset, field_name, value):
-        if not value:
-            return None
-
-        year, month = value.split("-")
-        return queryset.filter(
-            status="D",
-            delivery_date__year=year,
-            delivery_date__month=month,
-        )
 
 
 class Order_item(models.Model):

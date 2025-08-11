@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import datetime
 import json
-from typing import List
 
 from annoying.fields import JSONField
 from django.db import models
@@ -11,98 +10,30 @@ from django.db.models.functions import Extract
 from django.forms import ValidationError
 from django.utils import timezone
 from django.utils.encoding import force_text
-from django.utils.translation import ugettext_lazy as _
-from django_filters import (
-    CharFilter,
-    ChoiceFilter,
-    FilterSet,
-    MultipleChoiceFilter,
-)
+from django.utils.translation import gettext_lazy as _
 
-from souschef.meal.models import (
+from souschef.meal.constants import (
     COMPONENT_GROUP_CHOICES,
     COMPONENT_GROUP_CHOICES_SIDES,
 )
+from souschef.member.constants import (
+    CELL,
+    CONTACT_TYPE_CHOICES,
+    DAYS_OF_WEEK,
+    DEFAULT_VEHICLE,
+    DELIVERY_TYPE,
+    EMAIL,
+    GENDER_CHOICES,
+    HOME,
+    MAILING_TYPE,
+    OPTION_GROUP_CHOICES,
+    PAYMENT_TYPE,
+    RATE_TYPE,
+    ROUTE_VEHICLES,
+    WORK,
+)
 from souschef.member.formsfield import CAPhoneNumberExtField
 from souschef.note.models import Note
-
-HOME = "Home phone"
-CELL = "Cell phone"
-WORK = "Work phone"
-EMAIL = "Email"
-
-GENDER_CHOICES = (
-    ("F", _("Female")),
-    ("M", _("Male")),
-    ("O", _("Other")),
-)
-
-CONTACT_TYPE_CHOICES = (
-    (HOME, HOME),
-    (CELL, CELL),
-    (WORK, WORK),
-    (EMAIL, EMAIL),
-)
-
-RATE_TYPE = (
-    ("default", _("Default")),
-    ("low income", _("Low income")),
-    ("solidary", _("Solidary")),
-)
-
-RATE_TYPE_LOW_INCOME = RATE_TYPE[1][0]
-RATE_TYPE_SOLIDARY = RATE_TYPE[2][0]
-
-PAYMENT_TYPE = (
-    (" ", _("----")),
-    ("3rd", "3rd Party"),
-    ("credit", "Carte de crédit"),
-    ("cash", "Cash"),
-    ("cheque", "Chèque"),
-    ("creditphon", "Credit téléphone"),
-    ("eft", "EFT"),
-    ("free", "Gratuité"),
-    ("etransfert", "Interac"),
-)
-
-MAILING_TYPE = (
-    (" ", _("----")),
-    ("email", "Email"),
-    ("paper", "Paper"),
-)
-
-DELIVERY_TYPE = (
-    ("O", _("Ongoing")),
-    ("E", _("Episodic")),
-)
-
-OPTION_GROUP_CHOICES = (
-    ("main dish size", _("Main dish size")),
-    ("dish", _("Dish")),
-    ("preparation", _("Preparation")),
-    ("other order item", _("Other order item")),
-)
-
-OPTION_GROUP_CHOICES_PREPARATION = OPTION_GROUP_CHOICES[2][0]
-
-DAYS_OF_WEEK = (
-    ("monday", _("Monday")),
-    ("tuesday", _("Tuesday")),
-    ("wednesday", _("Wednesday")),
-    ("thursday", _("Thursday")),
-    ("friday", _("Friday")),
-    ("saturday", _("Saturday")),
-    ("sunday", _("Sunday")),
-)
-
-ROUTE_VEHICLES = (
-    # Vehicles should be supported by mapbox.
-    ("cycling", _("Cycling")),
-    ("walking", _("Walking")),
-    ("driving", _("Driving")),
-)
-
-DEFAULT_VEHICLE = ROUTE_VEHICLES[0][0]
 
 
 class Member(models.Model):
@@ -443,7 +374,7 @@ class BirthdayContactClientManager(ClientManager):
 
 def get_ongoing_clients_at_date(
     the_date: datetime.date, today: datetime.date | None = None
-) -> List["Client"]:  # noqa: UP037
+) -> list["Client"]:  # noqa: UP037
     today = today or datetime.date.today()
 
     # This way of doing things will not work with a very large client database.
@@ -897,40 +828,6 @@ class ClientScheduledStatus(models.Model):
         return (self.operation_status == self.ERROR) or (
             self.change_date <= timezone.datetime.date(timezone.datetime.today())
         )
-
-
-class ClientScheduledStatusFilter(FilterSet):
-    class Meta:
-        model = ClientScheduledStatus
-        fields = ["operation_status"]
-
-
-class ClientFilter(FilterSet):
-    name = CharFilter(method="filter_search", label=_("Search by name"))
-
-    status = MultipleChoiceFilter(choices=Client.CLIENT_STATUS)
-
-    delivery_type = ChoiceFilter(choices=(("", ""),) + DELIVERY_TYPE)
-
-    class Meta:
-        model = Client
-        fields = ["route", "status", "delivery_type"]
-
-    def filter_search(self, queryset, field_name, value):
-        if not value:
-            return queryset
-
-        name_contains = Q()
-        names = value.split(" ")
-
-        for name in names:
-            firstname_contains = Q(member__firstname__icontains=name)
-
-            lastname_contains = Q(member__lastname__icontains=name)
-
-            name_contains |= firstname_contains | lastname_contains
-
-        return queryset.filter(name_contains)
 
 
 class Relationship(models.Model):
