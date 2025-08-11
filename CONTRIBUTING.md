@@ -100,12 +100,6 @@ Our development process is based on Continuous Integration. We love to have a ni
 
 Each Django module comes with its own `tests.py` file. Feel free to implement missing unit or functional tests.
 
-### Translating
-
-Sous-Chef is a bilingual (French/English) application and needs your talent of translators!
-
-We use Transifex to translate the Sous-Chef project. Please visit [Sous-Chef on Transifex](https://www.transifex.com/savoirfairelinux/sous-chef) if you are interested!
-
 ## Additional notes
 
 ### Issue labels

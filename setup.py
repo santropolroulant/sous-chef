@@ -45,6 +45,5 @@ setuptools.setup(
         "pylabels>=1.2,<1.2.999",
         "reportlab>=3.4,<3.4.999",
         "rules>=1.2,<1.2.999",
-        "transifex-client>=0.12,<0.12.999",
     ],
 )
