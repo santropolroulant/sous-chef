@@ -1,5 +1,5 @@
 from django.urls.base import lazy
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 
 
 def _string_concat(*strings):
@@ -8,7 +8,7 @@ def _string_concat(*strings):
     constructed from multiple parts.
     From https://docs.djangoproject.com/en/1.8/_modules/django/utils/translation/
     """
-    return "".join(force_text(s) for s in strings)
+    return "".join(force_str(s) for s in strings)
 
 
 string_concat = lazy(_string_concat, str)

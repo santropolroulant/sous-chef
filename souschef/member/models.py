@@ -9,7 +9,7 @@ from django.db.models import Q
 from django.db.models.functions import Extract
 from django.forms import ValidationError
 from django.utils import timezone
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from django.utils.translation import gettext_lazy as _
 
 from souschef.meal.constants import (
@@ -857,7 +857,7 @@ class Relationship(models.Model):
     def get_type_display(self):
         return "+".join(
             map(
-                force_text,
+                force_str,
                 list(map(lambda t: self.TYPE_CHOICES_DICT[t], self.type))
                 or ([_("Unknown type")]),
             )

@@ -5,6 +5,7 @@ from datetime import (
     timedelta,
 )
 from decimal import Decimal
+from io import StringIO
 from unittest import skip
 
 from django.contrib.auth.models import User
@@ -18,7 +19,6 @@ from django.utils import (
     timezone,
     translation,
 )
-from django.utils.six import StringIO
 from django.utils.translation import gettext
 
 from souschef.meal.constants import (
