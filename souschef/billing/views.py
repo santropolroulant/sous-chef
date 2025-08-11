@@ -1,5 +1,6 @@
 import collections
 import copy
+from typing import cast
 
 from django.contrib import messages
 from django.contrib.auth.mixins import (
@@ -150,6 +151,7 @@ class BillingSummaryView(
                 "client__member__lastname",
                 "client__rate_type",
                 "client__billing_payment_type",
+                "client__billing_mailing_type",
             )
             .prefetch_related(
                 Prefetch(
@@ -175,7 +177,7 @@ class BillingSummaryView(
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        billing = self.object
+        billing = cast(Billing, self.object)
 
         # generate a summary
         zero_statistics = {
@@ -213,6 +215,9 @@ class BillingSummaryView(
                     "lastname": client.member.lastname,
                     "payment_type": client.get_billing_payment_type_display()
                     if (client.billing_payment_type is not None)
+                    else "",
+                    "mailing_type": client.get_billing_mailing_type_display()
+                    if (client.billing_mailing_type is not None)
                     else "",
                     "rate_type": client.get_rate_type_display()
                     if (client.rate_type != "default")

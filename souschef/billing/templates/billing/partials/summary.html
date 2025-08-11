@@ -2,7 +2,7 @@
 <style>
   {% comment %}define table width/border...{% endcomment %}
   #sc_bs {width:100%;border-collapse:collapse}
-  #sc_bs th {text-align:left}
+  #sc_bs th {text-align:left;padding-left:0.5em;padding-right:0.5em}
   #sc_bs .border-top {border-top: 1px solid black}
   #sc_bs .border-right {border-right: 1px solid black}
   #sc_bs .center.aligned {text-align:center}
@@ -23,6 +23,7 @@
       </th>
       <th class="bottom aligned">{% trans 'Delivery Status' as tr_cn %}{{ tr_cn|upper }}</th>
       <th width="1" class="left aligned bottom aligned">{% trans 'Payment Method' as tr_pm %}{{ tr_pm|upper }}</th>
+      <th width="1" class="left aligned bottom aligned">{% trans 'Mailing Type' as tr_pm %}{{ tr_pm|upper }}</th>
       <th width="1" class="center aligned bottom aligned padding-x">{% trans 'Price Scale' as tr_ps %}{{ tr_ps|upper }}</th>
       <th width="1" class="center bottom aligned">{% trans 'Number of Orders' as tr_cn %}{{ tr_cn|upper }}</th>
       <th colspan="2" class="center aligned bottom aligned">
@@ -55,6 +56,7 @@
       <td class="nowrap"><a href="{% url 'member:client_information' pk=client.id %}">{{ client.lastname|upper }}, {{ client.firstname }}</a></td>
       <td>{{client.delivery_type_verbose}}</td>
       <td>{{client.payment_type}}</td>
+      <td>{{client.mailing_type}}</td>
       <td class="center aligned nowrap padding-x">{{client.rate_type}}</td>
       <td class="center aligned">{{client.number_of_deliveries_in_month}}</td>
       <td class="center aligned border-top border-right">{{client.total_main_dishes.R|default:""}}</td>

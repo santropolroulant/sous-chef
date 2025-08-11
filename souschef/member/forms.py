@@ -16,6 +16,7 @@ from souschef.member.models import (
     DAYS_OF_WEEK,
     DELIVERY_TYPE,
     GENDER_CHOICES,
+    MAILING_TYPE,
     PAYMENT_TYPE,
     RATE_TYPE,
     Client,
@@ -382,6 +383,19 @@ class ClientPaymentInformation(MemberForm):
         label=_("Payment Type"),
         choices=PAYMENT_TYPE,
         widget=forms.Select(attrs={"class": "ui dropdown"}),
+        required=False,
+    )
+
+    billing_mailing_type = forms.ChoiceField(
+        label=_("Mailing Type"),
+        choices=MAILING_TYPE,
+        widget=forms.Select(attrs={"class": "ui dropdown"}),
+        required=False,
+    )
+
+    billing_email = forms.CharField(
+        label=_("Billing Email"),
+        max_length=320,
         required=False,
     )
 
