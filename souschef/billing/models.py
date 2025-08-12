@@ -3,6 +3,7 @@ from datetime import (
     date,
     datetime,
 )
+from typing import TypedDict
 
 from annoying.fields import JSONField
 from django.db import models
@@ -10,7 +11,6 @@ from django.db.models import (
     Prefetch,
 )
 from django.utils.translation import gettext_lazy as _
-from typing_extensions import TypedDict
 
 from souschef.member.models import Client
 from souschef.order.models import (

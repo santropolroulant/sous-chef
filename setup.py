@@ -27,7 +27,7 @@ setuptools.setup(
         "Topic :: Internet :: WWW/HTTP :: Dynamic Content :: Content Management System",
     ],
     keywords="meals-on-wheel",
-    python_requires=">=3.10",
+    python_requires=">=3.11",
     install_requires=[
         "django-annoying==0.10.8",
         "django-crontab==0.7.1",

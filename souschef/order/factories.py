@@ -20,7 +20,7 @@ class OrderFactory(DjangoModelFactory):
         model = Order
 
     creation_date = factory.LazyFunction(
-        lambda: datetime.datetime.now(datetime.timezone.utc)
+        lambda: datetime.datetime.now(datetime.UTC)
     )
     delivery_date = factory.Faker("date_time_between", start_date="-1y", end_date="+1y")
     client = factory.SubFactory(ClientFactory)

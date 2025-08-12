@@ -15,13 +15,13 @@
 3. Clear remaining files in `dist-packages`:
 
     ```
-    rm -rf /usr/local/lib/python3.10/dist-packages/souschef
+    rm -rf /usr/local/lib/python3.11/dist-packages/souschef
     ```
 
     This step is to make sure assets removed from source code are also removed on the server. You may otherwise move the directory somewhere else if you want to be safe:
 
     ```
-    mv /usr/local/lib/python3.10/dist-packages/souschef /tmp/souschef-old-installation
+    mv /usr/local/lib/python3.11/dist-packages/souschef /tmp/souschef-old-installation
     ```
 
 4. Install the latest Sous-Chef version:
@@ -39,7 +39,7 @@
 5. Collect the static files and upgrade the database:
 
     ```bash
-    cd /usr/local/lib/python3.10/dist-packages/souschef
+    cd /usr/local/lib/python3.11/dist-packages/souschef
 
     # Export the Sous-Chef configuration variables, so Django's
     # manage.py may work.
