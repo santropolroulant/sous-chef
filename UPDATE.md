@@ -50,7 +50,7 @@
 
     # Migrate the database.
     # Needs to run as the root user and not as souschefdb.
-    SOUSCHEF_DJANGO_DB_USER=root SOUSCHEF_DJANGO_DB_PASSWORD=...password... python3 manage.py migrate
+    env SOUSCHEF_DJANGO_DB_USER=root SOUSCHEF_DJANGO_DB_PASSWORD=...password... python3 manage.py migrate
     ```
 
 6. Start Sous-Chef:
