@@ -18,6 +18,7 @@ python3 -m pip install souschef
 ```
 
 To install a development version of Sous-Chef from the PyPI test index, run:
+
 ```
 python3 -m pip install --extra-index-url https://test.pypi.org/simple/ souschef==1.3.0.dev2
 ```
@@ -49,6 +50,7 @@ MariaDB [(none)]> quit
 ```
 
 If you need to restore the Sous-Chef database from a backup, you can do so using the following command:
+
 ```
 mysql -p souschefdb < backupfile.sql
 ```
@@ -83,7 +85,7 @@ chown www-data:www-data /var/local/souschef
 3. Initialize Sous-Chef
 
 ```bash
-cd /usr/local/lib/python3.9/dist-packages/souschef
+cd /usr/local/lib/python3.10/dist-packages/souschef
 
 # Export the Sous-Chef configuration variables, so Django's
 # manage.py may work.
@@ -110,7 +112,7 @@ This server will serve the static files and redirect all other requests to the g
 Copy the content of [`souschef/configsamples/nginx.conf`](souschef/configsamples/nginx.conf) to `/etc/nginx/sites-available/souschef` and activate nginx:
 
 ```bash
-cp /usr/local/lib/python3.9/dist-packages/souschef/configsamples/nginx.conf /etc/nginx/sites-available/souschef
+cp /usr/local/lib/python3.10/dist-packages/souschef/configsamples/nginx.conf /etc/nginx/sites-available/souschef
 
 # Remove the default site configuration, which is a symbolic link to `/etc/nginx/sites-available/default`
 rm /etc/nginx/sites-enabled/default
@@ -125,11 +127,12 @@ systemctl restart nginx
 Put the content of [`souschef/configsamples/souschef.service`](souschef/configsamples/souschef.service) to `/lib/systemd/system/souschef.service`, then ask systemctl to read the new configuration:
 
 ```
-cp /usr/local/lib/python3.9/dist-packages/souschef/configsamples/souschef.service /lib/systemd/system/souschef.service
+cp /usr/local/lib/python3.10/dist-packages/souschef/configsamples/souschef.service /lib/systemd/system/souschef.service
 systemctl daemon-reload
 ```
 
 Also make sure Sous-Chef will start at boot:
+
 ```
 systemctl enable souschef
 ```
@@ -155,22 +158,25 @@ Sous-Chef needs a cron job to be executed daily in order to correcly process ord
 
 ```
 cd /etc/cron.daily
-ln -s /usr/local/lib/python3.9/dist-packages/souschef/cronscripts/souschef_daily.sh souschef_daily
+ln -s /usr/local/lib/python3.10/dist-packages/souschef/cronscripts/souschef_daily.sh souschef_daily
 ```
 
 7. Managing souschef crons
 
 To a add all crons configured in the settings of the souschef app:
+
 ```
 python manage.py crontab add
 ```
 
 To show all crons added by souschef:
+
 ```
 python manage.py crontab show
 ```
 
 To remove all crons added by souschef:
+
 ```
 python manage.py crontab remove
 ```
