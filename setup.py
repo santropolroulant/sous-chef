@@ -5,7 +5,7 @@ with open("README.md") as fh:
 
 setuptools.setup(
     name="souschef",
-    version="2.0.0dev3",
+    version="2.0.0dev4",
     license="AGPL-3.0",
     author="Santropol Roulant and Savoir Faire Linux",
     author_email="info@santropolroulant.org",
@@ -27,7 +27,7 @@ setuptools.setup(
         "Topic :: Internet :: WWW/HTTP :: Dynamic Content :: Content Management System",
     ],
     keywords="meals-on-wheel",
-    python_requires=">=3.9",
+    python_requires=">=3.11",
     install_requires=[
         "django-annoying==0.10.8",
         "django-crontab==0.7.1",

@@ -1,5 +1,5 @@
 [tool.ruff]
-target-version = "py39"
+target-version = "py311"
 
 [tool.ruff.lint]
 select = [
@@ -18,4 +18,4 @@ select = [
     # isort
     "I",
 ]
-ignore = ["DJ001", "DJ012", "UP031"]
+ignore = ["B905", "DJ001", "DJ012", "UP031"]

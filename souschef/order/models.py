@@ -5,7 +5,6 @@ from datetime import (
     date,
     datetime,
 )
-from typing import Optional
 
 from django.core.exceptions import ValidationError
 from django.db import (
@@ -982,7 +981,7 @@ class MealComponent:
 class KitchenItem:
     lastname: str  # Client's lastname
     firstname: str  # Client's firstname
-    routename: Optional[str]  # Name of Client's route (ex. 'Mile-end')
+    routename: str | None  # Name of Client's route (ex. 'Mile-end')
     meal_qty: int  # Quantity of main dish servings
     meal_size: str  # Size of main dish
     incompatible_ingredients: list[str]  # Ingredients in main dish that clash
