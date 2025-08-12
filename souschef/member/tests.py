@@ -960,29 +960,25 @@ class FormTestCase(TestCase):
 
         # The response is the same form with the errors messages.
         self.assertTrue(error_response.context["form"].errors)
-        self.assertFormError(
-            error_response, "form", "lastname", gettext("This field is required.")
+        self.assertEqual(
+            error_response.context["form"].errors["lastname"],
+            [gettext("This field is required.")],
         )
-        self.assertFormError(
-            error_response, "form", "birthdate", gettext("This field is required.")
+        self.assertEqual(
+            error_response.context["form"].errors["birthdate"],
+            [gettext("This field is required.")],
         )
-        self.assertFormError(
-            error_response,
-            "form",
-            "email",
-            gettext("At least one contact information is required."),
+        self.assertEqual(
+            error_response.context["form"].errors["email"],
+            [gettext("At least one contact information is required.")],
         )
-        self.assertFormError(
-            error_response,
-            "form",
-            "home_phone",
-            gettext("At least one contact information is required."),
+        self.assertEqual(
+            error_response.context["form"].errors["home_phone"],
+            [gettext("At least one contact information is required.")],
         )
-        self.assertFormError(
-            error_response,
-            "form",
-            "cell_phone",
-            gettext("At least one contact information is required."),
+        self.assertEqual(
+            error_response.context["form"].errors["cell_phone"],
+            [gettext("At least one contact information is required.")],
         )
 
     def _test_basic_information_without_errors(self):
@@ -1047,14 +1043,17 @@ class FormTestCase(TestCase):
 
         # The response is the same form with the errors messages.
         self.assertTrue(response_error.context["form"].errors)
-        self.assertFormError(
-            response_error, "form", "street", gettext("This field is required.")
+        self.assertEqual(
+            response_error.context["form"].errors["street"],
+            [gettext("This field is required.")],
         )
-        self.assertFormError(
-            response_error, "form", "city", gettext("This field is required.")
+        self.assertEqual(
+            response_error.context["form"].errors["city"],
+            [gettext("This field is required.")],
         )
-        self.assertFormError(
-            response_error, "form", "postal_code", gettext("This field is required.")
+        self.assertEqual(
+            response_error.context["form"].errors["postal_code"],
+            [gettext("This field is required.")],
         )
 
     def _test_address_information_without_errors(self):
@@ -1258,25 +1257,26 @@ class FormTestCase(TestCase):
 
         # Validate that the response is the same form with the errors messages.
         self.assertTrue(response_error.context["form"].errors)
-        self.assertFormError(
-            response_error,
-            "form",
-            "billing_payment_type",
-            gettext(
-                "Select a valid choice. %(value)s is not one of the available choices."
-            )
-            % {"value": "INVALID"},
+        self.assertEqual(
+            response_error.context["form"].errors["billing_payment_type"],
+            [
+                gettext(
+                    "Select a valid choice. "
+                    "%(value)s is not one of the available choices."
+                )
+                % {"value": "INVALID"}
+            ],
         )
-        self.assertFormError(
-            response_error,
-            "form",
-            "member",
-            gettext(
-                "This member has not a valid address, "
-                "please add a valid address to this "
-                "member, "
-                "so it can be used for the billing."
-            ),
+        self.assertEqual(
+            response_error.context["form"].errors["member"],
+            [
+                gettext(
+                    "This member has not a valid address, "
+                    "please add a valid address to this "
+                    "member, "
+                    "so it can be used for the billing."
+                )
+            ],
         )
 
         # Data for the address_information step with errors.
@@ -1305,14 +1305,17 @@ class FormTestCase(TestCase):
 
         # Validate that the response is the same form with the errors messages.
         self.assertTrue(response_error.context["form"].errors)
-        self.assertFormError(
-            response_error, "form", "street", gettext("This field is required")
+        self.assertEqual(
+            response_error.context["form"].errors["street"],
+            [gettext("This field is required")],
         )
-        self.assertFormError(
-            response_error, "form", "city", gettext("This field is required")
+        self.assertEqual(
+            response_error.context["form"].errors["city"],
+            [gettext("This field is required")],
         )
-        self.assertFormError(
-            response_error, "form", "postal_code", gettext("This field is required")
+        self.assertEqual(
+            response_error.context["form"].errors["postal_code"],
+            [gettext("This field is required")],
         )
 
     def _test_payment_information_without_errors(self):
@@ -1379,17 +1382,19 @@ class FormTestCase(TestCase):
 
         # Validate that the response is the same form with the errors messages.
         self.assertTrue(response_error.context["form"].errors)
-        self.assertFormError(
-            response_error, "form", "delivery_type", gettext("This field is required.")
+        self.assertEqual(
+            response_error.context["form"].errors["delivery_type"],
+            [gettext("This field is required.")],
         )
-        self.assertFormError(
-            response_error,
-            "form",
-            "meals_schedule",
-            gettext(
-                "Select a valid choice. %(value)s is not one of the available choices."
-            )
-            % {"value": ""},
+        self.assertEqual(
+            response_error.context["form"].errors["meals_schedule"],
+            [
+                gettext(
+                    "Select a valid choice. "
+                    "%(value)s is not one of the available choices."
+                )
+                % {"value": ""},
+            ],
         )
 
     def _test_step_dietary_restriction_without_errors(self):
