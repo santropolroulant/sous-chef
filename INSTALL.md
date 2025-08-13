@@ -10,17 +10,23 @@ Become root, then install the dependencies.
 
 ```
 apt install mariadb-server nginx libnginx-mod-http-fancyindex gdal-bin python3 \
-    python3-pip libmariadb-dev-compat
-# Invoke pip with 'python3 -m pip' to avoid a warning about a wrapper script
-python3 -m pip install -U pip certifi
-python3 -m pip install gunicorn
-python3 -m pip install souschef
+    python3-pip libmariadb-dev-compat pkg-config
+
+# We install a more recent version of pipx than available on Debian 12
+# so we can install souschef in a global virtual environment.
+pip install --user --break-system-packages pipx
+echo "PATH=\$PATH:/root/.local/bin" >> /root/.bashrc
+source /root/.bashrc
+
+# Install gunicorn and Sous-Chef
+pipx install --global gunicorn
+pipx inject --global gunicorn certifi souschef
 ```
 
 To install a development version of Sous-Chef from the PyPI test index, run:
 
 ```
-python3 -m pip install --extra-index-url https://test.pypi.org/simple/ souschef==1.3.0.dev2
+pipx inject --global gunicorn souschef==2.0.0dev4 --pip-args='--extra-index-url=https://test.pypi.org/simple/'
 ```
 
 2. Configure the database
@@ -85,7 +91,7 @@ chown www-data:www-data /var/local/souschef
 3. Initialize Sous-Chef
 
 ```bash
-cd /usr/local/lib/python3.11/dist-packages/souschef
+cd /opt/pipx/venvs/gunicorn/lib/python3.11/site-packages/souschef
 
 # Export the Sous-Chef configuration variables, so Django's
 # manage.py may work.
@@ -93,16 +99,17 @@ for line in `cat /etc/souschef.conf`; do export $line; done
 
 # Collect the static files. To be done after installation and after each
 # version upgrade.
-python3 manage.py collectstatic --noinput
+/opt/pipx/venvs/gunicorn/bin/python manage.py collectstatic --noinput
 
 # Create the tables. When run after a version upgade it ensures the database
 # schema is up to date.
 # Database migration needs to run as the root user and not as souschefdb.
-SOUSCHEF_DJANGO_DB_USER=root SOUSCHEF_DJANGO_DB_PASSWORD=...password... python3 manage.py migrate
+# Note: the database password here is the one from the `mysql_secure_installation` step.
+env SOUSCHEF_DJANGO_DB_USER=root SOUSCHEF_DJANGO_DB_PASSWORD=...password... /opt/pipx/venvs/gunicorn/bin/python manage.py migrate
 
 # Create a user with administrator privileges.
 # To be done once only.
-python3 manage.py createsuperuser
+/opt/pipx/venvs/gunicorn/bin/python manage.py createsuperuser
 ```
 
 4. Configure the nginx server
@@ -112,7 +119,7 @@ This server will serve the static files and redirect all other requests to the g
 Copy the content of [`souschef/configsamples/nginx.conf`](souschef/configsamples/nginx.conf) to `/etc/nginx/sites-available/souschef` and activate nginx:
 
 ```bash
-cp /usr/local/lib/python3.11/dist-packages/souschef/configsamples/nginx.conf /etc/nginx/sites-available/souschef
+cp /opt/pipx/venvs/gunicorn/lib/python3.11/site-packages/souschef/configsamples/nginx.conf /etc/nginx/sites-available/souschef
 
 # Remove the default site configuration, which is a symbolic link to `/etc/nginx/sites-available/default`
 rm /etc/nginx/sites-enabled/default
@@ -127,7 +134,7 @@ systemctl restart nginx
 Put the content of [`souschef/configsamples/souschef.service`](souschef/configsamples/souschef.service) to `/lib/systemd/system/souschef.service`, then ask systemctl to read the new configuration:
 
 ```
-cp /usr/local/lib/python3.11/dist-packages/souschef/configsamples/souschef.service /lib/systemd/system/souschef.service
+cp /opt/pipx/venvs/gunicorn/lib/python3.11/site-packages/souschef/configsamples/souschef.service /lib/systemd/system/souschef.service
 systemctl daemon-reload
 ```
 
@@ -158,27 +165,7 @@ Sous-Chef needs a cron job to be executed daily in order to correcly process ord
 
 ```
 cd /etc/cron.daily
-ln -s /usr/local/lib/python3.11/dist-packages/souschef/cronscripts/souschef_daily.sh souschef_daily
-```
-
-7. Managing souschef crons
-
-To a add all crons configured in the settings of the souschef app:
-
-```
-python manage.py crontab add
-```
-
-To show all crons added by souschef:
-
-```
-python manage.py crontab show
-```
-
-To remove all crons added by souschef:
-
-```
-python manage.py crontab remove
+ln -s /opt/pipx/venvs/gunicorn/lib/python3.11/site-packages/souschef/cronscripts/souschef_daily.sh souschef_daily
 ```
 
 ## Debugging Sous-Chef
