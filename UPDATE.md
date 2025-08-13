@@ -2,59 +2,56 @@
 
 1. Stop Sous-Chef:
 
-    ```
-    systemctl stop souschef
-    ```
+   ```
+   systemctl stop souschef
+   ```
 
 2. Uninstall the Python package:
 
-    ```
-    python3 -m pip uninstall souschef
-    ```
+   ```
+   pipx uninject --global gunicorn souschef
+   ```
 
-3. Clear remaining files in `dist-packages`:
+3. Clear remaining files in `dist-packages`. This step is to make sure assets removed from source code are also removed on the server.
 
-    ```
-    rm -rf /usr/local/lib/python3.11/dist-packages/souschef
-    ```
-
-    This step is to make sure assets removed from source code are also removed on the server. You may otherwise move the directory somewhere else if you want to be safe:
-
-    ```
-    mv /usr/local/lib/python3.11/dist-packages/souschef /tmp/souschef-old-installation
-    ```
+   ```
+   rm -rf /opt/pipx/venvs/gunicorn/lib/python3.11/site-packages/souschef
+   ```
 
 4. Install the latest Sous-Chef version:
 
-    ```
-    python3 -m pip install souschef
-    ```
+   ```
+   pipx inject --global gunicorn certifi souschef
+   ```
 
-    or provide a specific version:
+   or provide a specific version:
 
-    ```
-    python3 -m pip install souschef==1.x.x
-    ```
+   ```
+   pipx inject --global gunicorn souschef==2.0.0dev4 --pip-args='--extra-index-url=https://test.pypi.org/simple/'
+   ```
 
 5. Collect the static files and upgrade the database:
 
-    ```bash
-    cd /usr/local/lib/python3.11/dist-packages/souschef
+   ```bash
+   cd /opt/pipx/venvs/gunicorn/lib/python3.11/site-packages/souschef
 
-    # Export the Sous-Chef configuration variables, so Django's
-    # manage.py may work.
-    for line in `cat /etc/souschef.conf`; do export $line; done
+   # Export the Sous-Chef configuration variables, so Django's
+   # manage.py may work.
+   for line in `cat /etc/souschef.conf`; do export $line; done
 
-    # Collect the static files.
-    python3 manage.py collectstatic --noinput
+   # Collect the static files. To be done after installation and after each
+   # version upgrade.
+   /opt/pipx/venvs/gunicorn/bin/python manage.py collectstatic --noinput
 
-    # Migrate the database.
-    # Needs to run as the root user and not as souschefdb.
-    SOUSCHEF_DJANGO_DB_USER=root SOUSCHEF_DJANGO_DB_PASSWORD=...password... python3 manage.py migrate
-    ```
+   # Create the tables. When run after a version upgade it ensures the database
+   # schema is up to date.
+   # Database migration needs to run as the root user and not as souschefdb.
+   # Note: the database password here is the one from the `mysql_secure_installation` step.
+   env SOUSCHEF_DJANGO_DB_USER=root SOUSCHEF_DJANGO_DB_PASSWORD=...password... /opt/pipx/venvs/gunicorn/bin/python manage.py migrate
+   ```
 
 6. Start Sous-Chef:
 
-    ```
-    systemctl start souschef
-    ```
+   ```
+   systemctl start souschef
+   ```
