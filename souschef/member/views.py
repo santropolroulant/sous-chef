@@ -494,9 +494,9 @@ DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sun
 def _get_csv_header():
     header = [
         "ID",
+        "Client Full Name",
         "Client Firstname",
         "Client Lastname",
-        "Client Fullname",
         "Client Status",
         "Client Alert",
         "Client Language",
@@ -531,9 +531,9 @@ def _get_csv_row(obj: Client, route):
     mealdefweek = obj.meal_default_week
     row = [
         obj.id,
+        f"{obj.member.lastname}, {obj.member.firstname}",
         obj.member.firstname,
         obj.member.lastname,
-        f"{obj.member.lastname}, {obj.member.firstname}",
         obj.get_status_display(),
         obj.alert,
         obj.language,
