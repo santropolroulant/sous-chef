@@ -1,6 +1,5 @@
 from decimal import Decimal
-
-from typing_extensions import Literal
+from typing import Literal
 
 from souschef.member.constants import (
     RATE_TYPE_DEFAULT,

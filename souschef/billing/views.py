@@ -1,5 +1,5 @@
 import collections
-from typing import Tuple, cast
+from typing import cast
 
 from django.contrib import messages
 from django.contrib.auth.mixins import (
@@ -183,7 +183,7 @@ class BillingSummaryView(
             return super().get_template_names()
 
     def _get_payment_summary_sort_key(
-        self, tup: Tuple[BillingPaymentType, PaymentTypeStatistics]
+        self, tup: tuple[BillingPaymentType, PaymentTypeStatistics]
     ):
         sort_position = {
             None: 0,

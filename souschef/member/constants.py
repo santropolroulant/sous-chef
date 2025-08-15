@@ -1,4 +1,3 @@
-from typing import Tuple
 
 from django.utils.translation import gettext_lazy as _
 
@@ -22,7 +21,7 @@ CONTACT_TYPE_CHOICES = (
     (EMAIL, EMAIL),
 )
 
-RATE_TYPE: Tuple[Tuple[RateType, str], ...] = (
+RATE_TYPE: tuple[tuple[RateType, str], ...] = (
     ("default", _("Default")),
     ("low income", _("Low income")),
     ("solidary", _("Solidary")),

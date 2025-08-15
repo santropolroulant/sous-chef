@@ -1,9 +1,10 @@
 import collections
+from collections.abc import Sequence
 from datetime import (
     date,
     datetime,
 )
-from typing import DefaultDict, Dict, List, Sequence, TypedDict
+from typing import TypedDict
 
 from annoying.fields import JSONField
 from django.db import models
@@ -114,7 +115,7 @@ class Billing(models.Model):  # noqa: DJ008
         return period
 
     @property
-    def client_orders(self) -> DefaultDict[Client, List[Order]]:
+    def client_orders(self) -> collections.defaultdict[Client, list[Order]]:
         client_orders = collections.defaultdict(list)
         for order in self.orders.all():
             client_orders[order.client].append(order)
@@ -126,7 +127,7 @@ class Billing(models.Model):  # noqa: DJ008
         Return a summary of every client.
         Format: dictionary {client: info}
         """
-        result: Dict[Client, OrderSummaryDict] = {}
+        result: dict[Client, OrderSummaryDict] = {}
         for client, orders in self.client_orders.items():
             result[client] = {
                 "total_orders": len(orders),

@@ -1,11 +1,12 @@
 import collections
 import re
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import (
     date,
     datetime,
 )
-from typing import TYPE_CHECKING, Any, Dict, Sequence, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from django.core.exceptions import ValidationError
 from django.db import (
@@ -157,7 +158,7 @@ class OrderManager(models.Manager):
                 if not filtered_items:
                     continue
 
-                individual_items: Dict[str, Any] = {}
+                individual_items: dict[str, Any] = {}
                 for key, value in filtered_items.items():
                     if "size" in key:
                         replaced_key = key + "_default"
@@ -174,7 +175,7 @@ class OrderManager(models.Manager):
         self,
         delivery_dates: Sequence[str],
         client: "Client",
-        items: Dict[str, Any],
+        items: dict[str, Any],
         override_dates: Sequence[str],
     ):
         """
@@ -205,7 +206,7 @@ class OrderManager(models.Manager):
                         x.save()
                 else:
                     continue
-            individual_items: Dict[str, Any] = {}
+            individual_items: dict[str, Any] = {}
             for key, value in items.items():
                 if delivery_date_str in key:
                     replaced_key = key.replace(delivery_date_str, "default")
@@ -220,7 +221,7 @@ class OrderManager(models.Manager):
         self,
         delivery_date: date,
         client: "Client",
-        items: Dict[str, Any],
+        items: dict[str, Any],
         is_main_dish_billable: bool = True,
     ):
         """

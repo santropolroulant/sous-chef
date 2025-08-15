@@ -1,6 +1,5 @@
-from typing import DefaultDict, List, Tuple, Union
-
-from typing_extensions import TypeAlias, TypedDict
+from collections import defaultdict
+from typing import TypeAlias, TypedDict
 
 from souschef.member.types import RateType
 
@@ -30,10 +29,10 @@ class PaymentTypeStatistics(TypedDict):
     total_billable_extras: int
     total_amount: int
     total_deliveries: int
-    clients: List[ClientStatistics]
+    clients: list[ClientStatistics]
 
 
-BillingPaymentType: TypeAlias = Union[str, None]
+BillingPaymentType: TypeAlias = str | None
 
 
 class BillingSummary(TypedDict):
@@ -41,5 +40,5 @@ class BillingSummary(TypedDict):
     total_billable_extras: int
     total_amount: int
     total_deliveries: int
-    payment_types_dict: DefaultDict[BillingPaymentType, PaymentTypeStatistics]
-    payment_types: List[Tuple[BillingPaymentType, PaymentTypeStatistics]]
+    payment_types_dict: defaultdict[BillingPaymentType, PaymentTypeStatistics]
+    payment_types: list[tuple[BillingPaymentType, PaymentTypeStatistics]]
