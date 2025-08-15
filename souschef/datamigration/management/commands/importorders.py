@@ -40,7 +40,6 @@ class Command(BaseCommand):
                     member = Member.objects.get(mid=row[self.ROW_MID])
                     client = Client.objects.get(member=member)
                     delivery_date = row[self.ROW_DATE]
-                    prices = Order.objects.get_client_prices(client)
                     items = {
                         "main_dish_default_quantity": int(
                             row[self.ROW_MAIN_DISH_QUANTITY]
@@ -56,9 +55,7 @@ class Command(BaseCommand):
                         "size_default": row[self.ROW_SIZE],
                     }
 
-                    order = Order.objects.create_order(
-                        delivery_date, client, items, prices
-                    )
+                    order = Order.objects.create_order(delivery_date, client, items)
 
                     order.status = row[self.ROW_STATUS]
                     order.save()

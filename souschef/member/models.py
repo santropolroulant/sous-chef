@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import datetime
 import json
+from typing import Any, Dict, List, Tuple
 
 from annoying.fields import JSONField
 from django.db import models
@@ -497,7 +498,7 @@ class Client(models.Model):
         null=True,
     )
 
-    meal_default_week = JSONField(blank=True, null=True)
+    meal_default_week: Dict[str, Any] = JSONField(blank=True, null=True)
 
     delivery_note = models.TextField(
         verbose_name=_("Delivery Note"), blank=True, null=True
@@ -626,7 +627,7 @@ class Client(models.Model):
         return None
 
     @property
-    def meals_default(self):
+    def meals_default(self) -> List[Tuple[str, Dict[str, int | None]]]:
         """
         Returns a list of tuple ((weekday, meal default), ...) that
         represents what the client wants on particular days.
@@ -637,16 +638,16 @@ class Client(models.Model):
         It is possible to have zero value, representing that the client
         has said no to a component on a particular day.
         """
-        defaults = []
+        defaults: List[Tuple[str, Dict[str, int | None]]] = []
         for day, _str in DAYS_OF_WEEK:
-            current = {}
-            numeric_fields = []
+            current: Dict[str, int | None] = {}
             for component, _label in COMPONENT_GROUP_CHOICES:
                 if component is COMPONENT_GROUP_CHOICES_SIDES:
                     continue  # skip "Sides"
-                item = self.meal_default_week.get(component + "_" + day + "_quantity")
-                current[component] = item
-                numeric_fields.append(item)
+                item_quantity: int | None = self.meal_default_week.get(
+                    component + "_" + day + "_quantity"
+                )
+                current[component] = item_quantity
 
             size = self.meal_default_week.get("size_" + day)
             current["size"] = size
@@ -656,7 +657,7 @@ class Client(models.Model):
         return defaults
 
     @property
-    def meals_schedule(self):
+    def meals_schedule(self) -> List[Tuple[str, Dict[str, int | None]]]:
         """
         Filters `self.meals_default` based on `self.simple_meals_schedule`.
         Non-scheduled days are excluded from the result tuple.
@@ -665,14 +666,14 @@ class Client(models.Model):
         or if `simple_meals_schedule` is not set, it returns empty tuple.
         """
         defaults = self.meals_default
-        prefs = []
+        prefs: List[Tuple[str, Dict[str, int | None]]] = []
         simple_meals_schedule = self.simple_meals_schedule
 
         if (
             self.delivery_type == self.EPISODIC_DELIVERY
             or simple_meals_schedule is None
         ):
-            return ()
+            return []
         else:
             for day, meal_schedule in defaults:
                 if day in simple_meals_schedule:

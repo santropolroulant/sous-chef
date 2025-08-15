@@ -489,7 +489,7 @@ class ClientMealDefaultWeekTestCase(TestCase):
         """
         self.clientOptionTest.delete()
         ms = self.clientTest.meals_schedule
-        self.assertEqual(ms, ())
+        self.assertEqual(ms, [])
 
 
 class RestrictionTestCase(TestCase):

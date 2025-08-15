@@ -429,26 +429,17 @@ class OrderAutoCreateOnDefaultsTestCase(TestCase):
 class OrderManualCreateTestCase(SousChefTestMixin, TestCase):
     fixtures = ["routes.json"]
 
-    @classmethod
-    def setUpTestData(cls):
-        """
-        Set up client.
-        """
-        # cls.client clashes with Django testcase
-        cls.sc_client = ClientFactory(
-            status=Client.ACTIVE, delivery_type="E", rate_type="default"
-        )
-        cls.delivery_date = date(2016, 7, 15)
-
     def test_create_order__maindish_smaller_than_sidedish(self):
         """
         Check created order items.
         Main_dish_quantity < side_dish_quantity
         """
+        client = ClientFactory(
+            status=Client.ACTIVE, delivery_type="E", rate_type="default"
+        )
         order = Order.objects.create_order(
-            delivery_date=self.delivery_date,
-            client=self.sc_client,
-            prices={"main": 10.0, "side": 1.0},
+            delivery_date=date(2016, 7, 15),
+            client=client,
             items={
                 "main_dish_default_quantity": 3,
                 "size_default": "R",
@@ -466,7 +457,7 @@ class OrderManualCreateTestCase(SousChefTestMixin, TestCase):
         main_dish = order.orders.get(component_group=COMPONENT_GROUP_CHOICES_MAIN_DISH)
         self.assertEqual(main_dish.total_quantity, 3)
         self.assertEqual(main_dish.size, "R")
-        self.assertEqual(main_dish.price, 30.0)
+        self.assertEqual(main_dish.price, 18.0)
         self.assertTrue(main_dish.billable_flag)
 
         # check sides
@@ -498,10 +489,12 @@ class OrderManualCreateTestCase(SousChefTestMixin, TestCase):
         Check created order items.
         Main_dish_quantity > side_dish_quantity
         """
+        client = ClientFactory(
+            status=Client.ACTIVE, delivery_type="E", rate_type="default"
+        )
         order = Order.objects.create_order(
-            delivery_date=self.delivery_date,
-            client=self.sc_client,
-            prices={"main": 10.0, "side": 1.0},
+            delivery_date=date(2016, 7, 15),
+            client=client,
             items={
                 "main_dish_default_quantity": 10,
                 "size_default": "R",
@@ -519,7 +512,7 @@ class OrderManualCreateTestCase(SousChefTestMixin, TestCase):
         main_dish = order.orders.get(component_group=COMPONENT_GROUP_CHOICES_MAIN_DISH)
         self.assertEqual(main_dish.total_quantity, 10)
         self.assertEqual(main_dish.size, "R")
-        self.assertEqual(main_dish.price, 100.0)
+        self.assertEqual(main_dish.price, 60.0)
         self.assertTrue(main_dish.billable_flag)
 
         # check sides
@@ -548,6 +541,87 @@ class OrderManualCreateTestCase(SousChefTestMixin, TestCase):
             ~Q(order_item_type=ORDER_ITEM_TYPE_CHOICES_COMPONENT)
         )
         self.assertEqual(other.count(), 1)
+
+    def test_create_large_order(self):
+        client = ClientFactory(
+            status=Client.ACTIVE, delivery_type="E", rate_type="default"
+        )
+        order = Order.objects.create_order(
+            delivery_date=date(2016, 7, 15),
+            client=client,
+            items={
+                "main_dish_default_quantity": 3,
+                "size_default": "L",
+                "dessert_default_quantity": 1,
+                "diabetic_default_quantity": 2,
+                "fruit_salad_default_quantity": 4,
+                "green_salad_default_quantity": 0,
+                "pudding_default_quantity": 0,
+                "compote_default_quantity": 0,
+                "delivery_default": True,
+            },
+        )
+
+        # check main dish
+        main_dish = order.orders.get(component_group=COMPONENT_GROUP_CHOICES_MAIN_DISH)
+        self.assertEqual(main_dish.total_quantity, 3)
+        self.assertEqual(main_dish.size, "L")
+        self.assertEqual(main_dish.price, 21.0)
+        self.assertTrue(main_dish.billable_flag)
+
+    def test_create_regular_order_with_low_income_client(self):
+        client = ClientFactory(
+            status=Client.ACTIVE, delivery_type="E", rate_type="low income"
+        )
+        order = Order.objects.create_order(
+            delivery_date=date(2016, 7, 15),
+            client=client,
+            items={
+                "main_dish_default_quantity": 3,
+                "size_default": "R",
+                "dessert_default_quantity": 1,
+                "diabetic_default_quantity": 2,
+                "fruit_salad_default_quantity": 4,
+                "green_salad_default_quantity": 0,
+                "pudding_default_quantity": 0,
+                "compote_default_quantity": 0,
+                "delivery_default": True,
+            },
+        )
+
+        # check main dish
+        main_dish = order.orders.get(component_group=COMPONENT_GROUP_CHOICES_MAIN_DISH)
+        self.assertEqual(main_dish.total_quantity, 3)
+        self.assertEqual(main_dish.size, "R")
+        self.assertEqual(main_dish.price, 13.5)
+        self.assertTrue(main_dish.billable_flag)
+
+    def test_create_large_order_with_low_income_client(self):
+        client = ClientFactory(
+            status=Client.ACTIVE, delivery_type="E", rate_type="low income"
+        )
+        order = Order.objects.create_order(
+            delivery_date=date(2016, 7, 15),
+            client=client,
+            items={
+                "main_dish_default_quantity": 3,
+                "size_default": "L",
+                "dessert_default_quantity": 1,
+                "diabetic_default_quantity": 2,
+                "fruit_salad_default_quantity": 4,
+                "green_salad_default_quantity": 0,
+                "pudding_default_quantity": 0,
+                "compote_default_quantity": 0,
+                "delivery_default": True,
+            },
+        )
+
+        # check main dish
+        main_dish = order.orders.get(component_group=COMPONENT_GROUP_CHOICES_MAIN_DISH)
+        self.assertEqual(main_dish.total_quantity, 3)
+        self.assertEqual(main_dish.size, "L")
+        self.assertEqual(main_dish.price, 15.75)
+        self.assertTrue(main_dish.billable_flag)
 
 
 class OrderCreateBatchTestCase(SousChefTestMixin, TestCase):

@@ -73,9 +73,7 @@ from souschef.member.models import (
 )
 from souschef.order.constants import SIZE_CHOICES
 from souschef.order.mixins import FormValidAjaxableResponseMixin
-from souschef.order.models import (
-    Order,
-)
+from souschef.order.models import Order
 
 
 class NamedUrlSessionWizardView_i18nURL(NamedUrlSessionWizardView):

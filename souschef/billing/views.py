@@ -1,6 +1,5 @@
 import collections
-import copy
-from typing import cast
+from typing import Tuple, cast
 
 from django.contrib import messages
 from django.contrib.auth.mixins import (
@@ -12,17 +11,22 @@ from django.db.models import (
     Prefetch,
     Q,
 )
-from django.http import HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
+from souschef.billing.csvexport import export_csv
 from souschef.billing.filters import BillingFilter
-from souschef.billing.models import (
-    Billing,
+from souschef.billing.models import Billing
+from souschef.billing.types import (
+    BillingPaymentType,
+    BillingSummary,
+    PaymentTypeStatistics,
 )
 from souschef.djangocompat import string_concat
 from souschef.member.models import Client
+from souschef.member.types import RateType
 from souschef.order.filters import DeliveredOrdersByMonthFilter
 from souschef.order.models import (
     Order,
@@ -154,6 +158,7 @@ class BillingSummaryView(
                 "client__rate_type",
                 "client__billing_payment_type",
                 "client__billing_mailing_type",
+                "client__billing_email",
             )
             .prefetch_related(
                 Prefetch(
@@ -177,55 +182,61 @@ class BillingSummaryView(
         else:
             return super().get_template_names()
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        billing = cast(Billing, self.object)
+    def _get_payment_summary_sort_key(
+        self, tup: Tuple[BillingPaymentType, PaymentTypeStatistics]
+    ):
+        sort_position = {
+            None: 0,
+            "": 0,
+            " ": 0,  # 0th position
+            "credit": 1,  # 1st position
+            "eft": 2,  # 2nd position
+        }
+        return sort_position.get(tup[0], 99)
 
-        # generate a summary
-        zero_statistics = {
+    def _get_billing_summary(self, billing: Billing) -> BillingSummary:
+        summary: BillingSummary = {
             "total_main_dishes": {"R": 0, "L": 0},
-            "total_billable_sides": 0,
+            "total_billable_extras": 0,
             "total_amount": 0,
             "total_deliveries": 0,
+            "payment_types_dict": collections.defaultdict(
+                lambda: {
+                    "total_main_dishes": {"R": 0, "L": 0},
+                    "total_billable_extras": 0,
+                    "total_amount": 0,
+                    "total_deliveries": 0,
+                    "clients": [],
+                }
+            ),
+            "payment_types": [],
         }
-        # target dict
-        summary = copy.deepcopy(zero_statistics)
-        summary["payment_types_dict"] = collections.defaultdict(
-            lambda: dict(clients=[], **copy.deepcopy(zero_statistics))
-        )
         for client, client_summary in billing.summary.items():
-            t = client.billing_payment_type
-            summary["payment_types_dict"][t]["total_main_dishes"]["R"] += (
-                client_summary["total_main_dishes"]["R"]
-            )
-            summary["payment_types_dict"][t]["total_main_dishes"]["L"] += (
-                client_summary["total_main_dishes"]["L"]
-            )
-            summary["payment_types_dict"][t]["total_billable_sides"] += client_summary[
-                "total_billable_sides"
-            ]
-            summary["payment_types_dict"][t]["total_amount"] += client_summary[
-                "total_amount"
-            ]
+            stats = summary["payment_types_dict"][client.billing_payment_type]
+            stats["total_main_dishes"]["R"] += client_summary["total_main_dishes"]["R"]
+            stats["total_main_dishes"]["L"] += client_summary["total_main_dishes"]["L"]
+            stats["total_billable_extras"] += client_summary["total_billable_extras"]
+            stats["total_amount"] += client_summary["total_amount"]
             nb_deliveries = client.number_of_deliveries_in_month(
                 billing.billing_year, billing.billing_month
             )
-            summary["payment_types_dict"][t]["clients"].append(
+            stats["clients"].append(
                 {
                     "id": client.id,
                     "firstname": client.member.firstname,
                     "lastname": client.member.lastname,
-                    "payment_type": client.get_billing_payment_type_display()
+                    "payment_type_display": client.get_billing_payment_type_display()
                     if (client.billing_payment_type is not None)
                     else "",
-                    "mailing_type": client.get_billing_mailing_type_display()
+                    "mailing_type_display": client.get_billing_mailing_type_display()
                     if (client.billing_mailing_type is not None)
                     else "",
-                    "rate_type": client.get_rate_type_display()
+                    "rate_type": cast(RateType, client.rate_type),
+                    "rate_type_display": client.get_rate_type_display()
                     if (client.rate_type != "default")
                     else "",
                     "total_main_dishes": client_summary["total_main_dishes"],
-                    "total_billable_sides": client_summary["total_billable_sides"],
+                    "total_billable_extras": client_summary["total_billable_extras"],
                     "total_amount": client_summary["total_amount"],
                     "delivery_type_verbose": client.delivery_type_verbose,
                     "number_of_deliveries_in_month": nb_deliveries,
@@ -237,7 +248,7 @@ class BillingSummaryView(
             summary["total_main_dishes"]["L"] += client_summary["total_main_dishes"][
                 "L"
             ]
-            summary["total_billable_sides"] += client_summary["total_billable_sides"]
+            summary["total_billable_extras"] += client_summary["total_billable_extras"]
             summary["total_amount"] += client_summary["total_amount"]
             summary["total_deliveries"] += nb_deliveries
 
@@ -248,15 +259,15 @@ class BillingSummaryView(
         # reorder the display for supported & non-supported payment types
         summary["payment_types"] = sorted(
             summary["payment_types_dict"].items(),
-            key=lambda tup: {
-                " ": 0,  # 0th position
-                "credit": 1,  # 1st position
-                "eft": 2,  # 2nd position
-                "3rd": 3,  # 3rd position
-            }.get(tup[0], 99),  # last position(s)
+            key=self._get_payment_summary_sort_key,
         )
+        return summary
 
-        context["summary"] = summary
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        billing = cast(Billing, self.object)
+
+        context["summary"] = self._get_billing_summary(billing)
 
         # Throw a warning if there's any main_dish order with size=None.
         q = Order_item.objects.filter(
@@ -273,10 +284,11 @@ class BillingSummaryView(
                 )
             )
             formatted_htmls = ['<ul class="ui list">']
-            for i, f, l in size_none_orders_info:  # noqa: E741 (no idea what these are)
+            for client_id, firstname, lastname in size_none_orders_info:
                 formatted_htmls.append(
-                    f'<li><a href="{Order(id=i).get_absolute_url()}" target="_blank">'
-                    f"#{i} ({f} {l})"
+                    f'<li><a href="{Order(id=client_id).get_absolute_url()}" '
+                    'target="_blank">'
+                    f"#{client_id} ({firstname} {lastname})"
                     "</a></li>"
                 )
             formatted_htmls.append("</ul>")
@@ -295,6 +307,17 @@ class BillingSummaryView(
                 ),
             )
         return context
+
+    def get(self, request, **kwargs):
+        self.format = request.GET.get("format", False)
+
+        if self.format == "csv":
+            billing = self.queryset.first()
+            if not billing:
+                raise Http404
+            return export_csv(billing)
+
+        return super().get(request, **kwargs)
 
 
 class BillingOrdersView(

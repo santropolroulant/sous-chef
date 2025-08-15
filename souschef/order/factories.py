@@ -6,7 +6,11 @@ from factory.django import DjangoModelFactory
 from faker import Factory as FakerFactory
 
 from souschef.member.factories import ClientFactory
-from souschef.order.constants import ORDER_ITEM_TYPE_CHOICES, ORDER_STATUS, SIZE_CHOICES
+from souschef.order.constants import (
+    ORDER_ITEM_TYPE_CHOICES,
+    ORDER_STATUS,
+    SIZE_CHOICES,
+)
 from souschef.order.models import (
     Order,
     Order_item,
@@ -19,9 +23,7 @@ class OrderFactory(DjangoModelFactory):
     class Meta:
         model = Order
 
-    creation_date = factory.LazyFunction(
-        lambda: datetime.datetime.now(datetime.UTC)
-    )
+    creation_date = factory.LazyFunction(lambda: datetime.datetime.now(datetime.UTC))
     delivery_date = factory.Faker("date_time_between", start_date="-1y", end_date="+1y")
     client = factory.SubFactory(ClientFactory)
     status = factory.LazyAttribute(lambda x: random.choice(ORDER_STATUS)[0])
