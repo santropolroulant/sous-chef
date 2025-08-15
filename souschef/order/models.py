@@ -5,7 +5,7 @@ from datetime import (
     date,
     datetime,
 )
-from typing import Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, cast
 
 from django.core.exceptions import ValidationError
 from django.db import (
@@ -22,55 +22,33 @@ from django_filters import (
     FilterSet,
 )
 
-from souschef.meal.models import (
+from souschef.meal.constants import (
     COMPONENT_GROUP_CHOICES,
     COMPONENT_GROUP_CHOICES_MAIN_DISH,
     COMPONENT_GROUP_CHOICES_SIDES,
 )
-from souschef.member.models import (
+from souschef.member.constants import (
     DAYS_OF_WEEK,
     OPTION_GROUP_CHOICES_PREPARATION,
-    RATE_TYPE_LOW_INCOME,
-    RATE_TYPE_SOLIDARY,
+)
+from souschef.member.types import RateType
+from souschef.order.constants import (
+    ORDER_ITEM_TYPE_CHOICES,
+    ORDER_ITEM_TYPE_CHOICES_COMPONENT,
+    ORDER_STATUS,
+    ORDER_STATUS_CANCELLED,
+    ORDER_STATUS_DELIVERED,
+    ORDER_STATUS_NO_CHARGE,
+    ORDER_STATUS_ORDERED,
+    SIZE_CHOICES,
+)
+from souschef.order.prices import (
+    get_main_dish_unit_price,
+    get_side_unit_price,
 )
 
-ORDER_STATUS = (
-    ("O", _("Ordered")),
-    ("D", _("Delivered")),
-    ("N", _("No Charge")),
-    ("C", _("Cancelled")),
-    ("B", _("Billed")),
-    ("P", _("Paid")),
-)
-
-ORDER_STATUS_ORDERED = ORDER_STATUS[0][0]
-ORDER_STATUS_DELIVERED = ORDER_STATUS[1][0]
-ORDER_STATUS_CANCELLED = ORDER_STATUS[3][0]
-
-SIZE_CHOICES = (
-    ("", ""),
-    ("R", _("Regular")),
-    ("L", _("Large")),
-)
-
-SIZE_CHOICES_REGULAR = SIZE_CHOICES[1][0]
-SIZE_CHOICES_LARGE = SIZE_CHOICES[2][0]
-
-ORDER_ITEM_TYPE_CHOICES = (
-    ("meal_component", _("Meal component (main dish, vegetable, side dish, seasonal)")),
-    ("delivery", _("Delivery (general store item, invitation, ...)")),
-    ("pickup", _("Pickup (payment)")),
-    ("visit", _("Visit")),
-)
-
-ORDER_ITEM_TYPE_CHOICES_COMPONENT = ORDER_ITEM_TYPE_CHOICES[0][0]
-
-MAIN_PRICE_DEFAULT = 6.00  # TODO use decimal ?
-SIDE_PRICE_DEFAULT = 1.00
-MAIN_PRICE_LOW_INCOME = 4.50
-SIDE_PRICE_LOW_INCOME = 0.75
-MAIN_PRICE_SOLIDARY = 3.50
-SIDE_PRICE_SOLIDARY = 0.50
+if TYPE_CHECKING:
+    from souschef.member.models import Client
 
 
 class OrderManager(models.Manager):
@@ -134,7 +112,7 @@ class OrderManager(models.Manager):
         return self.get_queryset().filter(
             delivery_date__year=year,
             delivery_date__month=month,
-            status="D",
+            status__in=(ORDER_STATUS_DELIVERED, ORDER_STATUS_NO_CHARGE),
         )
 
     def get_billable_orders_client(self, month, year, client):
@@ -147,24 +125,10 @@ class OrderManager(models.Manager):
             delivery_date__year=year,
             delivery_date__month=month,
             client=client,
-            status="D",
+            status__in=(ORDER_STATUS_DELIVERED, ORDER_STATUS_NO_CHARGE),
         )
 
-    def get_client_prices(self, client):
-        # TODO Use Parameters Model in member to store unit prices
-        if client.rate_type == RATE_TYPE_LOW_INCOME:
-            main_price = MAIN_PRICE_LOW_INCOME
-            side_price = SIDE_PRICE_LOW_INCOME
-        elif client.rate_type == RATE_TYPE_SOLIDARY:
-            main_price = MAIN_PRICE_SOLIDARY
-            side_price = SIDE_PRICE_SOLIDARY
-        else:
-            main_price = MAIN_PRICE_DEFAULT
-            side_price = SIDE_PRICE_DEFAULT
-
-        return {"main": main_price, "side": side_price}
-
-    def auto_create_orders(self, delivery_date, clients):
+    def auto_create_orders(self, delivery_date: date, clients: Sequence["Client"]):
         """
         Automatically creates orders and order items for the given delivery
         date and given client list.
@@ -187,7 +151,7 @@ class OrderManager(models.Manager):
                 continue
             except Order.DoesNotExist:
                 # If no order for this client/date, create it and attach items
-                items = dict(client.meals_schedule).get(day, None)
+                items = dict(client.meals_schedule).get(day)
 
                 # Skip this client if no scheduled delivery
                 if items is None:
@@ -199,7 +163,7 @@ class OrderManager(models.Manager):
                 if not filtered_items:
                     continue
 
-                individual_items = {}
+                individual_items: Dict[str, Any] = {}
                 for key, value in filtered_items.items():
                     if "size" in key:
                         replaced_key = key + "_default"
@@ -207,15 +171,18 @@ class OrderManager(models.Manager):
                         replaced_key = key + "_default_quantity"
                     individual_items[replaced_key] = value
 
-                prices = self.get_client_prices(client)
-                order = self.create_order(
-                    delivery_date, client, individual_items, prices
-                )
+                order = self.create_order(delivery_date, client, individual_items)
 
                 created_orders.append(order)
         return created_orders
 
-    def create_batch_orders(self, delivery_dates, client, items, override_dates):
+    def create_batch_orders(
+        self,
+        delivery_dates: Sequence[str],
+        client: "Client",
+        items: Dict[str, Any],
+        override_dates: Sequence[str],
+    ):
         """
         Create orders for one or multiple days, for a given client.
         Order items will be created based on client's meals schedule.
@@ -231,9 +198,6 @@ class OrderManager(models.Manager):
         """
         created_orders = []
 
-        # Calculate client prices (main and side)
-        prices = self.get_client_prices(client)
-
         for delivery_date_str in delivery_dates:
             delivery_date = datetime.strptime(delivery_date_str, "%Y-%m-%d").date()
             prior_order = Order.objects.filter(
@@ -247,18 +211,24 @@ class OrderManager(models.Manager):
                         x.save()
                 else:
                     continue
-            individual_items = {}
+            individual_items: Dict[str, Any] = {}
             for key, value in items.items():
                 if delivery_date_str in key:
                     replaced_key = key.replace(delivery_date_str, "default")
                     individual_items[replaced_key] = value
-            order = self.create_order(delivery_date, client, individual_items, prices)
+            order = self.create_order(delivery_date, client, individual_items)
             created_orders.append(order)
 
         return created_orders
 
     @transaction.atomic
-    def create_order(self, delivery_date, client, items, prices):
+    def create_order(
+        self,
+        delivery_date: date,
+        client: "Client",
+        items: Dict[str, Any],
+        is_main_dish_billable: bool = True,
+    ):
         """
         Create an order for given date, client, items and prices.
         items should be formatted as (example):
@@ -273,11 +243,11 @@ class OrderManager(models.Manager):
         Every main dish comes with a free side dish. (thus not billable)
         """
         order = Order.objects.create(client=client, delivery_date=delivery_date)
-        free_side_dishes = items.get("main_dish_default_quantity") or 0
+        free_side_dishes: int = items.get("main_dish_default_quantity") or 0
 
         for component_group, _trans in COMPONENT_GROUP_CHOICES:
             if component_group != COMPONENT_GROUP_CHOICES_SIDES:
-                item_qty = items.get(component_group + "_default_quantity") or 0
+                item_qty: int = items.get(component_group + "_default_quantity") or 0
                 if item_qty == 0:
                     continue
 
@@ -288,27 +258,32 @@ class OrderManager(models.Manager):
                 }
 
                 if component_group == COMPONENT_GROUP_CHOICES_MAIN_DISH:
-                    price = item_qty * prices["main"]
-                    if items["size_default"] == "L":
-                        price += item_qty * prices["side"]
+                    unit_price = get_main_dish_unit_price(
+                        rate_type=cast(RateType, client.rate_type),
+                        size=items["size_default"],
+                    )
+                    price = item_qty * unit_price
                     # main dish
                     Order_item.objects.create(
                         size=items["size_default"],
                         total_quantity=item_qty,
                         price=price,
-                        billable_flag=True,
+                        billable_flag=is_main_dish_billable,
                         **common_kwargs,
                     )
                 else:
                     # side dish: deduct+billable
                     deduct = min(free_side_dishes, item_qty)
                     free_side_dishes -= deduct
+                    unit_price = get_side_unit_price(
+                        rate_type=cast(RateType, client.rate_type)
+                    )
                     if deduct > 0:
                         # free side dishes
                         Order_item.objects.create(
                             size=None,
                             total_quantity=deduct,
-                            price=deduct * prices["side"],
+                            price=deduct * unit_price,
                             billable_flag=False,
                             **common_kwargs,
                         )
@@ -319,7 +294,7 @@ class OrderManager(models.Manager):
                         Order_item.objects.create(
                             size=None,
                             total_quantity=billable,
-                            price=billable * prices["side"],
+                            price=billable * unit_price,
                             billable_flag=True,
                             **common_kwargs,
                         )

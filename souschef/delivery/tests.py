@@ -16,6 +16,7 @@ from django.utils import timezone as tz
 from django.utils.translation import ugettext, ugettext_lazy
 from pypdf import PdfReader
 
+from souschef.meal.constants import COMPONENT_GROUP_CHOICES_SIDES
 from souschef.meal.factories import (
     ComponentFactory,
     ComponentIngredientFactory,
@@ -24,12 +25,12 @@ from souschef.meal.factories import (
     RestrictedItemFactory,
 )
 from souschef.meal.models import (
-    COMPONENT_GROUP_CHOICES_SIDES,
     Component,
     Component_ingredient,
     Ingredient,
     Menu,
 )
+from souschef.member.constants import DAYS_OF_WEEK
 from souschef.member.factories import (
     AddressFactory,
     ClientFactory,
@@ -38,7 +39,6 @@ from souschef.member.factories import (
     RouteFactory,
 )
 from souschef.member.models import (
-    DAYS_OF_WEEK,
     Client,
     Client_avoid_ingredient,
     DeliveryHistory,

@@ -2,8 +2,10 @@ from django import forms
 from django.db.models.functions import Lower
 from django.utils.translation import ugettext_lazy as _
 
-from souschef.meal.models import (
+from souschef.meal.constants import (
     COMPONENT_GROUP_CHOICES_MAIN_DISH,
+)
+from souschef.meal.models import (
     Component,
     Ingredient,
 )

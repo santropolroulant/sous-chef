@@ -27,7 +27,7 @@ from extra_views import (
     UpdateWithInlinesView,
 )
 
-from souschef.meal.models import (
+from souschef.meal.constants import (
     COMPONENT_GROUP_CHOICES,
     COMPONENT_GROUP_CHOICES_SIDES,
 )
@@ -35,6 +35,10 @@ from souschef.meal.settings import COMPONENT_SYSTEM_DEFAULT
 from souschef.member.models import (
     DAYS_OF_WEEK,
     Client,
+)
+from souschef.order.constants import (
+    ORDER_STATUS,
+    ORDER_STATUS_CANCELLED,
 )
 from souschef.order.forms import (
     CreateOrderItem,
@@ -47,8 +51,6 @@ from souschef.order.mixins import (
     FormValidAjaxableResponseMixin,
 )
 from souschef.order.models import (
-    ORDER_STATUS,
-    ORDER_STATUS_CANCELLED,
     Order,
     OrderFilter,
     OrderStatusChange,

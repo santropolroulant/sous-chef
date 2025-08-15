@@ -41,7 +41,7 @@
       <th class="no-print center aligned bottom aligned">{% trans 'Actions' %}</th>
     </tr>
     <tr class="border-top">
-      <th colspan="6"></th>
+      <th colspan="7"></th>
       <th class="center aligned border-right" style="font-weight:normal">{% trans 'Regular' %}</th>
       <th class="center aligned" style="font-weight:normal">{% trans 'Large' %}</th>
       <th colspan="2"></th>
@@ -55,13 +55,13 @@
       <td>{% comment 'column NEW' %}{% endcomment %}</td>
       <td class="nowrap"><a href="{% url 'member:client_information' pk=client.id %}">{{ client.lastname|upper }}, {{ client.firstname }}</a></td>
       <td>{{client.delivery_type_verbose}}</td>
-      <td>{{client.payment_type}}</td>
-      <td>{{client.mailing_type}}</td>
-      <td class="center aligned nowrap padding-x">{{client.rate_type}}</td>
+      <td>{{client.payment_type_display}}</td>
+      <td>{{client.mailing_type_display}}</td>
+      <td class="center aligned nowrap padding-x">{{client.rate_type_display}}</td>
       <td class="center aligned">{{client.number_of_deliveries_in_month}}</td>
       <td class="center aligned border-top border-right">{{client.total_main_dishes.R|default:""}}</td>
       <td class="center aligned border-top">{{client.total_main_dishes.L|default:""}}</td>
-      <td class="center aligned border-top">{{client.total_billable_sides|default:""}}</td>
+      <td class="center aligned border-top">{{client.total_billable_extras|default:""}}</td>
       <td class="right aligned border-top">${{client.total_amount}}</td>
       <td class="no-print center aligned">
         <a class="ui basic icon button" href="{% url 'billing:view_orders' pk=billing.id %}?client={{ client.id }}" title="{% trans 'View orders' %}">
@@ -75,7 +75,7 @@
       <th colspan="5" class="top aligned nowrap">{% trans 'Subtotal:' as tr_s %}{{ tr_s|upper }}</th>
       <th class="center aligned border-top top aligned">{{statistics.total_main_dishes.R}}</th>
       <th class="center aligned border-top top aligned">{{statistics.total_main_dishes.L}}</th>
-      <th class="center aligned border-top top aligned">{{statistics.total_billable_sides}}</th>
+      <th class="center aligned border-top top aligned">{{statistics.total_billable_extras}}</th>
       <th class="right aligned border-top top aligned">${{statistics.total_amount}}</th>
       <th class="no-print"></th>
     </tr>
@@ -88,7 +88,7 @@
       <th class="center aligned">{{ summary.total_deliveries }}</th>
       <th class="center aligned">{{ summary.total_main_dishes.R }}</th>
       <th class="center aligned">{{ summary.total_main_dishes.L }}</th>
-      <th class="center aligned">{{ summary.total_billable_sides }}</th>
+      <th class="center aligned">{{ summary.total_billable_extras }}</th>
       <th class="right aligned">${{ summary.total_amount }}</th>
       <th class="no-print center aligned">
         <a class="ui basic icon button" href="{% url 'billing:view_orders' pk=billing.id %}" title="{% trans 'View orders' %}">

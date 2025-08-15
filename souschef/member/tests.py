@@ -20,12 +20,14 @@ from django.utils import (
 from django.utils.six import StringIO
 from django.utils.translation import ugettext
 
+from souschef.meal.constants import (
+    COMPONENT_GROUP_CHOICES,
+)
 from souschef.meal.factories import (
     ComponentFactory,
     IngredientFactory,
 )
 from souschef.meal.models import (
-    COMPONENT_GROUP_CHOICES,
     Component,
     Ingredient,
     Restricted_item,
@@ -63,8 +65,8 @@ from souschef.member.models import (
     Restriction,
     Route,
 )
+from souschef.order.constants import ORDER_STATUS_ORDERED
 from souschef.order.factories import OrderFactory
-from souschef.order.models import ORDER_STATUS_ORDERED
 from souschef.sous_chef.tests import TestMigrations
 from souschef.sous_chef.tests import TestMixin as SousChefTestMixin
 
@@ -486,7 +488,7 @@ class ClientMealDefaultWeekTestCase(TestCase):
         """
         self.clientOptionTest.delete()
         ms = self.clientTest.meals_schedule
-        self.assertEqual(ms, ())
+        self.assertEqual(ms, [])
 
 
 class RestrictionTestCase(TestCase):

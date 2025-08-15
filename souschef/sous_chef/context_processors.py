@@ -12,10 +12,8 @@ from souschef.note.models import (
     Note,
     NoteFilter,
 )
-from souschef.order.models import (
-    ORDER_STATUS_ORDERED,
-    Order,
-)
+from souschef.order.constants import ORDER_STATUS_ORDERED
+from souschef.order.models import Order
 
 
 def get_sous_chef_version():

@@ -6,9 +6,11 @@ from django.contrib.admin.models import (
 )
 from django.core.management.base import BaseCommand
 
-from souschef.order.models import (
+from souschef.order.constants import (
     ORDER_STATUS_DELIVERED,
     ORDER_STATUS_ORDERED,
+)
+from souschef.order.models import (
     Order,
 )
 
