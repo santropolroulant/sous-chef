@@ -2624,6 +2624,23 @@ class ClientListViewTestCase(SousChefTestMixin, TestCase):
         # Check
         self.assertEqual(response.status_code, 200)
 
+    def test_csv_export(self):
+        # Setup
+        user = User.objects.create_user(
+            username="foo", email="foo@example.com", password="secure"
+        )
+        user.is_staff = True
+        user.save()
+        self.client.login(username="foo", password="secure")
+        ClientFactory()
+        url = reverse("member:list")
+        # Run
+        response = self.client.get(url, {"display": "list", "format": "csv"})
+        # Check
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.content.startswith(b"ID,"))
+        self.assertTrue(len(response.content.splitlines()), 2)
+
 
 class ClientInfoViewTestCase(SousChefTestMixin, TestCase):
     fixtures = ["routes.json"]

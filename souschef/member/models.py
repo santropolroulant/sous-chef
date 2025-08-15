@@ -186,6 +186,14 @@ class Address(models.Model):
     # Montreal postal code look like H3E 1C2
     postal_code = models.CharField(max_length=7, verbose_name=_("postal code"))
 
+    region_code = models.CharField(
+        max_length=10, verbose_name=_("province"), default="QC"
+    )
+
+    country_code = models.CharField(
+        max_length=10, verbose_name=_("country"), default="CA"
+    )
+
     longitude = models.DecimalField(
         max_digits=9,
         decimal_places=6,
