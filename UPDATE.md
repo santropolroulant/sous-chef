@@ -47,7 +47,7 @@
    # schema is up to date.
    # Database migration needs to run as the root user and not as souschefdb.
    # Note: the database password here is the one from the `mysql_secure_installation` step.
-   env SOUSCHEF_DJANGO_DB_USER=root SOUSCHEF_DJANGO_DB_PASSWORD=...password... python3 manage.py migrate
+   env SOUSCHEF_DJANGO_DB_USER=root SOUSCHEF_DJANGO_DB_PASSWORD=...password... /opt/pipx/venvs/gunicorn/bin/python manage.py migrate
    ```
 
 6. Start Sous-Chef:
