@@ -1,4 +1,5 @@
 import collections
+from collections.abc import Sequence
 from datetime import (
     date,
     datetime,
@@ -80,7 +81,7 @@ class RegularLargeDict(TypedDict):
 class OrderSummaryDict(TypedDict):
     total_orders: int
     total_main_dishes: RegularLargeDict
-    total_billable_sides: int
+    total_billable_extras: int
     total_amount: int
 
 
@@ -114,45 +115,48 @@ class Billing(models.Model):  # noqa: DJ008
         return period
 
     @property
+    def client_orders(self) -> collections.defaultdict[Client, list[Order]]:
+        client_orders = collections.defaultdict(list)
+        for order in self.orders.all():
+            client_orders[order.client].append(order)
+        return client_orders
+
+    @property
     def summary(self) -> dict[Client, OrderSummaryDict]:
         """
         Return a summary of every client.
         Format: dictionary {client: info}
         """
-        # collect orders by clients
-        kvpairs = map(lambda o: (o.client, o), self.orders.all())
-        d: collections.defaultdict[Client, list[Order]] = collections.defaultdict(list)
-        for k, v in kvpairs:
-            d[k].append(v)
         result: dict[Client, OrderSummaryDict] = {}
-        for client, orders in d.items():
+        for client, orders in self.client_orders.items():
             result[client] = {
                 "total_orders": len(orders),
                 "total_main_dishes": {"R": 0, "L": 0},  # to be counted
-                "total_billable_sides": 0,  # to be counted
+                "total_billable_extras": 0,  # to be counted
                 "total_amount": sum(map(lambda o: o.price, orders)),
             }
-            for o in orders:
-                for o_item in o.orders.all():
-                    if o_item.component_group == "main_dish":
-                        if o_item.size == "R":
+            for order in orders:
+                for item in order.orders.all():
+                    item: Order_item
+                    if item.component_group == "main_dish":
+                        if item.size == "R":
                             result[client]["total_main_dishes"]["R"] += (
-                                o_item.total_quantity
+                                item.total_quantity
                             )
-                        elif o_item.size == "L":
+                        elif item.size == "L":
                             result[client]["total_main_dishes"]["L"] += (
-                                o_item.total_quantity
+                                item.total_quantity
                             )
                     else:
-                        if o_item.billable_flag is True:
-                            result[client]["total_billable_sides"] += (
-                                o_item.total_quantity
+                        if item.billable_flag is True:
+                            result[client]["total_billable_extras"] += (
+                                item.total_quantity
                             )
         return result
 
 
 # get the total amount from a list of orders
-def calculate_amount_total(orders):
+def calculate_amount_total(orders: Sequence[Order]):
     total = 0
     for order in orders:
         total += order.price

@@ -4,10 +4,12 @@ import factory
 from factory.django import DjangoModelFactory
 from faker import Factory as FakerFactory
 
-from souschef.meal.models import (
+from souschef.meal.constants import (
     COMPONENT_GROUP_CHOICES,
     INGREDIENT_GROUP_CHOICES,
     RESTRICTED_ITEM_GROUP_CHOICES,
+)
+from souschef.meal.models import (
     Component,
     Component_ingredient,
     Incompatibility,

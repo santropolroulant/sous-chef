@@ -73,9 +73,7 @@ from souschef.member.models import (
 )
 from souschef.order.constants import SIZE_CHOICES
 from souschef.order.mixins import FormValidAjaxableResponseMixin
-from souschef.order.models import (
-    Order,
-)
+from souschef.order.models import Order
 
 
 class NamedUrlSessionWizardView_i18nURL(NamedUrlSessionWizardView):
@@ -491,6 +489,7 @@ DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sun
 def _get_csv_header():
     header = [
         "ID",
+        "Client Full Name",
         "Client Firstname",
         "Client Lastname",
         "Client Status",
@@ -507,6 +506,8 @@ def _get_csv_header():
         "Client Apartment",
         "Client City",
         "Client Postal Code",
+        "Client Province",
+        "Client Country",
         "Client Route",
         "Client Billing Type",
         "Client Mailing Type",
@@ -525,6 +526,7 @@ def _get_csv_row(obj: Client, route):
     mealdefweek = obj.meal_default_week
     row = [
         obj.id,
+        f"{obj.member.lastname}, {obj.member.firstname}",
         obj.member.firstname,
         obj.member.lastname,
         obj.get_status_display(),
@@ -541,6 +543,8 @@ def _get_csv_row(obj: Client, route):
         obj.member.address.apartment,
         obj.member.address.city,
         obj.member.address.postal_code,
+        obj.member.address.region_code,
+        obj.member.address.country_code,
         route,
         obj.billing_payment_type,
         obj.billing_mailing_type,

@@ -1,4 +1,7 @@
+
 from django.utils.translation import gettext_lazy as _
+
+from souschef.member.types import RateType
 
 HOME = "Home phone"
 CELL = "Cell phone"
@@ -18,12 +21,13 @@ CONTACT_TYPE_CHOICES = (
     (EMAIL, EMAIL),
 )
 
-RATE_TYPE = (
+RATE_TYPE: tuple[tuple[RateType, str], ...] = (
     ("default", _("Default")),
     ("low income", _("Low income")),
     ("solidary", _("Solidary")),
 )
 
+RATE_TYPE_DEFAULT = RATE_TYPE[0][0]
 RATE_TYPE_LOW_INCOME = RATE_TYPE[1][0]
 RATE_TYPE_SOLIDARY = RATE_TYPE[2][0]
 

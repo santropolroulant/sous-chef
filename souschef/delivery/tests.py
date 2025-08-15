@@ -30,6 +30,7 @@ from souschef.meal.models import (
     Ingredient,
     Menu,
 )
+from souschef.member.constants import DAYS_OF_WEEK
 from souschef.member.factories import (
     AddressFactory,
     ClientFactory,
@@ -38,7 +39,6 @@ from souschef.member.factories import (
     RouteFactory,
 )
 from souschef.member.models import (
-    DAYS_OF_WEEK,
     Client,
     Client_avoid_ingredient,
     DeliveryHistory,
