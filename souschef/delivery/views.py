@@ -52,10 +52,12 @@ from reportlab.platypus import Table as RLTable
 from reportlab.platypus import TableStyle as RLTableStyle
 
 from souschef.delivery.meal_labels import MealLabel, draw_label, meal_label_fields
-from souschef.meal.models import (
+from souschef.meal.constants import (
     COMPONENT_GROUP_CHOICES,
     COMPONENT_GROUP_CHOICES_MAIN_DISH,
     COMPONENT_GROUP_CHOICES_SIDES,
+)
+from souschef.meal.models import (
     Component,
     Component_ingredient,
     Menu,
@@ -67,11 +69,13 @@ from souschef.member.models import (
     Route,
     get_ongoing_clients_at_date,
 )
-from souschef.order.models import (
+from souschef.order.constants import (
     ORDER_STATUS_CANCELLED,
     ORDER_STATUS_ORDERED,
     SIZE_CHOICES_LARGE,
     SIZE_CHOICES_REGULAR,
+)
+from souschef.order.models import (
     DeliveryClient,
     KitchenItem,
     Order,

@@ -4,9 +4,11 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from localflavor.ca.forms import CAPostalCodeField
 
-from souschef.meal.models import (
+from souschef.meal.constants import (
     COMPONENT_GROUP_CHOICES,
     COMPONENT_GROUP_CHOICES_SIDES,
+)
+from souschef.meal.models import (
     Component,
     Ingredient,
     Restricted_item,
@@ -26,7 +28,7 @@ from souschef.member.models import (
     Relationship,
     Route,
 )
-from souschef.order.models import SIZE_CHOICES
+from souschef.order.constants import SIZE_CHOICES
 
 
 class ClientBasicInformation(forms.Form):

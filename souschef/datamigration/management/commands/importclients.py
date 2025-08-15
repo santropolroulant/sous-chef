@@ -22,7 +22,7 @@ class Command(BaseCommand):
     ROW_CREATED = 5
     ROW_GENDER = 6
     ROW_LANG = 7
-    ROW_PAYSCALE = 8
+    ROW_RATE_TYPE = 8
     ROW_ALERT = 9
     ROW_DELIVERY_NOTES = 10
     ROW_DELIVERY_TYPE = 11
@@ -78,7 +78,7 @@ class Command(BaseCommand):
                         "delivery_note": row[self.ROW_DELIVERY_NOTES],
                         "route": route,
                         "language": row[self.ROW_LANG],
-                        "rate_type": row[self.ROW_PAYSCALE],
+                        "rate_type": row[self.ROW_RATE_TYPE],
                     },
                 )
 

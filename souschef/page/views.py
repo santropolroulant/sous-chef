@@ -11,8 +11,8 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView
 
+from souschef.member.constants import DAYS_OF_WEEK
 from souschef.member.models import (
-    DAYS_OF_WEEK,
     Client,
     Client_option,
     Route,

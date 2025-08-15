@@ -34,7 +34,7 @@ from django.views import generic
 from formtools.wizard.views import NamedUrlSessionWizardView
 
 from souschef.delivery.views import calculateRoutePointsEuclidean
-from souschef.meal.models import (
+from souschef.meal.constants import (
     COMPONENT_GROUP_CHOICES,
     COMPONENT_GROUP_CHOICES_SIDES,
 )
@@ -70,11 +70,11 @@ from souschef.member.models import (
     Restriction,
     Route,
 )
-from souschef.order.mixins import FormValidAjaxableResponseMixin
-from souschef.order.models import (
+from souschef.order.constants import (
     SIZE_CHOICES,
-    Order,
 )
+from souschef.order.mixins import FormValidAjaxableResponseMixin
+from souschef.order.models import Order
 
 
 class NamedUrlSessionWizardView_i18nURL(NamedUrlSessionWizardView):

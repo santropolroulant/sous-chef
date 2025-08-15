@@ -5,10 +5,12 @@ import factory
 from faker import Factory as FakerFactory
 
 from souschef.member.factories import ClientFactory
-from souschef.order.models import (
+from souschef.order.constants import (
     ORDER_ITEM_TYPE_CHOICES,
     ORDER_STATUS,
     SIZE_CHOICES,
+)
+from souschef.order.models import (
     Order,
     Order_item,
 )

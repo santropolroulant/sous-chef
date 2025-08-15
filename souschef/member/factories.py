@@ -2,14 +2,16 @@ import random
 
 import factory
 
-from souschef.meal.models import COMPONENT_GROUP_CHOICES
-from souschef.member.models import (
+from souschef.meal.constants import COMPONENT_GROUP_CHOICES
+from souschef.member.constants import (
     DAYS_OF_WEEK,
     DELIVERY_TYPE,
     GENDER_CHOICES,
     MAILING_TYPE,
     PAYMENT_TYPE,
     RATE_TYPE,
+)
+from souschef.member.models import (
     Address,
     Client,
     ClientScheduledStatus,
