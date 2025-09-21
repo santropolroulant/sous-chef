@@ -22,4 +22,13 @@ $(function() {
     $("#create_billing").click(function(e){
         $(".ui.dimmer").show();
     });
+
+    $('#export-billing-button').click(function(){
+      $('#export-csv-modal').modal('show');
+    });
+
+    $('#export-csv-modal button').click(function(){
+      $('#export-csv-modal form').trigger('submit');
+      $('#export-csv-modal').modal('hide');
+    });
 });

@@ -287,7 +287,7 @@ class BillingSummaryViewTestCase(SousChefTestMixin, TestCase):
 
         url = reverse("billing:view", args=(billing.id,))
         # Run
-        response = self.client.get(url, {"format": "csv"})
+        response = self.client.get(url, {"format": "csv", "next_invoice_number": 432})
         # Check
         self.assertEqual(response.status_code, 200)
 
@@ -295,12 +295,15 @@ class BillingSummaryViewTestCase(SousChefTestMixin, TestCase):
         self.assertEqual(10, len(rows))
 
         firstrow = rows[0]
-        self.assertTrue(int(firstrow[INVOICE_NO_COL]))
+        self.assertEqual(int(firstrow[INVOICE_NO_COL]), 432)
         self.assertTrue(firstrow[CUSTOMER_COL])
         self.assertTrue(firstrow[DESCRIPTION_COL])
         self.assertEqual("2025-08-31", firstrow[INVOICE_DATE_COL])
         self.assertEqual("2025-08-31", firstrow[DUE_DATE_COL])
         self.assertEqual("Payable dès réception", firstrow[TERMS_COL])
+
+        lastrow = rows[-1]
+        self.assertEqual(int(lastrow[INVOICE_NO_COL]), 433)
 
         csv_total = Decimal(0)
         for row in rows:

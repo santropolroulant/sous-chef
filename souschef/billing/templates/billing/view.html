@@ -17,9 +17,13 @@
         {% include 'billing/partials/statistics.html' with orders=billing.orders.all %}
     </div>
     <a href="?print=yes" target="_blank" class="ui labeled icon right big button"><i class="print icon"></i>{% trans 'Print' %}</a>
-    <a href="?format=csv" target="_blank" class="ui labeled icon right big button"><i class="file excel icon"></i>{% trans 'Export' %}</a>
+    <a href="#" class="ui labeled icon right big button" id="export-billing-button">
+        <i class="file excel icon"></i>{% trans 'Export' %}
+    </a>
 </div>
 
 {% include 'billing/partials/summary.html' %}
+
+{% include 'billing/partials/export_csv_modal.html' %}
 
 {% endblock %}

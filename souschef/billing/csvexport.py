@@ -85,12 +85,19 @@ def _get_billing_date(billing_year: int, billing_month: int):
     )
 
 
-def _get_row_prefix(billing: "Billing", client: "Client"):
+def _get_row_prefix(
+    is_first_row: bool, billing: "Billing", client: "Client", invoice_number: int
+):
+    # We use the client ID as the invoice number as to group invoice lines
+    # together. Quickbooks will replace this number when generating the invoices.
+    first_cell = invoice_number
+
+    if not is_first_row:
+        return [first_cell] + [""] * 5
+
     billing_date = _get_billing_date(billing.billing_year, billing.billing_month)
     return [
-        # We use the client ID as the invoice number as to group invoice lines
-        # together. Quickbooks will replace this number when generating the invoices.
-        client.id,
+        first_cell,
         f"{client.member.lastname}, {client.member.firstname}",
         client.billing_email,
         "Payable dès réception",
@@ -199,22 +206,23 @@ def _get_invoice_rows(orders: "List[Order]", rate_type: "RateType"):
         yield from _get_row_for_group(group, rate_type)
 
 
-def _get_client_rows(billing: "Billing", client: "Client", orders: "List[Order]"):
-    first_row_prefix = _get_row_prefix(billing, client)
-    non_first_row_prefix = [client.id] + [""] * 5
+def _get_client_rows(
+    billing: "Billing", client: "Client", orders: "List[Order]", invoice_number: int
+):
     is_first_row = True
     for row in _get_invoice_rows(orders, cast("RateType", client.rate_type)):
-        prefix = first_row_prefix if is_first_row else non_first_row_prefix
+        prefix = _get_row_prefix(is_first_row, billing, client, invoice_number)
         yield prefix + row
         is_first_row = False
 
 
-def _get_rows(billing: "Billing"):
+def _get_rows(billing: "Billing", next_invoice_number: int):
     for client, orders in billing.client_orders.items():
-        yield from _get_client_rows(billing, client, orders)
+        yield from _get_client_rows(billing, client, orders, next_invoice_number)
+        next_invoice_number += 1
 
 
-def export_csv(billing: "Billing"):
+def export_csv(billing: "Billing", next_invoice_number: int):
     response = HttpResponse(content_type="text/csv")
     billing_date = _get_billing_date(billing.billing_year, billing.billing_month)
     response["Content-Disposition"] = (
@@ -223,6 +231,6 @@ def export_csv(billing: "Billing"):
     writer = csv.writer(response, csv.excel)
     writer.writerow(CSV_HEADER)
 
-    writer.writerows(_get_rows(billing))
+    writer.writerows(_get_rows(billing, next_invoice_number))
 
     return response
