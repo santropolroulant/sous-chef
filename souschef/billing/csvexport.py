@@ -125,6 +125,9 @@ def _get_invoice_row(
 
 
 def _get_row_for_group(item_group: GroupedItem, rate_type: "RateType"):
+    if item_group.quantity <= 0 or not item_group.is_billable:
+        return
+
     if (
         item_group.component == COMPONENT_GROUP_CHOICES_MAIN_DISH
         and item_group.size == "R"
@@ -152,23 +155,12 @@ def _get_row_for_group(item_group: GroupedItem, rate_type: "RateType"):
             else "Popote roulante_Extra"
         )
 
-    if (
-        item_group.component == COMPONENT_GROUP_CHOICES_MAIN_DISH
-        and not item_group.is_billable
-    ):
-        product = (
-            "Popote roulante_Large_non-chargé"
-            if item_group.size == "L"
-            else "Popote roulante_non-chargé"
-        )
-
-    if item_group.quantity > 0:
-        yield _get_invoice_row(
-            product=product,
-            description=item_group.description,
-            quantity=item_group.quantity,
-            unit_price=item_group.unit_price,
-        )
+    yield _get_invoice_row(
+        product=product,
+        description=item_group.description,
+        quantity=item_group.quantity,
+        unit_price=item_group.unit_price,
+    )
 
 
 def _get_grouped_items(orders: "List[Order]") -> List[GroupedItem]:

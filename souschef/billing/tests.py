@@ -292,7 +292,7 @@ class BillingSummaryViewTestCase(SousChefTestMixin, TestCase):
         self.assertEqual(response.status_code, 200)
 
         rows = list(csv.DictReader(StringIO(response.content.decode())))
-        self.assertEqual(10, len(rows))
+        self.assertEqual(6, len(rows))
 
         firstrow = rows[0]
         self.assertEqual(int(firstrow[INVOICE_NO_COL]), 432)
@@ -321,13 +321,9 @@ class BillingSummaryViewTestCase(SousChefTestMixin, TestCase):
             sorted(items),
             [
                 ("4", "Popote roulante", "24.00"),
-                ("4", "Popote roulante_Large_non-chargé", "0"),
-                ("4", "Popote roulante_Large_non-chargé", "0"),
                 ("4", "Popote roulante_Low income", "18.00"),
                 ("4", "Popote roulante_Low income Large", "21.00"),
                 ("4", "Popote roulante_Repas Large", "28.00"),
-                ("4", "Popote roulante_non-chargé", "0"),
-                ("4", "Popote roulante_non-chargé", "0"),
                 ("8", "Popote roulante_Extra", "8.00"),
                 ("8", "Popote roulante_Extra Low Income", "6.00"),
             ],
