@@ -26,6 +26,7 @@ CSV_HEADER = [
     "Courriel",
     "Modalités",
     "Date de facturation",
+    "Date du service",
     "Échéance",
     "Produit/service",
     "Description",
@@ -93,7 +94,7 @@ def _get_row_prefix(
     first_cell = invoice_number
 
     if not is_first_row:
-        return [first_cell] + [""] * 5
+        return [first_cell] + [""] * 6
 
     billing_date = _get_billing_date(billing.billing_year, billing.billing_month)
     return [
@@ -101,6 +102,7 @@ def _get_row_prefix(
         f"{client.member.lastname}, {client.member.firstname}",
         client.billing_email,
         "Payable dès réception",
+        billing_date,
         billing_date,
         billing_date,
     ]

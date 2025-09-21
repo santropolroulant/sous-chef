@@ -30,6 +30,7 @@ INVOICE_NO_COL = "Nº de facture"
 PRODUCT_COL = "Produit/service"
 QUANTITY_COL = "Qté"
 RATE_COL = "Taux"
+SERVICE_DATE_COL = "Date du service"
 TERMS_COL = "Modalités"
 
 
@@ -299,6 +300,7 @@ class BillingSummaryViewTestCase(SousChefTestMixin, TestCase):
         self.assertTrue(firstrow[CUSTOMER_COL])
         self.assertTrue(firstrow[DESCRIPTION_COL])
         self.assertEqual("2025-08-31", firstrow[INVOICE_DATE_COL])
+        self.assertEqual("2025-08-31", firstrow[SERVICE_DATE_COL])
         self.assertEqual("2025-08-31", firstrow[DUE_DATE_COL])
         self.assertEqual("Payable dès réception", firstrow[TERMS_COL])
 
