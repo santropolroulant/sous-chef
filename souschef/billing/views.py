@@ -11,7 +11,11 @@ from django.db.models import (
     Prefetch,
     Q,
 )
-from django.http import Http404, HttpResponseRedirect
+from django.http import (
+    HttpResponseBadRequest,
+    HttpResponseNotFound,
+    HttpResponseRedirect,
+)
 from django.urls import reverse_lazy
 from django.utils.translation import string_concat
 from django.utils.translation import ugettext_lazy as _
@@ -306,13 +310,23 @@ class BillingSummaryView(
         return context
 
     def get(self, request, **kwargs):
-        self.format = request.GET.get("format", False)
+        format = request.GET.get("format", False)
 
-        if self.format == "csv":
+        if format == "csv":
             billing = self.queryset.first()
             if not billing:
-                raise Http404
-            return export_csv(billing)
+                return HttpResponseNotFound
+
+            next_invoice_number = request.GET.get("next_invoice_number")
+            try:
+                next_invoice_number = int(next_invoice_number)
+            except (ValueError, TypeError):
+                return HttpResponseBadRequest(
+                    "Invalid next_invoice_number parameter: "
+                    f"{next_invoice_number!r}".encode()
+                )
+
+            return export_csv(billing, next_invoice_number)
 
         return super().get(request, **kwargs)
 
