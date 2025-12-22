@@ -1,6 +1,6 @@
 # Installing Sous-Chef
 
-These instructions document how to install Sous-Chef on Debian 12.
+These instructions document how to install Sous-Chef on Debian 13.
 
 To update an existing installation, see [UPDATE.md](UPDATE.md).
 
@@ -10,13 +10,7 @@ Become root, then install the dependencies.
 
 ```
 apt install mariadb-server nginx libnginx-mod-http-fancyindex gdal-bin python3 \
-    python3-pip libmariadb-dev-compat pkg-config
-
-# We install a more recent version of pipx than available on Debian 12
-# so we can install souschef in a global virtual environment.
-pip install --user --break-system-packages pipx
-echo "PATH=\$PATH:/root/.local/bin" >> /root/.bashrc
-source /root/.bashrc
+    python3-pip libmariadb-dev-compat pkg-config pipx
 
 # Install gunicorn and Sous-Chef
 pipx install --global gunicorn
@@ -29,25 +23,10 @@ To install a development version of Sous-Chef from the PyPI test index, run:
 pipx inject --global gunicorn souschef==2.0.0dev4 --pip-args='--extra-index-url=https://test.pypi.org/simple/'
 ```
 
-2. Configure the database
-
-Secure mariadb:
+2. Create the database and the souschef user
 
 ```
-mysql_secure_installation
-# When prompted for the current password for root, press the enter key (since no password is defined).
-# Then answer yes to all questions (and provide asked information):
-# -> Set root password
-# -> Remove anonymous users
-# -> Disallow root login remotely
-# -> Remove test database and access to it
-# -> Reload privilege tables now
-```
-
-Create the database and the souschef user.
-
-```
-mariadb -u root -p
+mariadb -u root
 MariaDB [(none)]> CREATE DATABASE souschefdb CHARACTER SET utf8;
 MariaDB [(none)]> CREATE USER souschefuser@localhost IDENTIFIED BY '...strong password here...';
 MariaDB [(none)]> GRANT SELECT, INSERT, UPDATE, DELETE ON souschefdb.* TO souschefuser@localhost;
@@ -91,7 +70,7 @@ chown www-data:www-data /var/local/souschef
 3. Initialize Sous-Chef
 
 ```bash
-cd /opt/pipx/venvs/gunicorn/lib/python3.11/site-packages/souschef
+cd /opt/pipx/venvs/gunicorn/lib/python3.13/site-packages/souschef
 
 # Export the Sous-Chef configuration variables, so Django's
 # manage.py may work.
@@ -104,8 +83,7 @@ for line in `cat /etc/souschef.conf`; do export $line; done
 # Create the tables. When run after a version upgade it ensures the database
 # schema is up to date.
 # Database migration needs to run as the root user and not as souschefdb.
-# Note: the database password here is the one from the `mysql_secure_installation` step.
-env SOUSCHEF_DJANGO_DB_USER=root SOUSCHEF_DJANGO_DB_PASSWORD=...password... /opt/pipx/venvs/gunicorn/bin/python manage.py migrate
+env SOUSCHEF_DJANGO_DB_USER=root SOUSCHEF_DJANGO_DB_PASSWORD= /opt/pipx/venvs/gunicorn/bin/python manage.py migrate
 
 # Create a user with administrator privileges.
 # To be done once only.
@@ -119,7 +97,7 @@ This server will serve the static files and redirect all other requests to the g
 Copy the content of [`souschef/configsamples/nginx.conf`](souschef/configsamples/nginx.conf) to `/etc/nginx/sites-available/souschef` and activate nginx:
 
 ```bash
-cp /opt/pipx/venvs/gunicorn/lib/python3.11/site-packages/souschef/configsamples/nginx.conf /etc/nginx/sites-available/souschef
+cp /opt/pipx/venvs/gunicorn/lib/python3.13/site-packages/souschef/configsamples/nginx.conf /etc/nginx/sites-available/souschef
 
 # Remove the default site configuration, which is a symbolic link to `/etc/nginx/sites-available/default`
 rm /etc/nginx/sites-enabled/default
@@ -134,7 +112,7 @@ systemctl restart nginx
 Put the content of [`souschef/configsamples/souschef.service`](souschef/configsamples/souschef.service) to `/lib/systemd/system/souschef.service`, then ask systemctl to read the new configuration:
 
 ```
-cp /opt/pipx/venvs/gunicorn/lib/python3.11/site-packages/souschef/configsamples/souschef.service /lib/systemd/system/souschef.service
+cp /opt/pipx/venvs/gunicorn/lib/python3.13/site-packages/souschef/configsamples/souschef.service /lib/systemd/system/souschef.service
 systemctl daemon-reload
 ```
 
@@ -165,7 +143,7 @@ Sous-Chef needs a cron job to be executed daily in order to correcly process ord
 
 ```
 cd /etc/cron.daily
-ln -s /opt/pipx/venvs/gunicorn/lib/python3.11/site-packages/souschef/cronscripts/souschef_daily.sh souschef_daily
+ln -s /opt/pipx/venvs/gunicorn/lib/python3.13/site-packages/souschef/cronscripts/souschef_daily.sh souschef_daily
 ```
 
 ## Debugging Sous-Chef

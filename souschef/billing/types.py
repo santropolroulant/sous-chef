@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import TypeAlias, TypedDict
+from typing import TypedDict
 
 from souschef.member.types import RateType
 
@@ -32,7 +32,7 @@ class PaymentTypeStatistics(TypedDict):
     clients: list[ClientStatistics]
 
 
-BillingPaymentType: TypeAlias = str | None
+type BillingPaymentType = str | None
 
 
 class BillingSummary(TypedDict):
