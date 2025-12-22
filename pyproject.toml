@@ -1,5 +1,53 @@
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "souschef"
+version = "2.0.0dev7"
+authors = [
+    { name = "Santropol Roulant and Savoir Faire Linux", email = "info@santropolroulant.org" },
+]
+dependencies = [
+    "django-annoying==0.10.8",
+    "django-crontab==0.7.1",
+    "django-extra-views==0.16.0",
+    "django-filter==25.2",
+    "django-formtools==2.5.1",
+    "django-leaflet==0.33.0",
+    "django-localflavor==5.0",
+    "django==5.2.9",
+    "factory_boy==3.3.3",
+    "mysqlclient==2.2.7",
+    "pypdf>=4.2,<5",
+    "pylabels==1.2.1",
+    "reportlab==4.4.7",
+    "rules==3.5",
+]
+description = "Webapp used to manage orders for meals-on-wheel delivery"
+readme = "README.md"
+requires-python = ">=3.13"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Web Environment",
+    "Framework :: Django",
+    "Intended Audience :: End Users/Desktop",
+    "Operating System :: OS Independent",
+    "Programming Language :: JavaScript",
+    "Programming Language :: Python :: 3",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content :: Content Management System",
+]
+license = "AGPL-3.0-only"
+license-files = ["LICENSE.txt"]
+
+[project.urls]
+Homepage = "https://github.com/santropolroulant/sous-chef"
+
+[tool.setuptools]
+package-dir = { "souschef" = "souschef" }
+
 [tool.ruff]
-target-version = "py311"
+target-version = "py313"
 
 [tool.ruff.lint]
 select = [

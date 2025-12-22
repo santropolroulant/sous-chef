@@ -1,3 +1,3 @@
-from typing import Literal, TypeAlias
+from typing import Literal
 
-RateType: TypeAlias = Literal["default", "low income", "solidary"]
+type RateType = Literal["default", "low income", "solidary"]

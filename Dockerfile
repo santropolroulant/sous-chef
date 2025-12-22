@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 python:3.11
+FROM --platform=linux/amd64 python:3.13
 ENV PYTHONUNBUFFERED 1
 
 # Install underlying Debian dependencies
@@ -16,7 +16,8 @@ WORKDIR /code
 
 # We copy the strict minimum from the source code into the image so we can
 # install the requirements and have that step cached by Docker.
-COPY setup.py README.md /code/
+COPY pyproject.toml README.md LICENSE.txt /code/
+RUN mkdir /code/souschef
 RUN pip3 install -e .
 
 # We add some development tool to make sure that contributors only need

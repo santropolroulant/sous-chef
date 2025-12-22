@@ -15,7 +15,7 @@
 3. Clear remaining files in `dist-packages`. This step is to make sure assets removed from source code are also removed on the server.
 
    ```
-   rm -rf /opt/pipx/venvs/gunicorn/lib/python3.11/site-packages/souschef
+   rm -rf /opt/pipx/venvs/gunicorn/lib/python3.13/site-packages/souschef
    ```
 
 4. Install the latest Sous-Chef version:
@@ -33,7 +33,7 @@
 5. Collect the static files and upgrade the database:
 
    ```bash
-   cd /opt/pipx/venvs/gunicorn/lib/python3.11/site-packages/souschef
+   cd /opt/pipx/venvs/gunicorn/lib/python3.13/site-packages/souschef
 
    # Export the Sous-Chef configuration variables, so Django's
    # manage.py may work.
@@ -46,8 +46,7 @@
    # Create the tables. When run after a version upgade it ensures the database
    # schema is up to date.
    # Database migration needs to run as the root user and not as souschefdb.
-   # Note: the database password here is the one from the `mysql_secure_installation` step.
-   env SOUSCHEF_DJANGO_DB_USER=root SOUSCHEF_DJANGO_DB_PASSWORD=...password... /opt/pipx/venvs/gunicorn/bin/python manage.py migrate
+   env SOUSCHEF_DJANGO_DB_USER=root SOUSCHEF_DJANGO_DB_PASSWORD= /opt/pipx/venvs/gunicorn/bin/python manage.py migrate
    ```
 
 6. Start Sous-Chef:
