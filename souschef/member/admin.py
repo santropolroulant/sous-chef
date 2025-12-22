@@ -38,6 +38,7 @@ class RelationshipInline(admin.TabularInline):
     extra = 0
 
 
+@admin.register(Member)
 class MemberAdmin(admin.ModelAdmin):
     search_fields = ["lastname", "firstname"]
     list_display = ("full_name", "address", "work_information", "updated_at")
@@ -49,6 +50,7 @@ class MemberAdmin(admin.ModelAdmin):
     full_name.short_description = "Name"
 
 
+@admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
     search_fields = ["member__lastname", "member__firstname"]
     list_filter = ("status", "route", "delivery_type")
@@ -62,6 +64,7 @@ class ClientAdmin(admin.ModelAdmin):
     ]
 
 
+@admin.register(Contact)
 class ContactAdmin(admin.ModelAdmin):
     search_fields = ["member__lastname", "member__firstname"]
     list_display = (
@@ -72,6 +75,7 @@ class ContactAdmin(admin.ModelAdmin):
     list_filter = ("type",)
 
 
+@admin.register(Relationship)
 class RelationshipAdmin(admin.ModelAdmin):
     search_fields = [
         "member__lastname",
@@ -85,12 +89,8 @@ class RelationshipAdmin(admin.ModelAdmin):
     list_display = ("__str__", "member", "type", "nature", "client", "extra_fields")
 
 
-admin.site.register(Member, MemberAdmin)
-admin.site.register(Client, ClientAdmin)
 admin.site.register(ClientScheduledStatus)
 admin.site.register(Route)
 admin.site.register(DeliveryHistory)
-admin.site.register(Contact, ContactAdmin)
 admin.site.register(Address)
-admin.site.register(Relationship, RelationshipAdmin)
 admin.site.register(Option)

@@ -18,6 +18,7 @@ class OrderItemInline(admin.TabularInline):
     model = Order_item
 
 
+@admin.register(Order_item)
 class OrderItemAdmin(admin.ModelAdmin):
     search_fields = ["order__id"]
     list_display = (
@@ -30,6 +31,7 @@ class OrderItemAdmin(admin.ModelAdmin):
     )
 
 
+@admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     search_fields = ["client__member__lastname", "client__member__firstname"]
     list_filter = ("status", "delivery_date")
@@ -45,6 +47,4 @@ class OrderAdmin(admin.ModelAdmin):
     inlines = [OrderItemInline]
 
 
-admin.site.register(Order, OrderAdmin)
-admin.site.register(Order_item, OrderItemAdmin)
 admin.site.register(OrderStatusChange)
