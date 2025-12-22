@@ -1,0 +1,24 @@
+{% load i18n %}
+
+<div class="ui mini modal" id="export-csv-modal">
+  <div class="header">
+    <i class="file excel icon"></i>
+    {% trans "Export as Quickbook CSV format" %}
+  </div>
+  <div class="content">
+    <form method="GET" target="_blank">
+      <div class="ui input">
+        <input name="next_invoice_number" type="number" min="0" placeholder="Next invoice number..." pattern="\d*"/>
+        <input name="format" type="hidden" value="csv"/>
+      </div>
+    </form>
+  </div>
+  <div class="actions">
+    <div class="ui cancel button">
+      <i class="remove icon"></i> {% trans "Cancel" %}
+    </div>
+    <button class="ui green button">
+      <i class="checkmark icon"></i> {% trans "Export" %}
+    </button>
+  </div>
+</div>
