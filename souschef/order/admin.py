@@ -7,11 +7,13 @@ from souschef.order.models import (
 )
 
 
+@admin.action(
+    description="Mark selected orders as delivered"
+)
 def make_delivered(modeladmin, request, queryset):
     queryset.update(status="D")
 
 
-make_delivered.short_description = "Mark selected orders as delivered"
 
 
 class OrderItemInline(admin.TabularInline):

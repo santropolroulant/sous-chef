@@ -168,7 +168,6 @@ AUTHENTICATION_BACKENDS = (
 
 LANGUAGE_CODE = "en"
 USE_I18N = True
-USE_L10N = True
 
 # Store datetimes as UTC in database
 USE_TZ = True

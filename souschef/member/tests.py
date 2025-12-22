@@ -1120,65 +1120,56 @@ class FormTestCase(TestCase):
 
         # Validate that the response is the same form with the errors messages.
         self.assertTrue(response_error.context["form"].errors)
-        self.assertFormsetError(
-            response_error,
-            "form",
+        self.assertFormSetError(
+            response_error.context["form"],
             0,
             "cell_phone",
             gettext("At least one contact is required."),
         )
-        self.assertFormsetError(
-            response_error,
-            "form",
+        self.assertFormSetError(
+            response_error.context["form"],
             0,
             "work_phone",
             gettext("At least one contact is required."),
         )
-        self.assertFormsetError(
-            response_error,
-            "form",
+        self.assertFormSetError(
+            response_error.context["form"],
             0,
             "email",
             gettext("At least one contact is required."),
         )
-        self.assertFormsetError(
-            response_error,
-            "form",
+        self.assertFormSetError(
+            response_error.context["form"],
             0,
             "lastname",
             gettext("This field is required unless you chose an existing member."),
         )
-        self.assertFormsetError(
-            response_error,
-            "form",
+        self.assertFormSetError(
+            response_error.context["form"],
             0,
             "firstname",
             gettext("This field is required unless you chose an existing member."),
         )
-        self.assertFormsetError(
-            response_error,
-            "form",
+        self.assertFormSetError(
+            response_error.context["form"],
             0,
             "firstname",
             gettext("This field is required unless you chose an existing member."),
         )
-        self.assertFormsetError(
-            response_error,
-            "form",
+        self.assertFormSetError(
+            response_error.context["form"],
             0,
             "work_information",
             gettext("This field is required for a referent relationship."),
         )
-        self.assertFormsetError(
-            response_error,
-            "form",
+        self.assertFormSetError(
+            response_error.context["form"],
             0,
             "referral_date",
             gettext("This field is required for a referent relationship."),
         )
-        self.assertFormsetError(
-            response_error,
-            "form",
+        self.assertFormSetError(
+            response_error.context["form"],
             0,
             "referral_reason",
             gettext("This field is required for a referent relationship."),
@@ -1445,7 +1436,7 @@ class MemberSearchTestCase(SousChefTestMixin, TestCase):
         """
         result = self.client.get(
             reverse_lazy("member:search") + "?name=Heid",
-            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+            headers={"x-requested-with": "XMLHttpRequest"}, 
             follow=True,
         )
         self.assertTrue(b"Katrina Heide" in result.content)
@@ -1457,7 +1448,7 @@ class MemberSearchTestCase(SousChefTestMixin, TestCase):
         """
         result = self.client.get(
             reverse_lazy("member:search") + "?name=Katri",
-            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+            headers={"x-requested-with": "XMLHttpRequest"}, 
             follow=True,
         )
         self.assertTrue(b"Katrina Heide" in result.content)
@@ -1641,7 +1632,7 @@ class ClientStatusUpdateAndScheduleCase(SousChefTestMixin, TestCase):
                 "member:clientStatusScheduler", kwargs={"pk": self.active_client.id}
             ),
             data,
-            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+            headers={"x-requested-with": "XMLHttpRequest"}, 
             follow=True,
         )
         self.assertEqual(response.status_code, 200)
@@ -1668,7 +1659,7 @@ class ClientStatusUpdateAndScheduleCase(SousChefTestMixin, TestCase):
                 "member:clientStatusScheduler", kwargs={"pk": self.active_client.id}
             ),
             data,
-            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+            headers={"x-requested-with": "XMLHttpRequest"}, 
             follow=True,
         )
         self.assertEqual(response.status_code, 200)
@@ -1712,7 +1703,7 @@ class ClientStatusUpdateAndScheduleCase(SousChefTestMixin, TestCase):
                 "member:clientStatusScheduler", kwargs={"pk": self.active_client.id}
             ),
             data,
-            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+            headers={"x-requested-with": "XMLHttpRequest"}, 
             follow=True,
         )
         self.assertEqual(response.status_code, 200)
@@ -1745,7 +1736,7 @@ class ClientStatusUpdateAndScheduleCase(SousChefTestMixin, TestCase):
                 "member:clientStatusScheduler", kwargs={"pk": self.active_client.id}
             ),
             data,
-            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+            headers={"x-requested-with": "XMLHttpRequest"}, 
             follow=True,
         )
         client = Client.objects.get(pk=self.active_client.id)
@@ -1775,7 +1766,7 @@ class ClientStatusUpdateAndScheduleCase(SousChefTestMixin, TestCase):
                 "change_date": "2019-09-23",
                 "end_date": "",
             },
-            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+            headers={"x-requested-with": "XMLHttpRequest"}, 
             follow=True,
         )
 
@@ -1807,7 +1798,7 @@ class ClientStatusUpdateAndScheduleCase(SousChefTestMixin, TestCase):
                 "change_date": "2018-09-23",
                 "end_date": "",
             },
-            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+            headers={"x-requested-with": "XMLHttpRequest"}, 
             follow=True,
         )
 
@@ -1843,7 +1834,7 @@ class ClientStatusUpdateAndScheduleCase(SousChefTestMixin, TestCase):
                 "change_date": "2018-09-23",
                 "end_date": "2018-10-02",
             },
-            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+            headers={"x-requested-with": "XMLHttpRequest"}, 
             follow=True,
         )
 

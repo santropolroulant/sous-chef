@@ -44,10 +44,12 @@ class MemberAdmin(admin.ModelAdmin):
     list_display = ("full_name", "address", "work_information", "updated_at")
     inlines = [ContactInline]
 
+    @admin.display(
+        description="Name"
+    )
     def full_name(self, obj):
         return f"{obj.firstname} {obj.lastname}"
 
-    full_name.short_description = "Name"
 
 
 @admin.register(Client)

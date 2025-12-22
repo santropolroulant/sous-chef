@@ -1347,7 +1347,7 @@ class OrderStatusChangeViewTestCase(OrderItemTestCase):
         response = self.client.post(
             reverse("order:update_status", kwargs={"pk": self.order.id}),
             data,
-            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+            headers={"x-requested-with": "XMLHttpRequest"}
         )
         # create successful. Returns json
         self.assertEqual(response.status_code, 200)
@@ -1359,10 +1359,10 @@ class OrderStatusChangeViewTestCase(OrderItemTestCase):
         response = self.client.post(
             reverse("order:update_status", kwargs={"pk": self.order.id}),
             data,
-            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+            headers={"x-requested-with": "XMLHttpRequest"}
         )
         self.assertFormError(
-            response, "form", "reason", "A reason is required for No Charge order."
+            response.context["form"], "reason", "A reason is required for No Charge order."
         )
         self.order.refresh_from_db()
         self.assertEqual(self.order.status, "B")
