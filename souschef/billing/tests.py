@@ -30,6 +30,7 @@ INVOICE_NO_COL = "Nº de facture"
 PRODUCT_COL = "Produit/service"
 QUANTITY_COL = "Qté"
 RATE_COL = "Taux"
+SERVICE_DATE_COL = "Date du service"
 TERMS_COL = "Modalités"
 
 
@@ -287,20 +288,24 @@ class BillingSummaryViewTestCase(SousChefTestMixin, TestCase):
 
         url = reverse("billing:view", args=(billing.id,))
         # Run
-        response = self.client.get(url, {"format": "csv"})
+        response = self.client.get(url, {"format": "csv", "next_invoice_number": 432})
         # Check
         self.assertEqual(response.status_code, 200)
 
         rows = list(csv.DictReader(StringIO(response.content.decode())))
-        self.assertEqual(10, len(rows))
+        self.assertEqual(6, len(rows))
 
         firstrow = rows[0]
-        self.assertTrue(int(firstrow[INVOICE_NO_COL]))
+        self.assertEqual(int(firstrow[INVOICE_NO_COL]), 432)
         self.assertTrue(firstrow[CUSTOMER_COL])
         self.assertTrue(firstrow[DESCRIPTION_COL])
         self.assertEqual("2025-08-31", firstrow[INVOICE_DATE_COL])
+        self.assertEqual("2025-08-31", firstrow[SERVICE_DATE_COL])
         self.assertEqual("2025-08-31", firstrow[DUE_DATE_COL])
         self.assertEqual("Payable dès réception", firstrow[TERMS_COL])
+
+        lastrow = rows[-1]
+        self.assertEqual(int(lastrow[INVOICE_NO_COL]), 433)
 
         csv_total = Decimal(0)
         for row in rows:
@@ -318,13 +323,9 @@ class BillingSummaryViewTestCase(SousChefTestMixin, TestCase):
             sorted(items),
             [
                 ("4", "Popote roulante", "24.00"),
-                ("4", "Popote roulante_Large_non-chargé", "0"),
-                ("4", "Popote roulante_Large_non-chargé", "0"),
                 ("4", "Popote roulante_Low income", "18.00"),
                 ("4", "Popote roulante_Low income Large", "21.00"),
                 ("4", "Popote roulante_Repas Large", "28.00"),
-                ("4", "Popote roulante_non-chargé", "0"),
-                ("4", "Popote roulante_non-chargé", "0"),
                 ("8", "Popote roulante_Extra", "8.00"),
                 ("8", "Popote roulante_Extra Low Income", "6.00"),
             ],

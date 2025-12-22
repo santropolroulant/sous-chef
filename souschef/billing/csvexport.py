@@ -25,6 +25,7 @@ CSV_HEADER = [
     "Courriel",
     "Modalités",
     "Date de facturation",
+    "Date du service",
     "Échéance",
     "Produit/service",
     "Description",
@@ -84,15 +85,23 @@ def _get_billing_date(billing_year: int, billing_month: int):
     )
 
 
-def _get_row_prefix(billing: "Billing", client: "Client"):
+def _get_row_prefix(
+    is_first_row: bool, billing: "Billing", client: "Client", invoice_number: int
+):
+    # We use the client ID as the invoice number as to group invoice lines
+    # together. Quickbooks will replace this number when generating the invoices.
+    first_cell = invoice_number
+
+    if not is_first_row:
+        return [first_cell] + [""] * 6
+
     billing_date = _get_billing_date(billing.billing_year, billing.billing_month)
     return [
-        # We use the client ID as the invoice number as to group invoice lines
-        # together. Quickbooks will replace this number when generating the invoices.
-        client.id,
+        first_cell,
         f"{client.member.lastname}, {client.member.firstname}",
         client.billing_email,
         "Payable dès réception",
+        billing_date,
         billing_date,
         billing_date,
     ]
@@ -117,6 +126,9 @@ def _get_invoice_row(
 
 
 def _get_row_for_group(item_group: GroupedItem, rate_type: "RateType"):
+    if item_group.quantity <= 0 or not item_group.is_billable:
+        return
+
     if (
         item_group.component == COMPONENT_GROUP_CHOICES_MAIN_DISH
         and item_group.size == "R"
@@ -144,23 +156,12 @@ def _get_row_for_group(item_group: GroupedItem, rate_type: "RateType"):
             else "Popote roulante_Extra"
         )
 
-    if (
-        item_group.component == COMPONENT_GROUP_CHOICES_MAIN_DISH
-        and not item_group.is_billable
-    ):
-        product = (
-            "Popote roulante_Large_non-chargé"
-            if item_group.size == "L"
-            else "Popote roulante_non-chargé"
-        )
-
-    if item_group.quantity > 0:
-        yield _get_invoice_row(
-            product=product,
-            description=item_group.description,
-            quantity=item_group.quantity,
-            unit_price=item_group.unit_price,
-        )
+    yield _get_invoice_row(
+        product=product,
+        description=item_group.description,
+        quantity=item_group.quantity,
+        unit_price=item_group.unit_price,
+    )
 
 
 def _get_grouped_items(orders: "list[Order]") -> list[GroupedItem]:
@@ -198,22 +199,23 @@ def _get_invoice_rows(orders: "list[Order]", rate_type: "RateType"):
         yield from _get_row_for_group(group, rate_type)
 
 
-def _get_client_rows(billing: "Billing", client: "Client", orders: "list[Order]"):
-    first_row_prefix = _get_row_prefix(billing, client)
-    non_first_row_prefix = [client.id] + [""] * 5
+def _get_client_rows(
+    billing: "Billing", client: "Client", orders: "list[Order]", invoice_number: int
+):
     is_first_row = True
     for row in _get_invoice_rows(orders, cast("RateType", client.rate_type)):
-        prefix = first_row_prefix if is_first_row else non_first_row_prefix
+        prefix = _get_row_prefix(is_first_row, billing, client, invoice_number)
         yield prefix + row
         is_first_row = False
 
 
-def _get_rows(billing: "Billing"):
+def _get_rows(billing: "Billing", next_invoice_number: int):
     for client, orders in billing.client_orders.items():
-        yield from _get_client_rows(billing, client, orders)
+        yield from _get_client_rows(billing, client, orders, next_invoice_number)
+        next_invoice_number += 1
 
 
-def export_csv(billing: "Billing"):
+def export_csv(billing: "Billing", next_invoice_number: int):
     response = HttpResponse(content_type="text/csv")
     billing_date = _get_billing_date(billing.billing_year, billing.billing_month)
     response["Content-Disposition"] = (
@@ -222,6 +224,6 @@ def export_csv(billing: "Billing"):
     writer = csv.writer(response, csv.excel)
     writer.writerow(CSV_HEADER)
 
-    writer.writerows(_get_rows(billing))
+    writer.writerows(_get_rows(billing, next_invoice_number))
 
     return response
