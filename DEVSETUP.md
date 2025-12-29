@@ -15,10 +15,6 @@ Install the following dependencies:
 1. **docker-engine**: https://docs.docker.com/engine/install/
 2. **docker compose**: https://docs.docker.com/compose/install/
 
-On Debian systems, the following commands can be used to install Docker:
-
-    sudo apt install docker compose
-
 ### OS X
 
 Install **Docker For Mac**: https://docs.docker.com/docker-for-mac/install/
@@ -92,6 +88,26 @@ python3 manage.py createsuperuser
 
 # Optional: Load the initial data set
 python3 manage.py loaddata sample_data
+```
+
+## Alternative initialization: from a database backup
+
+If instead you would like to initialize the database from a backup, instead of performing the initialization step documented above, do the following instead:
+
+In your console:
+
+```
+docker compose run web bash
+```
+
+Then you should be inside a container as you can see, e.g., `root@d157a3f57426:/code#`. Then run:
+
+```
+apt update
+apt install mariadb-client
+mariadb -h db -D feast -u root -p < /code/path.to.backup.sql
+# password is: 123456
+exit
 ```
 
 ## Running unit tests
