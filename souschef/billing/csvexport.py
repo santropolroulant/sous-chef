@@ -1,5 +1,6 @@
 import calendar
 import csv
+import operator
 from dataclasses import dataclass
 from decimal import Decimal
 from typing import TYPE_CHECKING, Dict, List, Tuple, Union, cast
@@ -11,7 +12,7 @@ from souschef.meal.constants import (
     COMPONENT_GROUP_CHOICES,
     COMPONENT_GROUP_CHOICES_MAIN_DISH,
 )
-from souschef.member.constants import RATE_TYPE_LOW_INCOME
+from souschef.member.constants import PAYMENT_TYPE, RATE_TYPE_LOW_INCOME
 from souschef.order.constants import ORDER_ITEM_TYPE_CHOICES_COMPONENT
 
 if TYPE_CHECKING:
@@ -20,21 +21,28 @@ if TYPE_CHECKING:
     from souschef.member.types import RateType
     from souschef.order.models import Order, Order_item
 
-CSV_HEADER = [
-    "Nº de facture",
+BLANK_ON_CLIENT_SECOND_LINE_COLUMN_NAMES = [
     "Client",
     "Courriel",
     "Modalités",
+    "Mode de paiement",
     "Date de facturation",
     "Date du service",
     "Échéance",
-    "Produit/service",
-    "Description",
-    "Qté",
-    "Taux",
-    "Montant",
-    "Classe",
 ]
+
+ALL_COLUMNS = (
+    ["Nº de facture"]
+    + BLANK_ON_CLIENT_SECOND_LINE_COLUMN_NAMES
+    + [
+        "Produit/service",
+        "Description",
+        "Qté",
+        "Taux",
+        "Montant",
+        "Classe",
+    ]
+)
 
 MAIN_DISH_DESCRIPTION_OVERRIDE = "Repas"
 
@@ -94,14 +102,18 @@ def _get_row_prefix(
     first_cell = invoice_number
 
     if not is_first_row:
-        return [first_cell] + [""] * 6
+        return [first_cell] + [""] * len(BLANK_ON_CLIENT_SECOND_LINE_COLUMN_NAMES)
 
     billing_date = _get_billing_date(billing.billing_year, billing.billing_month)
+    payment_type = dict(PAYMENT_TYPE).get(
+        client.billing_payment_type or "", client.billing_payment_type
+    )
     return [
         first_cell,
         f"{client.member.lastname}, {client.member.firstname}",
         client.billing_email,
         "Payable dès réception",
+        payment_type,
         billing_date,
         billing_date,
         billing_date,
@@ -211,7 +223,13 @@ def _get_client_rows(
 
 
 def _get_rows(billing: "Billing", next_invoice_number: int):
-    for client, orders in billing.client_orders.items():
+    for client in sorted(
+        billing.client_orders,
+        key=operator.attrgetter(
+            "billing_payment_type", "member.lastname", "member.firstname"
+        ),
+    ):
+        orders = billing.client_orders[client]
         yield from _get_client_rows(billing, client, orders, next_invoice_number)
         next_invoice_number += 1
 
@@ -223,7 +241,7 @@ def export_csv(billing: "Billing", next_invoice_number: int):
         f"attachment; filename={billing_date}_sous_chef_billing.csv"
     )
     writer = csv.writer(response, csv.excel)
-    writer.writerow(CSV_HEADER)
+    writer.writerow(ALL_COLUMNS)
 
     writer.writerows(_get_rows(billing, next_invoice_number))
 
