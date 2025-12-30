@@ -1,4 +1,5 @@
 import csv
+from typing import cast
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -38,6 +39,7 @@ from souschef.meal.constants import (
     COMPONENT_GROUP_CHOICES,
     COMPONENT_GROUP_CHOICES_SIDES,
 )
+from souschef.member.constants import MAILING_TYPE, PAYMENT_TYPE, RATE_TYPE
 from souschef.member.forms import (
     ClientAddressInformation,
     ClientBasicInformation,
@@ -70,6 +72,7 @@ from souschef.member.models import (
     Restriction,
     Route,
 )
+from souschef.member.types import RateType
 from souschef.order.constants import (
     SIZE_CHOICES,
 )
@@ -515,6 +518,7 @@ def _get_csv_header():
         "Client Country",
         "Client Route",
         "Client Billing Type",
+        "Client Payment Type",
         "Client Mailing Type",
         "Client Billing Email",
         "Billing Member",
@@ -529,6 +533,13 @@ def _get_csv_header():
 
 def _get_csv_row(obj: Client, route):
     mealdefweek = obj.meal_default_week
+    rate_type = dict(RATE_TYPE).get(cast(RateType, obj.rate_type), obj.rate_type)
+    payment_type = dict(PAYMENT_TYPE).get(
+        obj.billing_payment_type or "", obj.billing_payment_type
+    )
+    mailing_type = dict(MAILING_TYPE).get(
+        obj.billing_mailing_type or "", obj.billing_mailing_type
+    )
     row = [
         obj.id,
         f"{obj.member.lastname}, {obj.member.firstname}",
@@ -551,8 +562,9 @@ def _get_csv_row(obj: Client, route):
         obj.member.address.region_code,
         obj.member.address.country_code,
         route,
-        obj.billing_payment_type,
-        obj.billing_mailing_type,
+        rate_type,
+        payment_type,
+        mailing_type,
         obj.billing_email,
         obj.billing_member,
         ", ".join(str(c) for c in obj.relationship_set.all()),
