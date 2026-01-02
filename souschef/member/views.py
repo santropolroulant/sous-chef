@@ -517,7 +517,7 @@ def _get_csv_header():
         "Client Province",
         "Client Country",
         "Client Route",
-        "Client Billing Type",
+        "Client Rate Type",
         "Client Payment Type",
         "Client Mailing Type",
         "Client Billing Email",
