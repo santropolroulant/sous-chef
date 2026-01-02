@@ -366,7 +366,7 @@ class MemberForm(forms.Form):
 
 class ClientPaymentInformation(MemberForm):
     facturation = forms.ChoiceField(
-        label=_("Billing Type"),
+        label=_("Rate Type"),
         choices=RATE_TYPE,
         widget=forms.Select(attrs={"class": "ui dropdown"}),
     )
