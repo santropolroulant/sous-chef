@@ -1,4 +1,5 @@
 import collections
+import re
 from typing import cast
 
 from django.contrib import messages
@@ -316,7 +317,13 @@ class BillingSummaryView(
         format = request.GET.get("format", False)
 
         if format == "csv":
-            billing = self.queryset.first()
+            match = re.search(r"\d+", request.path)
+            if match:
+                billing_id = int(match.group(0))
+            else:
+                return HttpResponseNotFound("Could not extract billing id")
+
+            billing = self.queryset.filter(id=billing_id).first()
             if not billing:
                 return HttpResponseNotFound
 
