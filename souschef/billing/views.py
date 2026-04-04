@@ -55,7 +55,9 @@ class BillingList(LoginRequiredMixin, PermissionRequiredMixin, generic.ListView)
 
     def get_queryset(self):
         uf = BillingFilter(self.request.GET)
-        return uf.qs.annotate(Count("orders", distinct=True))
+        return uf.qs.annotate(Count("orders", distinct=True)).order_by(
+            "-billing_year", "-billing_month"
+        )
 
 
 class BillingCreate(LoginRequiredMixin, PermissionRequiredMixin, generic.CreateView):
