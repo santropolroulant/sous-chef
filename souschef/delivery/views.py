@@ -1985,24 +1985,39 @@ def kcr_make_labels(
     # find max lengths of fields to sort on
     routew = 0
     namew = 0
+    clashesw = 0
+    prepw = 0
     for label in meal_labels:
         routew = max(routew, len(label.route))
         namew = max(namew, len(label.name))
+        clashesw = max(clashesw, len(label.dish_clashes), len(label.sides_clashes))
+        prepw = max(prepw, len(label.preparations))
     # generate grouping and sorting key
     for j in range(len(meal_labels)):
-        route = ""  # for groups 1, 2 and 3 : sort by name
+        # for groups 1, 2 and 3 : sort by restrictions, preparations, name
+        # for groups 4 : sort by route, name
+        route = ""
+        clashes = ""
+        prep = ""
         if meal_labels[j].dish_clashes:  # has dish restrictions
             group = 1
+            clashes = " ".join(meal_labels[j].dish_clashes) # sort by restrictions
         elif meal_labels[j].sides_clashes:  # has sides restrictions
             group = 2
+            clashes = " ".join(meal_labels[j].sides_clashes) # sort by restrictions
         elif meal_labels[j].preparations:  # has food preparations
             group = 3
+            prep = " ".join(meal_labels[j].preparations) # sort by preparations
         else:  # regular meal
             group = 4
-            route = meal_labels[j].route  # sort by route, name
+            route = meal_labels[j].route  # sort by route
         meal_labels[j] = meal_labels[j]._replace(
-            sortkey="{grp:1}{rou:{rouw}}{nam:{namw}}".format(
-                grp=group, rou=route, rouw=routew, nam=meal_labels[j].name, namw=namew
+            sortkey="{grp:1}{cla:{claw}}{pre:{prew}}{rou:{rouw}}{nam:{namw}}".format(
+                grp=group, 
+                cla=clashes, claw=clashesw, 
+                pre=prep, prew=prepw, 
+                rou=route, rouw=routew, 
+                nam=meal_labels[j].name, namw=namew
             )
         )
     # generate labels into PDF
