@@ -1,15 +1,15 @@
 # How to package Sous-Chef
 
-1. Modify the version in `setup.py` and commit the changes. Development versions should have the following pattern:
+1. Modify the version in `pyproject.toml` and commit the changes. Development versions should have the following pattern:
 
    ```
-   1.3.1.dev1
+   2.0.0.dev1
    ```
 
    Production versions should follow semantic versionning:
 
    ```
-   1.3.1
+   2.0.0
    ```
 
 2. Stop your local development server:
