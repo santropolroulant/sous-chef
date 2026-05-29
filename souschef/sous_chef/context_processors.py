@@ -1,26 +1,28 @@
 import datetime
 import os
+from importlib.metadata import version
 
-import pkg_resources
 from django.conf import settings
 
 from souschef.member.models import (
     Client,
     Route,
 )
+from souschef.note.filters import NoteFilter
 from souschef.note.models import (
     Note,
-    NoteFilter,
 )
 from souschef.order.constants import ORDER_STATUS_ORDERED
-from souschef.order.models import Order
+from souschef.order.models import (
+    Order,
+)
 
 
 def get_sous_chef_version():
     if os.environ.get("CI") == "1":
         return "dev"
 
-    return pkg_resources.require("souschef")[0].version
+    return version("souschef")
 
 
 def total(request):

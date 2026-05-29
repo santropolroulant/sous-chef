@@ -1,6 +1,6 @@
 import collections
 from dataclasses import dataclass
-from typing import Any, Union
+from typing import Any
 
 from reportlab.graphics import shapes as rl_shapes
 from reportlab.lib import colors
@@ -44,8 +44,8 @@ MealLabel = collections.namedtuple("MealLabel", meal_label_fields[0::2])
 class LabelPainter:
     # dimensions are in font points (72 points = 1 inch)
     label: Any
-    width: Union[int, float]
-    height: Union[int, float]
+    width: int | float
+    height: int | float
     vertic_post: int = 0
 
     def __post_init__(self):

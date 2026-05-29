@@ -1,6 +1,5 @@
-from typing import Tuple
 
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from souschef.member.types import RateType
 
@@ -22,7 +21,7 @@ CONTACT_TYPE_CHOICES = (
     (EMAIL, EMAIL),
 )
 
-RATE_TYPE: Tuple[Tuple[RateType, str], ...] = (
+RATE_TYPE: tuple[tuple[RateType, str], ...] = (
     ("default", _("Default")),
     ("low income", _("Low income")),
     ("solidary", _("Solidary")),

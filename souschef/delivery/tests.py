@@ -13,7 +13,7 @@ from django.urls import (
     reverse_lazy,
 )
 from django.utils import timezone as tz
-from django.utils.translation import ugettext, ugettext_lazy
+from django.utils.translation import gettext, gettext_lazy
 from pypdf import PdfReader
 
 from souschef.meal.constants import COMPONENT_GROUP_CHOICES_SIDES
@@ -413,7 +413,7 @@ class ChooseDayMainDishIngredientsTestCase(SousChefTestMixin, TestCase):
         response = self.client.post(reverse_lazy("delivery:meal"), req)
 
         self.assertIn(
-            ugettext(
+            gettext(
                 "Select a valid choice. That choice is not one of "
                 "the available choices."
             ).encode(response.charset),
@@ -1084,7 +1084,7 @@ class ExcludeMisconfiguredClientsTestCase(SousChefTestMixin, TestCase):
         main_dish_component_line = next(
             cl
             for cl in component_lines
-            if cl.component_group == ugettext_lazy("Main Dish")
+            if cl.component_group == gettext_lazy("Main Dish")
         )
         self.assertEqual(main_dish_component_line.rqty, 0)
         # only c_valid

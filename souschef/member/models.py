@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime
 import json
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 from annoying.fields import JSONField
 from django.db import models
@@ -10,14 +10,8 @@ from django.db.models import Q
 from django.db.models.functions import Extract
 from django.forms import ValidationError
 from django.utils import timezone
-from django.utils.encoding import force_text
-from django.utils.translation import ugettext_lazy as _
-from django_filters import (
-    CharFilter,
-    ChoiceFilter,
-    FilterSet,
-    MultipleChoiceFilter,
-)
+from django.utils.encoding import force_str
+from django.utils.translation import gettext_lazy as _
 
 from souschef.meal.constants import (
     COMPONENT_GROUP_CHOICES,
@@ -389,7 +383,7 @@ class BirthdayContactClientManager(ClientManager):
 
 def get_ongoing_clients_at_date(
     the_date: datetime.date, today: datetime.date | None = None
-) -> List["Client"]:  # noqa: UP037
+) -> list["Client"]:  # noqa: UP037
     today = today or datetime.date.today()
 
     # This way of doing things will not work with a very large client database.
@@ -504,7 +498,7 @@ class Client(models.Model):
         null=True,
     )
 
-    meal_default_week: Dict[str, Any] = JSONField(blank=True, null=True)
+    meal_default_week: dict[str, Any] = JSONField(blank=True, null=True)
 
     delivery_note = models.TextField(
         verbose_name=_("Delivery Note"), blank=True, null=True
@@ -633,7 +627,7 @@ class Client(models.Model):
         return None
 
     @property
-    def meals_default(self) -> List[Tuple[str, Dict[str, int | None]]]:
+    def meals_default(self) -> list[tuple[str, dict[str, int | None]]]:
         """
         Returns a list of tuple ((weekday, meal default), ...) that
         represents what the client wants on particular days.
@@ -644,9 +638,9 @@ class Client(models.Model):
         It is possible to have zero value, representing that the client
         has said no to a component on a particular day.
         """
-        defaults: List[Tuple[str, Dict[str, int | None]]] = []
+        defaults: list[tuple[str, dict[str, int | None]]] = []
         for day, _str in DAYS_OF_WEEK:
-            current: Dict[str, int | None] = {}
+            current: dict[str, int | None] = {}
             for component, _label in COMPONENT_GROUP_CHOICES:
                 if component is COMPONENT_GROUP_CHOICES_SIDES:
                     continue  # skip "Sides"
@@ -663,7 +657,7 @@ class Client(models.Model):
         return defaults
 
     @property
-    def meals_schedule(self) -> List[Tuple[str, Dict[str, int | None]]]:
+    def meals_schedule(self) -> list[tuple[str, dict[str, int | None]]]:
         """
         Filters `self.meals_default` based on `self.simple_meals_schedule`.
         Non-scheduled days are excluded from the result tuple.
@@ -672,7 +666,7 @@ class Client(models.Model):
         or if `simple_meals_schedule` is not set, it returns empty tuple.
         """
         defaults = self.meals_default
-        prefs: List[Tuple[str, Dict[str, int | None]]] = []
+        prefs: list[tuple[str, dict[str, int | None]]] = []
         simple_meals_schedule = self.simple_meals_schedule
 
         if (
@@ -845,40 +839,6 @@ class ClientScheduledStatus(models.Model):
         )
 
 
-class ClientScheduledStatusFilter(FilterSet):
-    class Meta:
-        model = ClientScheduledStatus
-        fields = ["operation_status"]
-
-
-class ClientFilter(FilterSet):
-    name = CharFilter(method="filter_search", label=_("Search by name"))
-
-    status = MultipleChoiceFilter(choices=Client.CLIENT_STATUS)
-
-    delivery_type = ChoiceFilter(choices=(("", ""),) + DELIVERY_TYPE)
-
-    class Meta:
-        model = Client
-        fields = ["route", "status", "delivery_type"]
-
-    def filter_search(self, queryset, field_name, value):
-        if not value:
-            return queryset
-
-        name_contains = Q()
-        names = value.split(" ")
-
-        for name in names:
-            firstname_contains = Q(member__firstname__icontains=name)
-
-            lastname_contains = Q(member__lastname__icontains=name)
-
-            name_contains |= firstname_contains | lastname_contains
-
-        return queryset.filter(name_contains)
-
-
 class Relationship(models.Model):
     REFERENT = "referent"
     EMERGENCY = "emergency"
@@ -906,7 +866,7 @@ class Relationship(models.Model):
     def get_type_display(self):
         return "+".join(
             map(
-                force_text,
+                force_str,
                 list(map(lambda t: self.TYPE_CHOICES_DICT[t], self.type))
                 or ([_("Unknown type")]),
             )

@@ -32,12 +32,14 @@ class IncompatibilityInline(admin.TabularInline):
     model = Incompatibility
 
 
+@admin.register(Menu)
 class MenuAdmin(admin.ModelAdmin):
     """Allows accessing menu components within the Menu admin."""
 
     inlines = [ComponentsInline]
 
 
+@admin.register(Component)
 class ComponentAdmin(admin.ModelAdmin):
     """Allows accessing ingredients within the Component admin."""
 
@@ -63,6 +65,7 @@ class ComponentAdmin(admin.ModelAdmin):
         return queryset, use_distinct
 
 
+@admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
     """Allows more control over the display of ingredients in the admin."""
 
@@ -90,6 +93,7 @@ class IngredientAdmin(admin.ModelAdmin):
         return queryset, use_distinct
 
 
+@admin.register(Restricted_item)
 class Restricted_itemAdmin(admin.ModelAdmin):
     """Allows accessing ingredients within the Restricted_item admin."""
 
@@ -118,7 +122,3 @@ class Restricted_itemAdmin(admin.ModelAdmin):
         return queryset, use_distinct
 
 
-admin.site.register(Component, ComponentAdmin)
-admin.site.register(Restricted_item, Restricted_itemAdmin)
-admin.site.register(Ingredient, IngredientAdmin)
-admin.site.register(Menu, MenuAdmin)

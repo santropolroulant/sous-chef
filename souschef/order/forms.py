@@ -1,6 +1,6 @@
 from django import forms
-from django.utils.translation import ugettext_lazy as _
-from extra_views import InlineFormSet
+from django.utils.translation import gettext_lazy as _
+from extra_views import InlineFormSetFactory
 
 from souschef.meal.constants import (
     COMPONENT_GROUP_CHOICES,
@@ -14,10 +14,20 @@ from souschef.order.models import (
 )
 
 
-class CreateOrderItem(InlineFormSet):
+class CreateOrderItem(InlineFormSetFactory):
     model = Order_item
     extra = 1
-    fields = "__all__"
+    fields = [
+        "order",
+        "price",
+        "billable_flag",
+        "size",
+        "order_item_type",
+        "remark",
+        "total_quantity",
+        "free_quantity",
+        "component_group",
+    ]
 
 
 class UpdateOrderItem(CreateOrderItem):

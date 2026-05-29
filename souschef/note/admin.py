@@ -7,6 +7,7 @@ from souschef.note.models import (
 )
 
 
+@admin.register(Note)
 class NoteAdmin(admin.ModelAdmin):
     list_display = (
         "date_created",
@@ -28,5 +29,4 @@ class NoteAdmin(admin.ModelAdmin):
 
 
 # Register your models here.
-admin.site.register(Note, NoteAdmin)
 admin.site.register((NotePriority, NoteCategory))

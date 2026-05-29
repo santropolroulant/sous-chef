@@ -12,20 +12,20 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django.views import (
     View,
     generic,
 )
 
 from souschef.member.models import Client
+from souschef.note.filters import NoteFilter
 from souschef.note.forms import (
     NoteEditForm,
     NoteForm,
 )
 from souschef.note.models import (
     Note,
-    NoteFilter,
 )
 
 # Create your views here.
@@ -129,14 +129,14 @@ class ClientNoteListAdd(NoteAdd):
 def mark_as_read(request, id):
     note = get_object_or_404(Note, pk=id)
     note.mark_as_read()
-    return HttpResponseRedirect(request.META.get("HTTP_REFERER"))
+    return HttpResponseRedirect(request.headers.get("referer"))
 
 
 @login_required
 def mark_as_unread(request, id):
     note = get_object_or_404(Note, pk=id)
     note.mark_as_unread()
-    return HttpResponseRedirect(request.META.get("HTTP_REFERER"))
+    return HttpResponseRedirect(request.headers.get("referer"))
 
 
 class NoteBatchToggle(LoginRequiredMixin, PermissionRequiredMixin, View):
@@ -152,7 +152,7 @@ class NoteBatchToggle(LoginRequiredMixin, PermissionRequiredMixin, View):
             messages.SUCCESS,
             _("%(count)s note(s) were updated.") % {"count": count},
         )
-        return HttpResponseRedirect(request.META.get("HTTP_REFERER"))
+        return HttpResponseRedirect(request.headers.get("referer"))
 
 
 class NoteEditView(

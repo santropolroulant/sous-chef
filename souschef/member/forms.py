@@ -1,7 +1,7 @@
 from django import forms
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from localflavor.ca.forms import CAPostalCodeField
 
 from souschef.meal.constants import (
@@ -13,9 +13,9 @@ from souschef.meal.models import (
     Ingredient,
     Restricted_item,
 )
+from souschef.member.constants import DAYS_OF_WEEK
 from souschef.member.formsfield import CAPhoneNumberExtField
 from souschef.member.models import (
-    DAYS_OF_WEEK,
     DELIVERY_TYPE,
     GENDER_CHOICES,
     MAILING_TYPE,

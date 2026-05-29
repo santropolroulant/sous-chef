@@ -8,10 +8,10 @@ class OrdersInline(admin.TabularInline):
     model = Billing.orders.through
 
 
+@admin.register(Billing)
 class BillingAdmin(admin.ModelAdmin):
     inlines = [
         OrdersInline,
     ]
 
 
-admin.site.register(Billing, BillingAdmin)

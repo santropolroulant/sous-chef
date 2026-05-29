@@ -1,6 +1,6 @@
 import collections
 import re
-from typing import Tuple, cast
+from typing import cast
 
 from django.contrib import messages
 from django.contrib.auth.mixins import (
@@ -18,21 +18,22 @@ from django.http import (
     HttpResponseRedirect,
 )
 from django.urls import reverse_lazy
-from django.utils.translation import string_concat
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
 from souschef.billing.csvexport import export_csv
-from souschef.billing.models import Billing, BillingFilter
+from souschef.billing.filters import BillingFilter
+from souschef.billing.models import Billing
 from souschef.billing.types import (
     BillingPaymentType,
     BillingSummary,
     PaymentTypeStatistics,
 )
+from souschef.djangocompat import string_concat
 from souschef.member.models import Client
 from souschef.member.types import RateType
+from souschef.order.filters import DeliveredOrdersByMonthFilter
 from souschef.order.models import (
-    DeliveredOrdersByMonth,
     Order,
     Order_item,
 )
@@ -54,7 +55,9 @@ class BillingList(LoginRequiredMixin, PermissionRequiredMixin, generic.ListView)
 
     def get_queryset(self):
         uf = BillingFilter(self.request.GET)
-        return uf.qs.annotate(Count("orders", distinct=True))
+        return uf.qs.annotate(Count("orders", distinct=True)).order_by(
+            "-billing_year", "-billing_month"
+        )
 
 
 class BillingCreate(LoginRequiredMixin, PermissionRequiredMixin, generic.CreateView):
@@ -101,7 +104,9 @@ class BillingAdd(LoginRequiredMixin, PermissionRequiredMixin, generic.ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        uf = DeliveredOrdersByMonth(self.request.GET, queryset=self.get_queryset())
+        uf = DeliveredOrdersByMonthFilter(
+            self.request.GET, queryset=self.get_queryset()
+        )
         context["filter"] = uf
         text = ""
         count = 0
@@ -121,7 +126,7 @@ class BillingAdd(LoginRequiredMixin, PermissionRequiredMixin, generic.ListView):
         return context
 
     def get_queryset(self):
-        uf = DeliveredOrdersByMonth(self.request.GET)
+        uf = DeliveredOrdersByMonthFilter(self.request.GET)
         return (
             uf.qs.select_related("client__member")
             .only(
@@ -185,7 +190,7 @@ class BillingSummaryView(
             return super().get_template_names()
 
     def _get_payment_summary_sort_key(
-        self, tup: Tuple[BillingPaymentType, PaymentTypeStatistics]
+        self, tup: tuple[BillingPaymentType, PaymentTypeStatistics]
     ):
         sort_position = {
             None: 0,

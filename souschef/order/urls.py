@@ -1,5 +1,5 @@
-from django.conf.urls import url
-from django.utils.translation import ugettext_lazy as _
+from django.urls import path
+from django.utils.translation import gettext_lazy as _
 
 from souschef.order.views import (
     CancelOrder,
@@ -16,22 +16,22 @@ from souschef.order.views import (
 app_name = "order"
 
 urlpatterns = [
-    url(_(r"^list/$"), OrderList.as_view(), name="list"),
-    url(_(r"^view/(?P<pk>\d+)/$"), OrderDetail.as_view(), name="view"),
-    url(_(r"^create/$"), CreateOrder.as_view(), name="create"),
+    path(_("list/"), OrderList.as_view(), name="list"),
+    path(_("view/<int:pk>/"), OrderDetail.as_view(), name="view"),
+    path(_("create/"), CreateOrder.as_view(), name="create"),
     # Multiple orders as once
-    url(_(r"^create/batch$"), CreateOrdersBatch.as_view(), name="create_batch"),
-    url(_(r"^update/(?P<pk>\d+)/$"), UpdateOrder.as_view(), name="update"),
-    url(
-        _(r"^update/(?P<pk>\d+)/status$"),
+    path(_("create/batch"), CreateOrdersBatch.as_view(), name="create_batch"),
+    path(_("update/<int:pk>/"), UpdateOrder.as_view(), name="update"),
+    path(
+        _("update/<int:pk>/status"),
         UpdateOrderStatus.as_view(),
         name="update_status",
     ),
-    url(
-        _(r"^update/(?P<pk>\d+)/client_bill$"),
+    path(
+        _("update/<int:pk>/client_bill"),
         CreateDeleteOrderClientBill.as_view(),
         name="update_client_bill",
     ),
-    url(_(r"^cancel/(?P<pk>\d+)/$"), CancelOrder.as_view(), name="cancel"),
-    url(_(r"^delete/(?P<pk>\d+)/$"), DeleteOrder.as_view(), name="delete"),
+    path(_("cancel/<int:pk>/"), CancelOrder.as_view(), name="cancel"),
+    path(_("delete/<int:pk>/"), DeleteOrder.as_view(), name="delete"),
 ]

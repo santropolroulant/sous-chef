@@ -3,10 +3,9 @@ import csv
 import operator
 from dataclasses import dataclass
 from decimal import Decimal
-from typing import TYPE_CHECKING, Dict, List, Tuple, Union, cast
+from typing import TYPE_CHECKING, Literal, cast
 
 from django.http import HttpResponse
-from typing_extensions import Literal
 
 from souschef.meal.constants import (
     COMPONENT_GROUP_CHOICES,
@@ -47,7 +46,7 @@ ALL_COLUMNS = (
 MAIN_DISH_DESCRIPTION_OVERRIDE = "Repas"
 
 # tuple of component group, meal size, unit price
-GroupKey = Tuple[str, Union[str, None], Decimal]
+GroupKey = tuple[str, str | None, Decimal]
 
 
 @dataclass
@@ -56,7 +55,7 @@ class GroupedItem:
 
     component: str
     description: str
-    size: Union[Literal["R", "L"], None]
+    size: Literal["R", "L"] | None
     unit_price: Decimal
     is_billable: bool
     quantity: int = 0
@@ -78,7 +77,7 @@ class GroupedItem:
         return GroupedItem(
             component=item.component_group,
             description=(component_descriptions.get(item.component_group, "")),
-            size=cast(Union[Literal["R", "L"], None], item.size),
+            size=cast(Literal["R", "L"] | None, item.size),
             unit_price=(
                 item.price / item.total_quantity if item.billable_flag else Decimal(0)
             ),
@@ -177,8 +176,8 @@ def _get_row_for_group(item_group: GroupedItem, rate_type: "RateType"):
     )
 
 
-def _get_grouped_items(orders: "List[Order]") -> List[GroupedItem]:
-    groups: Dict[GroupKey, GroupedItem] = dict()
+def _get_grouped_items(orders: "list[Order]") -> list[GroupedItem]:
+    groups: dict[GroupKey, GroupedItem] = dict()
     for order in orders:
         for item in order.orders.all():
             item: Order_item
@@ -207,13 +206,13 @@ def _get_grouped_items(orders: "List[Order]") -> List[GroupedItem]:
     return list(groups.values())
 
 
-def _get_invoice_rows(orders: "List[Order]", rate_type: "RateType"):
+def _get_invoice_rows(orders: "list[Order]", rate_type: "RateType"):
     for group in _get_grouped_items(orders):
         yield from _get_row_for_group(group, rate_type)
 
 
 def _get_client_rows(
-    billing: "Billing", client: "Client", orders: "List[Order]", invoice_number: int
+    billing: "Billing", client: "Client", orders: "list[Order]", invoice_number: int
 ):
     is_first_row = True
     for row in _get_invoice_rows(orders, cast("RateType", client.rate_type)):
