@@ -11,6 +11,22 @@
 
 }
 
-.ui.inverted.menu.staging-color {
+// Prod interne
+.ui.inverted.menu.env-prod {
+    background: #1b1c1d;
+}
+
+// Staging interne
+.ui.inverted.menu.env-staging {
     background: cadetblue;
+}
+
+// Prod cloud
+.ui.inverted.menu.env-prod-cloud {
+    background: #4a235a;
+}
+
+// Staging cloud
+.ui.inverted.menu.env-staging-cloud {
+    background: #1a7a4a;
 }

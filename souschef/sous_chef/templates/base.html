@@ -21,14 +21,14 @@
 
 <body>
     <!-- Responsive sidebar menu -->
-    <div class="ui inverted vertical menu {% if SC_ENVIRONMENT_NAME == 'STAGING' %}staging-color{% endif %} left sidebar">
+    <div class="ui inverted vertical menu env-{{ SC_ENVIRONMENT_NAME|lower }} left sidebar">
         {% include "system/menu.html" %}
     </div>
     <!-- Main content grid -->
     <div class="pusher">
         <div class="ui grid container">
             <!-- Non responsive menu -->
-            <div class="ui left fixed vertical inverted menu {% if SC_ENVIRONMENT_NAME == 'STAGING' %}staging-color{% endif %}">
+            <div class="ui left fixed vertical inverted menu env-{{ SC_ENVIRONMENT_NAME|lower }}">
                 {% include "system/menu.html" %}
             </div>
             <!-- Responsive top menu -->
