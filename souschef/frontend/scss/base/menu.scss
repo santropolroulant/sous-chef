@@ -11,6 +11,24 @@
 
 }
 
+.logout-form {
+    padding: 0 !important;
+}
+
+.logout-button {
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.08);
+    }
+}
+
 // Prod interne
 .ui.inverted.menu.env-prod {
     background: #1b1c1d;
