@@ -49,7 +49,12 @@
     <!-- The archive link is served by nginx and will not work in a development setup. -->
     <!-- It contains previously generated kitchen counts, labels and route reports. -->
     <a class="item" href="/archive/?C=M&O=D" target="_blank"><i class="folder icon"></i>{% trans 'Archive' %}</a>
-    <a href="{% url 'page:logout' %}" class="item"><i class="sign out icon"></i>{% trans 'Logout' %}</a>
+    <form method="post" action="{% url 'page:logout' %}" class="item logout-form">
+        {% csrf_token %}
+        <button type="submit" class="ui item logout-button">
+            <i class="sign out icon"></i>{% trans 'Logout' %}
+        </button>
+    </form>
 </div>
 <div class="item">
     <strong class="ui center aligned container" style="color:aqua;">
