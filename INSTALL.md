@@ -54,7 +54,7 @@ SOUSCHEF_DJANGO_DB_NAME=souschefdb
 SOUSCHEF_DJANGO_DB_USER=souschefuser
 SOUSCHEF_DJANGO_DB_PASSWORD=...password ...
 SOUSCHEF_GENERATED_DOCS_DIR=/var/local/souschef
-```
+SOUSCHEF_CSRF_TRUSTED_ORIGINS=...websiteurl...
 
 Note: `SOUSCHEF_DJANGO_ALLOWED_HOSTS` is a list of coma-separated public name(s) or IP(s) of the server hosting sous-chef.
 
