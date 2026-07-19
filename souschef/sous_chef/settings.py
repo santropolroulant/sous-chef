@@ -54,6 +54,12 @@ ALLOWED_HOSTS = (
     .split()
 )
 
+CSRF_TRUSTED_ORIGINS = (
+    os.environ.get("SOUSCHEF_CSRF_TRUSTED_ORIGINS", "").split()
+)
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 # Application definition
